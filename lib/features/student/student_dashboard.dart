@@ -30,6 +30,7 @@ class StudentDashboard extends ConsumerWidget {
           academicRepo.getSubjects(),
           attendanceRepo.getSessions(),
           attendanceRepo.getAttendanceRecordsForStudent(studentId),
+          academicRepo.getSubjectMappings(),
         ]),
         builder: (context, AsyncSnapshot<List<dynamic>> snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -43,6 +44,7 @@ class StudentDashboard extends ConsumerWidget {
           final subjects = snapshot.data?[4] as List<Subject>? ?? [];
           final allSessions = snapshot.data?[5] as List<AttendanceSession>? ?? [];
           final myRecords = snapshot.data?[6] as List<AttendanceRecord>? ?? [];
+          final subjectMappings = snapshot.data?[7] as List<SubjectMapping>? ?? [];
 
           // Find student profile details
           final student = students.firstWhere((s) => s.id == studentId, orElse: () => Student(id: '', rollNumber: '', name: 'Unknown Student', sectionId: ''));
@@ -62,10 +64,16 @@ class StudentDashboard extends ConsumerWidget {
           final totalAttended = myRecords.where((r) => r.status == 'present').length;
           final double overallPercentage = totalConducted > 0 ? (totalAttended / totalConducted) * 100 : 0.0;
 
+          // Filter mappings for this student's section
+          final classMappings = subjectMappings.where((m) => m.sectionId == student.sectionId).toList();
+
           // Subject-wise stats calculation
           final Map<String, Map<String, int>> subjectStats = {}; // subjectId -> { 'conducted': 0, 'attended': 0 }
 
-          // Initialize subject stats for subjects mapped to class
+          // Initialize subject stats for all subjects mapped to this section
+          for (final mapping in classMappings) {
+            subjectStats[mapping.subjectId] = {'conducted': 0, 'attended': 0};
+          }
           for (final sess in classSessions) {
             subjectStats.putIfAbsent(sess.subjectId, () => {'conducted': 0, 'attended': 0});
             subjectStats[sess.subjectId]!['conducted'] = subjectStats[sess.subjectId]!['conducted']! + 1;
@@ -211,7 +219,7 @@ class StudentDashboard extends ConsumerWidget {
                       final subId = subjectStats.keys.elementAt(idx);
                       final stats = subjectStats[subId]!;
                       final sub = subjects.firstWhere((s) => s.id == subId, orElse: () => Subject(id: '', code: 'UNK', name: 'Unknown'));
-                      final double pct = stats['conducted']! > 0 ? (stats['attended']! / stats['conducted']!) * 100 : 0.0;
+                      final double pct = stats['conducted']! > 0 ? (stats['attended']! / stats['conducted']!) * 100 : 100.0;
 
                       return Card(
                         margin: const EdgeInsets.only(bottom: 12),
@@ -479,7 +487,7 @@ class StudentDashboard extends ConsumerWidget {
                           final subId = subjectStats.keys.elementAt(idx);
                           final stats = subjectStats[subId]!;
                           final sub = subjects.firstWhere((s) => s.id == subId, orElse: () => Subject(id: '', code: 'UNK', name: 'Unknown'));
-                          final double pct = stats['conducted']! > 0 ? (stats['attended']! / stats['conducted']!) * 100 : 0.0;
+                          final double pct = stats['conducted']! > 0 ? (stats['attended']! / stats['conducted']!) * 100 : 100.0;
 
                           return Card(
                             elevation: 0,
