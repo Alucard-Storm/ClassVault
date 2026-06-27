@@ -105,6 +105,7 @@ class _AcademicSetupScreenState extends ConsumerState<AcademicSetupScreen> with 
               mainAxisSize: MainAxisSize.min,
               children: [
                 DropdownButtonFormField<String>(
+                  isExpanded: true,
                   value: selectedCourseId,
                   items: _courses
                       .map((c) => DropdownMenuItem(value: c.id, child: Text(c.name)))
@@ -161,6 +162,7 @@ class _AcademicSetupScreenState extends ConsumerState<AcademicSetupScreen> with 
               mainAxisSize: MainAxisSize.min,
               children: [
                 DropdownButtonFormField<String>(
+                  isExpanded: true,
                   value: selectedBranchId,
                   items: _branches
                       .map((b) => DropdownMenuItem(value: b.id, child: Text(b.name)))
@@ -218,6 +220,7 @@ class _AcademicSetupScreenState extends ConsumerState<AcademicSetupScreen> with 
               mainAxisSize: MainAxisSize.min,
               children: [
                 DropdownButtonFormField<String>(
+                  isExpanded: true,
                   value: selectedSemesterId,
                   items: _semesters.map((s) {
                     final b = _branches.firstWhere((br) => br.id == s.branchId, orElse: () => Branch(id: '', courseId: '', name: 'Unknown'));
@@ -359,21 +362,23 @@ class _AcademicSetupScreenState extends ConsumerState<AcademicSetupScreen> with 
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Academic Setup Console',
-                    style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Configure your academic structure: courses, branches, semesters, and sections.',
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: theme.colorScheme.onSurface.withOpacity(0.6),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Academic Setup Console',
+                      style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 4),
+                    Text(
+                      'Configure your academic structure: courses, branches, semesters, and sections.',
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: theme.colorScheme.onSurface.withOpacity(0.6),
+                      ),
+                    ),
+                  ],
+                ),
               ),
               IconButton.filledTonal(
                 onPressed: _loadData,

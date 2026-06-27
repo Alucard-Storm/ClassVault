@@ -112,66 +112,70 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     ),
                   ),
                 ),
-                Padding(
-                  padding: const EdgeInsets.all(64.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Row(
+                Center(
+                  child: SingleChildScrollView(
+                    child: Padding(
+                      padding: const EdgeInsets.all(64.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.2),
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            child: const Icon(
-                              Icons.lock_person_rounded,
-                              size: 40,
-                              color: Colors.white,
-                            ),
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.2),
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                                child: const Icon(
+                                  Icons.lock_person_rounded,
+                                  size: 40,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              const SizedBox(width: 16),
+                              const Text(
+                                'CampusVault',
+                                style: TextStyle(
+                                  fontSize: 36,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                  letterSpacing: -1,
+                                ),
+                              ),
+                            ],
                           ),
-                          const SizedBox(width: 16),
+                          const SizedBox(height: 48),
                           const Text(
-                            'CampusVault',
+                            'Academic attendance management\nsimplified for everyone.',
                             style: TextStyle(
-                              fontSize: 36,
+                              fontSize: 28,
                               fontWeight: FontWeight.bold,
                               color: Colors.white,
-                              letterSpacing: -1,
+                              height: 1.3,
                             ),
                           ),
+                          const SizedBox(height: 24),
+                          Text(
+                            'CampusVault lets administrators, faculty, and students monitor, mark, and analyze class attendances in real-time. Powering educational workflows with absolute precision.',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.white.withOpacity(0.85),
+                              height: 1.5,
+                            ),
+                          ),
+                          const SizedBox(height: 48),
+                          _buildFeatureRow(Icons.check_circle_outline_rounded, 'Real-time Attendance Marking'),
+                          const SizedBox(height: 16),
+                          _buildFeatureRow(Icons.upload_file_rounded, 'Bulk Student CSV Imports'),
+                          const SizedBox(height: 16),
+                          _buildFeatureRow(Icons.trending_up_rounded, 'Automated Semester Promotions'),
+                          const SizedBox(height: 16),
+                          _buildFeatureRow(Icons.analytics_outlined, 'Defaulters & Subject Analytics'),
                         ],
                       ),
-                      const SizedBox(height: 48),
-                      const Text(
-                        'Academic attendance management\nsimplified for everyone.',
-                        style: TextStyle(
-                          fontSize: 28,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                          height: 1.3,
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-                      Text(
-                        'CampusVault lets administrators, faculty, and students monitor, mark, and analyze class attendances in real-time. Powering educational workflows with absolute precision.',
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.white.withOpacity(0.85),
-                          height: 1.5,
-                        ),
-                      ),
-                      const SizedBox(height: 48),
-                      _buildFeatureRow(Icons.check_circle_outline_rounded, 'Real-time Attendance Marking'),
-                      const SizedBox(height: 16),
-                      _buildFeatureRow(Icons.upload_file_rounded, 'Bulk Student CSV Imports'),
-                      const SizedBox(height: 16),
-                      _buildFeatureRow(Icons.trending_up_rounded, 'Automated Semester Promotions'),
-                      const SizedBox(height: 16),
-                      _buildFeatureRow(Icons.analytics_outlined, 'Defaulters & Subject Analytics'),
-                    ],
+                    ),
                   ),
                 ),
               ],

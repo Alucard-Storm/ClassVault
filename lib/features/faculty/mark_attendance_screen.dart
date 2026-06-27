@@ -217,6 +217,7 @@ class _MarkAttendanceScreenState extends ConsumerState<MarkAttendanceScreen> {
                             style: TextStyle(color: theme.colorScheme.error),
                           )
                         : DropdownButtonFormField<String>(
+                            isExpanded: true,
                             value: _selectedAssignmentId,
                             decoration: const InputDecoration(labelText: 'Class / Subject'),
                             items: _assignments.map((fa) {
@@ -227,7 +228,10 @@ class _MarkAttendanceScreenState extends ConsumerState<MarkAttendanceScreen> {
                               final b = _branches.firstWhere((br) => br.id == sem.branchId, orElse: () => Branch(id: '', courseId: '', name: 'Unknown'));
                               return DropdownMenuItem(
                                 value: fa.id,
-                                child: Text('${b.name} - Sem ${sem.semesterNumber} (${sec.name}) ➔ ${sub.name}'),
+                                child: Text(
+                                  '${b.name} - Sem ${sem.semesterNumber} (${sec.name}) ➔ ${sub.name}',
+                                  overflow: TextOverflow.ellipsis,
+                                ),
                               );
                             }).toList(),
                             onChanged: (val) {
@@ -269,30 +273,53 @@ class _MarkAttendanceScreenState extends ConsumerState<MarkAttendanceScreen> {
                     Row(
                       children: [
                         Expanded(
-                          child: ListTile(
-                            contentPadding: EdgeInsets.zero,
-                            title: const Text('Start Time'),
-                            subtitle: Text(_startTime.format(context)),
-                            trailing: IconButton(
-                              icon: const Icon(Icons.access_time_rounded),
-                              onPressed: () async {
-                                final time = await showTimePicker(context: context, initialTime: _startTime);
-                                if (time != null) setState(() => _startTime = time);
-                              },
+                          child: InkWell(
+                            onTap: () async {
+                              final time = await showTimePicker(context: context, initialTime: _startTime);
+                              if (time != null) setState(() => _startTime = time);
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 8.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text('Start Time', style: TextStyle(fontSize: 12)),
+                                  const SizedBox(height: 4),
+                                  Row(
+                                    children: [
+                                      const Icon(Icons.access_time_rounded, size: 16),
+                                      const SizedBox(width: 4),
+                                      Text(_startTime.format(context), style: const TextStyle(fontWeight: FontWeight.bold)),
+                                    ],
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ),
+                        const SizedBox(width: 16),
                         Expanded(
-                          child: ListTile(
-                            contentPadding: EdgeInsets.zero,
-                            title: const Text('End Time'),
-                            subtitle: Text(_endTime.format(context)),
-                            trailing: IconButton(
-                              icon: const Icon(Icons.access_time_rounded),
-                              onPressed: () async {
-                                final time = await showTimePicker(context: context, initialTime: _endTime);
-                                if (time != null) setState(() => _endTime = time);
-                              },
+                          child: InkWell(
+                            onTap: () async {
+                              final time = await showTimePicker(context: context, initialTime: _endTime);
+                              if (time != null) setState(() => _endTime = time);
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 8.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text('End Time', style: TextStyle(fontSize: 12)),
+                                  const SizedBox(height: 4),
+                                  Row(
+                                    children: [
+                                      const Icon(Icons.access_time_rounded, size: 16),
+                                      const SizedBox(width: 4),
+                                      Text(_endTime.format(context), style: const TextStyle(fontWeight: FontWeight.bold)),
+                                    ],
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ),
@@ -457,6 +484,7 @@ class _MarkAttendanceScreenState extends ConsumerState<MarkAttendanceScreen> {
                                         style: TextStyle(color: theme.colorScheme.error),
                                       )
                                     : DropdownButtonFormField<String>(
+                                        isExpanded: true,
                                         value: _selectedAssignmentId,
                                         decoration: const InputDecoration(labelText: 'Class / Subject'),
                                         items: _assignments.map((fa) {
@@ -467,7 +495,10 @@ class _MarkAttendanceScreenState extends ConsumerState<MarkAttendanceScreen> {
                                           final b = _branches.firstWhere((br) => br.id == sem.branchId, orElse: () => Branch(id: '', courseId: '', name: 'Unknown'));
                                           return DropdownMenuItem(
                                             value: fa.id,
-                                            child: Text('${b.name} - Sem ${sem.semesterNumber} (${sec.name}) ➔ ${sub.name}'),
+                                            child: Text(
+                                              '${b.name} - Sem ${sem.semesterNumber} (${sec.name}) ➔ ${sub.name}',
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
                                           );
                                         }).toList(),
                                         onChanged: _onAssignmentChanged,
@@ -511,30 +542,53 @@ class _MarkAttendanceScreenState extends ConsumerState<MarkAttendanceScreen> {
                                 Row(
                                   children: [
                                     Expanded(
-                                      child: ListTile(
-                                        contentPadding: EdgeInsets.zero,
-                                        title: const Text('Start Time', style: TextStyle(fontSize: 12)),
-                                        subtitle: Text(_startTime.format(context), style: const TextStyle(fontWeight: FontWeight.bold)),
-                                        trailing: IconButton(
-                                          icon: const Icon(Icons.access_time_rounded, size: 20),
-                                          onPressed: () async {
-                                            final time = await showTimePicker(context: context, initialTime: _startTime);
-                                            if (time != null) setState(() => _startTime = time);
-                                          },
+                                      child: InkWell(
+                                        onTap: () async {
+                                          final time = await showTimePicker(context: context, initialTime: _startTime);
+                                          if (time != null) setState(() => _startTime = time);
+                                        },
+                                        child: Padding(
+                                          padding: const EdgeInsets.symmetric(vertical: 8.0),
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              const Text('Start Time', style: TextStyle(fontSize: 12)),
+                                              const SizedBox(height: 4),
+                                              Row(
+                                                children: [
+                                                  const Icon(Icons.access_time_rounded, size: 16),
+                                                  const SizedBox(width: 4),
+                                                  Text(_startTime.format(context), style: const TextStyle(fontWeight: FontWeight.bold)),
+                                                ],
+                                              ),
+                                            ],
+                                          ),
                                         ),
                                       ),
                                     ),
+                                    const SizedBox(width: 16),
                                     Expanded(
-                                      child: ListTile(
-                                        contentPadding: EdgeInsets.zero,
-                                        title: const Text('End Time', style: TextStyle(fontSize: 12)),
-                                        subtitle: Text(_endTime.format(context), style: const TextStyle(fontWeight: FontWeight.bold)),
-                                        trailing: IconButton(
-                                          icon: const Icon(Icons.access_time_rounded, size: 20),
-                                          onPressed: () async {
-                                            final time = await showTimePicker(context: context, initialTime: _endTime);
-                                            if (time != null) setState(() => _endTime = time);
-                                          },
+                                      child: InkWell(
+                                        onTap: () async {
+                                          final time = await showTimePicker(context: context, initialTime: _endTime);
+                                          if (time != null) setState(() => _endTime = time);
+                                        },
+                                        child: Padding(
+                                          padding: const EdgeInsets.symmetric(vertical: 8.0),
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              const Text('End Time', style: TextStyle(fontSize: 12)),
+                                              const SizedBox(height: 4),
+                                              Row(
+                                                children: [
+                                                  const Icon(Icons.access_time_rounded, size: 16),
+                                                  const SizedBox(width: 4),
+                                                  Text(_endTime.format(context), style: const TextStyle(fontWeight: FontWeight.bold)),
+                                                ],
+                                              ),
+                                            ],
+                                          ),
                                         ),
                                       ),
                                     ),

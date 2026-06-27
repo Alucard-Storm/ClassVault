@@ -159,102 +159,130 @@ class AdminDashboard extends ConsumerWidget {
                   const SizedBox(height: 28),
 
                   // Metrics Cards Row
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _buildMetricCard(
-                          context,
-                          title: 'Total Students',
-                          value: NumberFormat('#,###').format(studentsCount),
-                          icon: Icons.group_outlined,
-                          color: const Color(0xFF4C5DF4),
-                          trendText: '↑ 8.5% this month',
-                          trendColor: const Color(0xFF10B981),
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: _buildMetricCard(
-                          context,
-                          title: 'Total Faculty',
-                          value: '$facultyCount',
-                          icon: Icons.badge_outlined,
-                          color: const Color(0xFF0D9488),
-                          trendText: '↑ 3.1% this month',
-                          trendColor: const Color(0xFF10B981),
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: _buildMetricCard(
-                          context,
-                          title: 'Total Subjects',
-                          value: '$subjectsCount',
-                          icon: Icons.auto_stories_outlined,
-                          color: const Color(0xFF3B82F6),
-                          trendText: '↑ 2.4% this month',
-                          trendColor: const Color(0xFF10B981),
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: _buildMetricCard(
-                          context,
-                          title: 'Attendance Today',
-                          value: '${attendanceToday.toStringAsFixed(0)}%',
-                          icon: Icons.calendar_today_outlined,
-                          color: const Color(0xFFF59E0B),
-                          trendText: attendanceTodayTrend,
-                          trendColor: attendanceTodayTrendColor,
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: _buildMetricCard(
-                          context,
-                          title: 'Defaulters',
-                          value: '$defaultersCount', 
-                          icon: Icons.gpp_bad_outlined,
-                          color: const Color(0xFFEF4444),
-                          trendText: defaultersCount > 0 ? 'Action required' : 'All clear',
-                          trendColor: defaultersCount > 0 ? const Color(0xFFEF4444) : const Color(0xFF10B981),
-                        ),
-                      ),
-                    ],
+                  LayoutBuilder(
+                    builder: (context, constraints) {
+                      final crossAxisCount = constraints.maxWidth > 1400
+                          ? 5
+                          : constraints.maxWidth > 1000
+                              ? 3
+                              : constraints.maxWidth > 600
+                                  ? 2
+                                  : 1;
+                      
+                      final double childAspectRatio = constraints.maxWidth > 1400
+                          ? 1.5
+                          : constraints.maxWidth > 1000
+                              ? 1.8
+                              : constraints.maxWidth > 600
+                                  ? 2.2
+                                  : 3.0;
+
+                      return GridView.count(
+                        crossAxisCount: crossAxisCount,
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        crossAxisSpacing: 16,
+                        mainAxisSpacing: 16,
+                        childAspectRatio: childAspectRatio,
+                        children: [
+                          _buildMetricCard(
+                            context,
+                            title: 'Total Students',
+                            value: NumberFormat('#,###').format(studentsCount),
+                            icon: Icons.group_outlined,
+                            color: const Color(0xFF4C5DF4),
+                            trendText: '↑ 8.5% this month',
+                            trendColor: const Color(0xFF10B981),
+                          ),
+                          _buildMetricCard(
+                            context,
+                            title: 'Total Faculty',
+                            value: '$facultyCount',
+                            icon: Icons.badge_outlined,
+                            color: const Color(0xFF0D9488),
+                            trendText: '↑ 3.1% this month',
+                            trendColor: const Color(0xFF10B981),
+                          ),
+                          _buildMetricCard(
+                            context,
+                            title: 'Total Subjects',
+                            value: '$subjectsCount',
+                            icon: Icons.auto_stories_outlined,
+                            color: const Color(0xFF3B82F6),
+                            trendText: '↑ 2.4% this month',
+                            trendColor: const Color(0xFF10B981),
+                          ),
+                          _buildMetricCard(
+                            context,
+                            title: 'Attendance Today',
+                            value: '${attendanceToday.toStringAsFixed(0)}%',
+                            icon: Icons.calendar_today_outlined,
+                            color: const Color(0xFFF59E0B),
+                            trendText: attendanceTodayTrend,
+                            trendColor: attendanceTodayTrendColor,
+                          ),
+                          _buildMetricCard(
+                            context,
+                            title: 'Defaulters',
+                            value: '$defaultersCount',
+                            icon: Icons.gpp_bad_outlined,
+                            color: const Color(0xFFEF4444),
+                            trendText: defaultersCount > 0 ? 'Action required' : 'All clear',
+                            trendColor: defaultersCount > 0 ? const Color(0xFFEF4444) : const Color(0xFF10B981),
+                          ),
+                        ],
+                      );
+                    },
                   ),
                   const SizedBox(height: 28),
 
                   // Main Two-Column Analytics Layout
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Left Column: Chart & Recent Activity
-                      Expanded(
-                        flex: 3,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            _buildAttendanceChart(theme, sessions, allRecords),
-                            const SizedBox(height: 24),
-                            _buildRecentSessionsCard(theme, recentSessions, subjects, sections, semesters, branches),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: 24),
+                  LayoutBuilder(
+                    builder: (context, constraints) {
+                      final leftColumn = Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          _buildAttendanceChart(theme, sessions, allRecords),
+                          const SizedBox(height: 24),
+                          _buildRecentSessionsCard(theme, recentSessions, subjects, sections, semesters, branches),
+                        ],
+                      );
+                      
+                      final rightColumn = Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          _buildDefaulterWatchlistCard(theme, dynamicDefaulters),
+                          const SizedBox(height: 24),
+                          _buildFacultyLoadCard(theme, facultyList, sessions),
+                        ],
+                      );
 
-                      // Right Column: Defaulters & Faculty Load
-                      Expanded(
-                        flex: 2,
-                        child: Column(
+                      if (constraints.maxWidth < 1100) {
+                        return Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            _buildDefaulterWatchlistCard(theme, dynamicDefaulters),
+                            leftColumn,
                             const SizedBox(height: 24),
-                            _buildFacultyLoadCard(theme, facultyList, sessions),
+                            rightColumn,
                           ],
-                        ),
-                      ),
-                    ],
+                        );
+                      } else {
+                        return Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              flex: 3,
+                              child: leftColumn,
+                            ),
+                            const SizedBox(width: 24),
+                            Expanded(
+                              flex: 2,
+                              child: rightColumn,
+                            ),
+                          ],
+                        );
+                      }
+                    },
                   ),
                 ],
               ),

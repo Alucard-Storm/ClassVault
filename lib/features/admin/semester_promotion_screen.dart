@@ -136,6 +136,7 @@ class _SemesterPromotionScreenState extends ConsumerState<SemesterPromotionScree
                     Text('Select Promotion Path', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
                     const SizedBox(height: 16),
                     DropdownButtonFormField<String>(
+                      isExpanded: true,
                       value: _sourceSectionId,
                       decoration: const InputDecoration(labelText: 'Source Section (Current Class)'),
                       items: _sections.map((sec) {
@@ -155,6 +156,7 @@ class _SemesterPromotionScreenState extends ConsumerState<SemesterPromotionScree
                     ),
                     const SizedBox(height: 16),
                     DropdownButtonFormField<String>(
+                      isExpanded: true,
                       value: _destSectionId,
                       decoration: const InputDecoration(labelText: 'Destination Section (New Class)'),
                       items: _sections.map((sec) {
@@ -256,154 +258,178 @@ class _SemesterPromotionScreenState extends ConsumerState<SemesterPromotionScree
           ),
           const SizedBox(height: 24),
           Expanded(
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Left Column - Selection & Actions
-                SizedBox(
-                  width: 380,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Card(
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          side: BorderSide(color: theme.dividerColor.withOpacity(0.08)),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(20.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Select Promotion Path',
-                                style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-                              ),
-                              const SizedBox(height: 16),
-                              DropdownButtonFormField<String>(
-                                value: _sourceSectionId,
-                                decoration: const InputDecoration(labelText: 'Source Section (Current Class)'),
-                                items: _sections.map((sec) {
-                                  final sem = _semesters.firstWhere((s) => s.id == sec.semesterId, orElse: () => Semester(id: '', branchId: '', semesterNumber: 0));
-                                  final b = _branches.firstWhere((br) => br.id == sem.branchId, orElse: () => Branch(id: '', courseId: '', name: 'Unknown'));
-                                  return DropdownMenuItem(
-                                    value: sec.id,
-                                    child: Text('${b.name} - Sem ${sem.semesterNumber} (${sec.name})'),
-                                  );
-                                }).toList(),
-                                onChanged: (val) {
-                                  setState(() {
-                                    _sourceSectionId = val;
-                                  });
-                                  _loadSourceStudents();
-                                },
-                              ),
-                              const SizedBox(height: 16),
-                              DropdownButtonFormField<String>(
-                                value: _destSectionId,
-                                decoration: const InputDecoration(labelText: 'Destination Section (New Class)'),
-                                items: _sections.map((sec) {
-                                  final sem = _semesters.firstWhere((s) => s.id == sec.semesterId, orElse: () => Semester(id: '', branchId: '', semesterNumber: 0));
-                                  final b = _branches.firstWhere((br) => br.id == sem.branchId, orElse: () => Branch(id: '', courseId: '', name: 'Unknown'));
-                                  return DropdownMenuItem(
-                                    value: sec.id,
-                                    child: Text('${b.name} - Sem ${sem.semesterNumber} (${sec.name})'),
-                                  );
-                                }).toList(),
-                                onChanged: (val) {
-                                  setState(() {
-                                    _destSectionId = val;
-                                  });
-                                },
-                              ),
-                            ],
-                          ),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final leftColumn = Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Card(
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        side: BorderSide(color: theme.dividerColor.withOpacity(0.08)),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(20.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Select Promotion Path',
+                              style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                            ),
+                            const SizedBox(height: 16),
+                            DropdownButtonFormField<String>(
+                              isExpanded: true,
+                              value: _sourceSectionId,
+                              decoration: const InputDecoration(labelText: 'Source Section (Current Class)'),
+                              items: _sections.map((sec) {
+                                final sem = _semesters.firstWhere((s) => s.id == sec.semesterId, orElse: () => Semester(id: '', branchId: '', semesterNumber: 0));
+                                final b = _branches.firstWhere((br) => br.id == sem.branchId, orElse: () => Branch(id: '', courseId: '', name: 'Unknown'));
+                                return DropdownMenuItem(
+                                  value: sec.id,
+                                  child: Text('${b.name} - Sem ${sem.semesterNumber} (${sec.name})', overflow: TextOverflow.ellipsis),
+                                );
+                              }).toList(),
+                              onChanged: (val) {
+                                setState(() {
+                                  _sourceSectionId = val;
+                                });
+                                _loadSourceStudents();
+                              },
+                            ),
+                            const SizedBox(height: 16),
+                            DropdownButtonFormField<String>(
+                              isExpanded: true,
+                              value: _destSectionId,
+                              decoration: const InputDecoration(labelText: 'Destination Section (New Class)'),
+                              items: _sections.map((sec) {
+                                final sem = _semesters.firstWhere((s) => s.id == sec.semesterId, orElse: () => Semester(id: '', branchId: '', semesterNumber: 0));
+                                final b = _branches.firstWhere((br) => br.id == sem.branchId, orElse: () => Branch(id: '', courseId: '', name: 'Unknown'));
+                                return DropdownMenuItem(
+                                  value: sec.id,
+                                  child: Text('${b.name} - Sem ${sem.semesterNumber} (${sec.name})', overflow: TextOverflow.ellipsis),
+                                );
+                              }).toList(),
+                              onChanged: (val) {
+                                setState(() {
+                                  _destSectionId = val;
+                                });
+                              },
+                            ),
+                          ],
                         ),
                       ),
-                      const SizedBox(height: 16),
-                      if (_sourceStudents.isNotEmpty)
-                        ElevatedButton.icon(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF10B981),
-                            foregroundColor: Colors.white,
-                            minimumSize: const Size.fromHeight(56),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                          ),
-                          onPressed: _promoteBatch,
-                          icon: const Icon(Icons.upgrade_rounded),
-                          label: const Text('Promote Batch Now'),
-                        ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 24),
-                // Right Column - Student List Table
-                Expanded(
-                  child: Card(
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      side: BorderSide(color: theme.dividerColor.withOpacity(0.08)),
                     ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(20.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          Text(
-                            'Students in Source Section (${_sourceStudents.length})',
-                            style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-                          ),
-                          const SizedBox(height: 16),
-                          Expanded(
-                            child: _sourceStudents.isEmpty
-                                ? Center(
-                                    child: Text(
-                                      'No students found in the selected source section.',
-                                      style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.5)),
-                                    ),
-                                  )
-                                : ListView.builder(
-                                    itemCount: _sourceStudents.length,
-                                    itemBuilder: (context, idx) {
-                                      final student = _sourceStudents[idx];
-                                      return Container(
-                                        margin: const EdgeInsets.only(bottom: 8),
-                                        child: Material(
-                                          color: theme.colorScheme.surfaceContainerHighest.withOpacity(0.3),
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(8),
-                                          ),
-                                          clipBehavior: Clip.antiAlias,
-                                          child: ListTile(
-                                            leading: CircleAvatar(
-                                              backgroundColor: theme.colorScheme.primary.withOpacity(0.1),
-                                              child: Text(
-                                                student.rollNumber,
-                                                style: TextStyle(
-                                                  color: theme.colorScheme.primary,
-                                                  fontSize: 12,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
+                    const SizedBox(height: 16),
+                    if (_sourceStudents.isNotEmpty)
+                      ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF10B981),
+                          foregroundColor: Colors.white,
+                          minimumSize: const Size.fromHeight(56),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                        onPressed: _promoteBatch,
+                        icon: const Icon(Icons.upgrade_rounded),
+                        label: const Text('Promote Batch Now'),
+                      ),
+                  ],
+                );
+
+                final rightColumn = Card(
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    side: BorderSide(color: theme.dividerColor.withOpacity(0.08)),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(20.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Text(
+                          'Students in Source Section (${_sourceStudents.length})',
+                          style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                        ),
+                        const SizedBox(height: 16),
+                        Expanded(
+                          child: _sourceStudents.isEmpty
+                              ? Center(
+                                  child: Text(
+                                    'No students found in the selected source section.',
+                                    style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.5)),
+                                  ),
+                                )
+                              : ListView.builder(
+                                  itemCount: _sourceStudents.length,
+                                  itemBuilder: (context, idx) {
+                                    final student = _sourceStudents[idx];
+                                    return Container(
+                                      margin: const EdgeInsets.only(bottom: 8),
+                                      child: Material(
+                                        color: theme.colorScheme.surfaceContainerHighest.withOpacity(0.3),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(8),
+                                        ),
+                                        clipBehavior: Clip.antiAlias,
+                                        child: ListTile(
+                                          leading: CircleAvatar(
+                                            backgroundColor: theme.colorScheme.primary.withOpacity(0.1),
+                                            child: Text(
+                                              student.rollNumber,
+                                              style: TextStyle(
+                                                color: theme.colorScheme.primary,
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.bold,
                                               ),
                                             ),
-                                            title: Text(
-                                              student.name,
-                                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-                                            ),
+                                          ),
+                                          title: Text(
+                                            student.name,
+                                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
                                           ),
                                         ),
-                                      );
-                                    },
-                                  ),
-                          ),
-                        ],
-                      ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                        ),
+                      ],
                     ),
                   ),
-                ),
-              ],
+                );
+
+                if (constraints.maxWidth < 1100) {
+                  return SingleChildScrollView(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        leftColumn,
+                        const SizedBox(height: 24),
+                        SizedBox(
+                          height: 500,
+                          child: rightColumn,
+                        ),
+                      ],
+                    ),
+                  );
+                } else {
+                  return Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SizedBox(
+                        width: 380,
+                        child: leftColumn,
+                      ),
+                      const SizedBox(width: 24),
+                      Expanded(
+                        child: rightColumn,
+                      ),
+                    ],
+                  );
+                }
+              },
             ),
           ),
         ],

@@ -120,13 +120,14 @@ class _SubjectsScreenState extends ConsumerState<SubjectsScreen> with SingleTick
               mainAxisSize: MainAxisSize.min,
               children: [
                 DropdownButtonFormField<String>(
+                  isExpanded: true,
                   value: selectedSectionId,
                   items: _sections.map((sec) {
                     final sem = _semesters.firstWhere((s) => s.id == sec.semesterId, orElse: () => Semester(id: '', branchId: '', semesterNumber: 0));
                     final b = _branches.firstWhere((br) => br.id == sem.branchId, orElse: () => Branch(id: '', courseId: '', name: 'Unknown'));
                     return DropdownMenuItem(
                       value: sec.id,
-                      child: Text('${b.name} - Sem ${sem.semesterNumber} (${sec.name})'),
+                      child: Text('${b.name} - Sem ${sem.semesterNumber} (${sec.name})', overflow: TextOverflow.ellipsis),
                     );
                   }).toList(),
                   onChanged: (val) => setStateDialog(() => selectedSectionId = val),
@@ -135,9 +136,10 @@ class _SubjectsScreenState extends ConsumerState<SubjectsScreen> with SingleTick
                 ),
                 const SizedBox(height: 16),
                 DropdownButtonFormField<String>(
+                  isExpanded: true,
                   value: selectedSubjectId,
                   items: _subjects
-                      .map((sub) => DropdownMenuItem(value: sub.id, child: Text('[${sub.code}] ${sub.name}')))
+                      .map((sub) => DropdownMenuItem(value: sub.id, child: Text('[${sub.code}] ${sub.name}', overflow: TextOverflow.ellipsis)))
                       .toList(),
                   onChanged: (val) => setStateDialog(() => selectedSubjectId = val),
                   decoration: const InputDecoration(labelText: 'Subject'),
@@ -348,21 +350,23 @@ class _SubjectsScreenState extends ConsumerState<SubjectsScreen> with SingleTick
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Subjects & Mappings Console',
-                    style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Manage your subjects library and map them to class sections.',
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: theme.colorScheme.onSurface.withOpacity(0.6),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Subjects & Mappings Console',
+                      style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 4),
+                    Text(
+                      'Manage your subjects library and map them to class sections.',
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: theme.colorScheme.onSurface.withOpacity(0.6),
+                      ),
+                    ),
+                  ],
+                ),
               ),
               IconButton.filledTonal(
                 onPressed: _loadData,
@@ -373,167 +377,192 @@ class _SubjectsScreenState extends ConsumerState<SubjectsScreen> with SingleTick
           ),
           const SizedBox(height: 24),
           Expanded(
-            child: Row(
-              children: [
-                // Left Panel - Subjects Catalog
-                Expanded(
-                  child: Card(
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      side: BorderSide(color: theme.dividerColor.withOpacity(0.08)),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(20.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                'Subjects Catalog (${_subjects.length})',
-                                style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-                              ),
-                              IconButton.filledTonal(
-                                onPressed: _addSubjectDialog,
-                                icon: const Icon(Icons.add, size: 18),
-                                tooltip: 'Add Subject',
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 12),
-                          Expanded(
-                            child: _subjects.isEmpty
-                                ? Center(
-                                    child: Text(
-                                      'No subjects added yet.',
-                                      style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.5)),
-                                    ),
-                                  )
-                                : ListView.builder(
-                                    itemCount: _subjects.length,
-                                    itemBuilder: (context, idx) {
-                                      final sub = _subjects[idx];
-                                      return Container(
-                                        margin: const EdgeInsets.only(bottom: 8),
-                                        child: Material(
-                                          color: theme.colorScheme.surfaceContainerHighest.withOpacity(0.3),
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(8),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final catalogCard = Card(
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    side: BorderSide(color: theme.dividerColor.withOpacity(0.08)),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(20.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Subjects Catalog (${_subjects.length})',
+                              style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                            ),
+                            IconButton.filledTonal(
+                              onPressed: _addSubjectDialog,
+                              icon: const Icon(Icons.add, size: 18),
+                              tooltip: 'Add Subject',
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        Expanded(
+                          child: _subjects.isEmpty
+                              ? Center(
+                                  child: Text(
+                                    'No subjects added yet.',
+                                    style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.5)),
+                                  ),
+                                )
+                              : ListView.builder(
+                                  itemCount: _subjects.length,
+                                  itemBuilder: (context, idx) {
+                                    final sub = _subjects[idx];
+                                    return Container(
+                                      margin: const EdgeInsets.only(bottom: 8),
+                                      child: Material(
+                                        color: theme.colorScheme.surfaceContainerHighest.withOpacity(0.3),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(8),
+                                        ),
+                                        clipBehavior: Clip.antiAlias,
+                                        child: ListTile(
+                                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                                          title: Text(
+                                            sub.name,
+                                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
                                           ),
-                                          clipBehavior: Clip.antiAlias,
-                                          child: ListTile(
-                                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                                            title: Text(
-                                              sub.name,
-                                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-                                            ),
-                                            subtitle: Text(
-                                              sub.code,
-                                              style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withOpacity(0.6)),
-                                            ),
-                                            trailing: IconButton(
-                                              icon: Icon(Icons.delete_outline_rounded, color: theme.colorScheme.error, size: 20),
-                                              onPressed: () async {
-                                                await ref.read(academicRepositoryProvider).deleteSubject(sub.id);
-                                                _loadData();
-                                              },
-                                            ),
+                                          subtitle: Text(
+                                            sub.code,
+                                            style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withOpacity(0.6)),
+                                          ),
+                                          trailing: IconButton(
+                                            icon: Icon(Icons.delete_outline_rounded, color: theme.colorScheme.error, size: 20),
+                                            onPressed: () async {
+                                              await ref.read(academicRepositoryProvider).deleteSubject(sub.id);
+                                              _loadData();
+                                            },
                                           ),
                                         ),
-                                      );
-                                    },
-                                  ),
-                          ),
-                        ],
-                      ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                        ),
+                      ],
                     ),
                   ),
-                ),
-                const SizedBox(width: 16),
-                // Right Panel - Class Mappings
-                Expanded(
-                  child: Card(
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      side: BorderSide(color: theme.dividerColor.withOpacity(0.08)),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(20.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                'Class Mappings (${_mappings.length})',
-                                style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-                              ),
-                              IconButton.filledTonal(
-                                onPressed: _addMappingDialog,
-                                icon: const Icon(Icons.link, size: 18),
-                                tooltip: 'Create Mapping',
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 12),
-                          Expanded(
-                            child: _mappings.isEmpty
-                                ? Center(
-                                    child: Text(
-                                      'No mappings registered yet.',
-                                      style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.5)),
-                                    ),
-                                  )
-                                : ListView.builder(
-                                    itemCount: _mappings.length,
-                                    itemBuilder: (context, idx) {
-                                      final map = _mappings[idx];
-                                      final sub = _subjects.firstWhere((s) => s.id == map.subjectId, orElse: () => Subject(id: '', code: 'UNK', name: 'Unknown Subject'));
-                                      final sec = _sections.firstWhere((se) => se.id == map.sectionId, orElse: () => Section(id: '', semesterId: '', name: 'Unknown Section'));
-                                      final sem = _semesters.firstWhere((s) => s.id == sec.semesterId, orElse: () => Semester(id: '', branchId: '', semesterNumber: 0));
-                                      final b = _branches.firstWhere((br) => br.id == sem.branchId, orElse: () => Branch(id: '', courseId: '', name: 'Unknown'));
+                );
 
-                                      return Container(
-                                        margin: const EdgeInsets.only(bottom: 8),
-                                        child: Material(
-                                          color: theme.colorScheme.surfaceContainerHighest.withOpacity(0.3),
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(8),
+                final mappingsCard = Card(
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    side: BorderSide(color: theme.dividerColor.withOpacity(0.08)),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(20.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Class Mappings (${_mappings.length})',
+                              style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                            ),
+                            IconButton.filledTonal(
+                              onPressed: _addMappingDialog,
+                              icon: const Icon(Icons.link, size: 18),
+                              tooltip: 'Create Mapping',
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        Expanded(
+                          child: _mappings.isEmpty
+                              ? Center(
+                                  child: Text(
+                                    'No mappings registered yet.',
+                                    style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.5)),
+                                  ),
+                                )
+                              : ListView.builder(
+                                  itemCount: _mappings.length,
+                                  itemBuilder: (context, idx) {
+                                    final map = _mappings[idx];
+                                    final sub = _subjects.firstWhere((s) => s.id == map.subjectId, orElse: () => Subject(id: '', code: 'UNK', name: 'Unknown Subject'));
+                                    final sec = _sections.firstWhere((se) => se.id == map.sectionId, orElse: () => Section(id: '', semesterId: '', name: 'Unknown Section'));
+                                    final sem = _semesters.firstWhere((s) => s.id == sec.semesterId, orElse: () => Semester(id: '', branchId: '', semesterNumber: 0));
+                                    final b = _branches.firstWhere((br) => br.id == sem.branchId, orElse: () => Branch(id: '', courseId: '', name: 'Unknown'));
+
+                                    return Container(
+                                      margin: const EdgeInsets.only(bottom: 8),
+                                      child: Material(
+                                        color: theme.colorScheme.surfaceContainerHighest.withOpacity(0.3),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(8),
+                                        ),
+                                        clipBehavior: Clip.antiAlias,
+                                        child: ListTile(
+                                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                                          title: Text(
+                                            '${b.name} - Sem ${sem.semesterNumber} (${sec.name})',
+                                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
                                           ),
-                                          clipBehavior: Clip.antiAlias,
-                                          child: ListTile(
-                                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                                            title: Text(
-                                              '${b.name} - Sem ${sem.semesterNumber} (${sec.name})',
-                                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-                                            ),
-                                            subtitle: Text(
-                                              '${sub.code}: ${sub.name}',
-                                              style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withOpacity(0.6)),
-                                            ),
-                                            trailing: IconButton(
-                                              icon: Icon(Icons.delete_outline_rounded, color: theme.colorScheme.error, size: 20),
-                                              onPressed: () async {
-                                                await ref.read(academicRepositoryProvider).deleteSubjectMapping(map.id);
-                                                _loadData();
-                                              },
-                                            ),
+                                          subtitle: Text(
+                                            '${sub.code}: ${sub.name}',
+                                            style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withOpacity(0.6)),
+                                          ),
+                                          trailing: IconButton(
+                                            icon: Icon(Icons.delete_outline_rounded, color: theme.colorScheme.error, size: 20),
+                                            onPressed: () async {
+                                              await ref.read(academicRepositoryProvider).deleteSubjectMapping(map.id);
+                                              _loadData();
+                                            },
                                           ),
                                         ),
-                                      );
-                                    },
-                                  ),
-                          ),
-                        ],
-                      ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                        ),
+                      ],
                     ),
                   ),
-                ),
-              ],
+                );
+
+                if (constraints.maxWidth < 1100) {
+                  return SingleChildScrollView(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        SizedBox(
+                          height: 400,
+                          child: catalogCard,
+                        ),
+                        const SizedBox(height: 24),
+                        SizedBox(
+                          height: 400,
+                          child: mappingsCard,
+                        ),
+                      ],
+                    ),
+                  );
+                } else {
+                  return Row(
+                    children: [
+                      Expanded(
+                        child: catalogCard,
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: mappingsCard,
+                      ),
+                    ],
+                  );
+                }
+              },
             ),
           ),
         ],

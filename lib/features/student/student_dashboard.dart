@@ -228,13 +228,18 @@ class StudentDashboard extends ConsumerWidget {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(
-                                    sub.name,
-                                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-                                  ),
+                               Row(
+                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                 children: [
+                                   Expanded(
+                                     child: Text(
+                                       sub.name,
+                                       maxLines: 1,
+                                       overflow: TextOverflow.ellipsis,
+                                       style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                                     ),
+                                   ),
+                                   const SizedBox(width: 16),
                                   Text(
                                     '${pct.toStringAsFixed(0)}%',
                                     style: TextStyle(
@@ -362,16 +367,102 @@ class StudentDashboard extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 24),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Left Column: Overall stats and Subject-wise progress
-              Expanded(
-                flex: 3,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Overall Attendance Circular Progress Indicator
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final leftColumn = Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Overall Attendance Circular Progress Indicator
+                  Card(
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      side: BorderSide(color: theme.dividerColor.withOpacity(0.08)),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(24.0),
+                      child: Row(
+                        children: [
+                          SizedBox(
+                            height: 90,
+                            width: 90,
+                            child: Stack(
+                              fit: StackFit.expand,
+                              children: [
+                                CircularProgressIndicator(
+                                  value: overallPercentage / 100,
+                                  strokeWidth: 10,
+                                  backgroundColor: theme.colorScheme.primary.withOpacity(0.1),
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    overallPercentage >= 75 ? const Color(0xFF10B981) : const Color(0xFFEF4444),
+                                  ),
+                                ),
+                                Center(
+                                  child: Text(
+                                    '${overallPercentage.toStringAsFixed(1)}%',
+                                    style: theme.textTheme.titleMedium?.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 24),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Overall Attendance',
+                                  style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Attended $totalAttended out of $totalConducted total sessions conducted.',
+                                  style: TextStyle(
+                                    color: theme.colorScheme.onSurface.withOpacity(0.6),
+                                    fontSize: 13,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                if (overallPercentage < 75)
+                                  Row(
+                                    children: [
+                                      Icon(Icons.warning_amber_rounded, size: 16, color: theme.colorScheme.error),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        'Low Attendance! Minimum 75% required.',
+                                        style: TextStyle(color: theme.colorScheme.error, fontSize: 11, fontWeight: FontWeight.bold),
+                                      ),
+                                    ],
+                                  )
+                                else
+                                  const Row(
+                                    children: [
+                                      Icon(Icons.check_circle_outline_rounded, size: 16, color: Color(0xFF10B981)),
+                                      SizedBox(width: 4),
+                                      Text(
+                                        'On Track! Attendance is good.',
+                                        style: TextStyle(color: Color(0xFF10B981), fontSize: 11, fontWeight: FontWeight.bold),
+                                      ),
+                                    ],
+                                  ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 28),
+                  // Subject-wise breakdown
+                  Text(
+                    'Subject-wise Breakdown',
+                    style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 12),
+                  if (subjectStats.isEmpty)
                     Card(
                       elevation: 0,
                       shape: RoundedRectangleBorder(
@@ -380,235 +471,165 @@ class StudentDashboard extends ConsumerWidget {
                       ),
                       child: Padding(
                         padding: const EdgeInsets.all(24.0),
-                        child: Row(
-                          children: [
-                            SizedBox(
-                              height: 90,
-                              width: 90,
-                              child: Stack(
-                                fit: StackFit.expand,
-                                children: [
-                                  CircularProgressIndicator(
-                                    value: overallPercentage / 100,
-                                    strokeWidth: 10,
-                                    backgroundColor: theme.colorScheme.primary.withOpacity(0.1),
-                                    valueColor: AlwaysStoppedAnimation<Color>(
-                                      overallPercentage >= 75 ? const Color(0xFF10B981) : const Color(0xFFEF4444),
-                                    ),
-                                  ),
-                                  Center(
-                                    child: Text(
-                                      '${overallPercentage.toStringAsFixed(1)}%',
-                                      style: theme.textTheme.titleMedium?.copyWith(
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(width: 24),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'Overall Attendance',
-                                    style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    'Attended $totalAttended out of $totalConducted total sessions conducted.',
-                                    style: TextStyle(
-                                      color: theme.colorScheme.onSurface.withOpacity(0.6),
-                                      fontSize: 13,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  if (overallPercentage < 75)
-                                    Row(
-                                      children: [
-                                        Icon(Icons.warning_amber_rounded, size: 16, color: theme.colorScheme.error),
-                                        const SizedBox(width: 4),
-                                        Text(
-                                          'Low Attendance! Minimum 75% required.',
-                                          style: TextStyle(color: theme.colorScheme.error, fontSize: 11, fontWeight: FontWeight.bold),
-                                        ),
-                                      ],
-                                    )
-                                  else
-                                    const Row(
-                                      children: [
-                                        Icon(Icons.check_circle_outline_rounded, size: 16, color: Color(0xFF10B981)),
-                                        SizedBox(width: 4),
-                                        Text(
-                                          'On Track! Attendance is good.',
-                                          style: TextStyle(color: Color(0xFF10B981), fontSize: 11, fontWeight: FontWeight.bold),
-                                        ),
-                                      ],
-                                    ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 28),
-                    // Subject-wise breakdown
-                    Text(
-                      'Subject-wise Breakdown',
-                      style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 12),
-                    if (subjectStats.isEmpty)
-                      Card(
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          side: BorderSide(color: theme.dividerColor.withOpacity(0.08)),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(24.0),
-                          child: Center(
-                            child: Text(
-                              'No lectures conducted for your class yet.',
-                              style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.5)),
-                            ),
+                        child: Center(
+                          child: Text(
+                            'No lectures conducted for your class yet.',
+                            style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.5)),
                           ),
                         ),
-                      )
-                    else
-                      ListView.builder(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        itemCount: subjectStats.length,
-                        itemBuilder: (context, idx) {
-                          final subId = subjectStats.keys.elementAt(idx);
-                          final stats = subjectStats[subId]!;
-                          final sub = subjects.firstWhere((s) => s.id == subId, orElse: () => Subject(id: '', code: 'UNK', name: 'Unknown'));
-                          final double pct = stats['conducted']! > 0 ? (stats['attended']! / stats['conducted']!) * 100 : 100.0;
+                      ),
+                    )
+                  else
+                    ListView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: subjectStats.length,
+                      itemBuilder: (context, idx) {
+                        final subId = subjectStats.keys.elementAt(idx);
+                        final stats = subjectStats[subId]!;
+                        final sub = subjects.firstWhere((s) => s.id == subId, orElse: () => Subject(id: '', code: 'UNK', name: 'Unknown'));
+                        final double pct = stats['conducted']! > 0 ? (stats['attended']! / stats['conducted']!) * 100 : 100.0;
 
-                          return Card(
-                            elevation: 0,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              side: BorderSide(color: theme.dividerColor.withOpacity(0.08)),
-                            ),
-                            margin: const EdgeInsets.only(bottom: 12),
-                            child: Padding(
-                              padding: const EdgeInsets.all(16.0),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.stretch,
-                                children: [
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Text(
+                        return Card(
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            side: BorderSide(color: theme.dividerColor.withOpacity(0.08)),
+                          ),
+                          margin: const EdgeInsets.only(bottom: 12),
+                          child: Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Expanded(
+                                      child: Text(
                                         sub.name,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
                                         style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
                                       ),
-                                      Text(
-                                        '${pct.toStringAsFixed(0)}%',
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          color: pct >= 75 ? const Color(0xFF10B981) : const Color(0xFFEF4444),
-                                        ),
+                                    ),
+                                    const SizedBox(width: 16),
+                                    Text(
+                                      '${pct.toStringAsFixed(0)}%',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color: pct >= 75 ? const Color(0xFF10B981) : const Color(0xFFEF4444),
                                       ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 8),
-                                  LinearProgressIndicator(
-                                    value: pct / 100,
-                                    minHeight: 6,
-                                    backgroundColor: theme.colorScheme.primary.withOpacity(0.1),
-                                    valueColor: AlwaysStoppedAnimation<Color>(
-                                      pct >= 75 ? const Color(0xFF10B981) : const Color(0xFFEF4444),
                                     ),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    'Attended ${stats['attended']} / ${stats['conducted']} classes',
-                                    style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.5), fontSize: 11),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 24),
-              // Right Column: Recent Activities History
-              Expanded(
-                flex: 2,
-                child: Card(
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    side: BorderSide(color: theme.dividerColor.withOpacity(0.08)),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(20.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Text(
-                          'Recent Activity History',
-                          style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-                        ),
-                        const SizedBox(height: 16),
-                        if (classSessions.isEmpty)
-                          Center(
-                            child: Text(
-                              'No recent activities.',
-                              style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.5)),
-                            ),
-                          )
-                        else
-                          ListView.separated(
-                            shrinkWrap: true,
-                            physics: const NeverScrollableScrollPhysics(),
-                            itemCount: classSessions.length > 8 ? 8 : classSessions.length, // Show last 8
-                            separatorBuilder: (context, index) => const Divider(height: 1),
-                            itemBuilder: (context, idx) {
-                              final sess = classSessions[idx];
-                              final sub = subjects.firstWhere((s) => s.id == sess.subjectId, orElse: () => Subject(id: '', code: 'UNK', name: 'Unknown'));
-                              final rec = myRecords.firstWhere((r) => r.sessionId == sess.id, orElse: () => AttendanceRecord(id: '', sessionId: '', studentId: '', status: 'absent'));
-                              final isPresent = rec.status == 'present';
-
-                              final dateStr = DateFormat('MMM dd, yyyy').format(sess.date);
-
-                              return ListTile(
-                                contentPadding: EdgeInsets.zero,
-                                title: Text(sub.name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
-                                subtitle: Text('$dateStr | ${sess.startTime}', style: const TextStyle(fontSize: 11)),
-                                trailing: Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                  decoration: BoxDecoration(
-                                    color: isPresent ? const Color(0xFF10B981).withOpacity(0.1) : const Color(0xFFEF4444).withOpacity(0.1),
-                                    borderRadius: BorderRadius.circular(4),
-                                  ),
-                                  child: Text(
-                                    isPresent ? 'PRESENT' : 'ABSENT',
-                                    style: TextStyle(
-                                      color: isPresent ? const Color(0xFF10B981) : const Color(0xFFEF4444),
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.bold,
-                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 8),
+                                LinearProgressIndicator(
+                                  value: pct / 100,
+                                  minHeight: 6,
+                                  backgroundColor: theme.colorScheme.primary.withOpacity(0.1),
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    pct >= 75 ? const Color(0xFF10B981) : const Color(0xFFEF4444),
                                   ),
                                 ),
-                              );
-                            },
+                                const SizedBox(height: 8),
+                                Text(
+                                  'Attended ${stats['attended']} / ${stats['conducted']} classes',
+                                  style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.5), fontSize: 11),
+                                ),
+                              ],
+                            ),
                           ),
-                      ],
+                        );
+                      },
                     ),
+                ],
+              );
+
+              final rightColumn = Card(
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  side: BorderSide(color: theme.dividerColor.withOpacity(0.08)),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Text(
+                        'Recent Activity History',
+                        style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 16),
+                      if (classSessions.isEmpty)
+                        Center(
+                          child: Text(
+                            'No recent activities.',
+                            style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.5)),
+                          ),
+                        )
+                      else
+                        ListView.separated(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: classSessions.length > 8 ? 8 : classSessions.length, // Show last 8
+                          separatorBuilder: (context, index) => const Divider(height: 1),
+                          itemBuilder: (context, idx) {
+                            final sess = classSessions[idx];
+                            final sub = subjects.firstWhere((s) => s.id == sess.subjectId, orElse: () => Subject(id: '', code: 'UNK', name: 'Unknown'));
+                            final rec = myRecords.firstWhere((r) => r.sessionId == sess.id, orElse: () => AttendanceRecord(id: '', sessionId: '', studentId: '', status: 'absent'));
+                            final isPresent = rec.status == 'present';
+
+                            final dateStr = DateFormat('MMM dd, yyyy').format(sess.date);
+
+                            return ListTile(
+                              contentPadding: EdgeInsets.zero,
+                              title: Text(sub.name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                              subtitle: Text('$dateStr | ${sess.startTime}', style: const TextStyle(fontSize: 11)),
+                              trailing: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: isPresent ? const Color(0xFF10B981).withOpacity(0.1) : const Color(0xFFEF4444).withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: Text(
+                                  isPresent ? 'PRESENT' : 'ABSENT',
+                                  style: TextStyle(
+                                    color: isPresent ? const Color(0xFF10B981) : const Color(0xFFEF4444),
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                    ],
                   ),
                 ),
-              ),
-            ],
+              );
+
+              if (constraints.maxWidth < 1100) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    leftColumn,
+                    const SizedBox(height: 24),
+                    rightColumn,
+                  ],
+                );
+              } else {
+                return Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(flex: 3, child: leftColumn),
+                    const SizedBox(width: 24),
+                    Expanded(flex: 2, child: rightColumn),
+                  ],
+                );
+              }
+            },
           ),
         ],
       ),

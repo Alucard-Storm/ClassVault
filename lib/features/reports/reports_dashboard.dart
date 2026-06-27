@@ -166,6 +166,7 @@ class _ReportsDashboardState extends ConsumerState<ReportsDashboard> with Single
               const Text('Select an attendance threshold below which students are flagged as defaulters:'),
               const SizedBox(height: 12),
               DropdownButtonFormField<double>(
+                isExpanded: true,
                 value: _defaulterThreshold,
                 decoration: const InputDecoration(
                   labelText: 'Defaulter Threshold',
@@ -203,111 +204,131 @@ class _ReportsDashboardState extends ConsumerState<ReportsDashboard> with Single
     if (isDesktop) {
       return Padding(
         padding: const EdgeInsets.all(24.0),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Left - Defaulters List Card
-            Expanded(
-              flex: 3,
-              child: Card(
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  side: BorderSide(color: theme.dividerColor.withOpacity(0.08)),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(24.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'Flagged Defaulter Roster',
-                            style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final defaultersCard = Card(
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+                side: BorderSide(color: theme.dividerColor.withOpacity(0.08)),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Flagged Defaulter Roster',
+                          style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                        ),
+                        Text(
+                          'Threshold: <$_defaulterThreshold%',
+                          style: TextStyle(
+                            color: theme.colorScheme.error,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 13,
                           ),
-                          Text(
-                            'Threshold: <$_defaulterThreshold%',
-                            style: TextStyle(
-                              color: theme.colorScheme.error,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 13,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      Expanded(
-                        child: defaulters.isEmpty
-                            ? Center(
-                                child: Text(
-                                  'No students match the defaulter threshold!',
-                                  style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.5)),
-                                ),
-                              )
-                            : SingleChildScrollView(
-                                child: Table(
-                                  columnWidths: const {
-                                    0: FixedColumnWidth(100),
-                                    1: FlexColumnWidth(3),
-                                    2: FlexColumnWidth(4),
-                                    3: FixedColumnWidth(100),
-                                  },
-                                  children: [
-                                    TableRow(
-                                      decoration: BoxDecoration(
-                                        border: Border(bottom: BorderSide(color: theme.dividerColor, width: 1.5)),
-                                      ),
-                                      children: const [
-                                        Padding(padding: EdgeInsets.symmetric(vertical: 10), child: Text('Roll No', style: TextStyle(fontWeight: FontWeight.bold))),
-                                        Padding(padding: EdgeInsets.symmetric(vertical: 10), child: Text('Student Name', style: TextStyle(fontWeight: FontWeight.bold))),
-                                        Padding(padding: EdgeInsets.symmetric(vertical: 10), child: Text('Class Section', style: TextStyle(fontWeight: FontWeight.bold))),
-                                        Padding(padding: EdgeInsets.symmetric(vertical: 10), child: Text('Attendance', style: TextStyle(fontWeight: FontWeight.bold))),
-                                      ],
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    Expanded(
+                      child: defaulters.isEmpty
+                          ? Center(
+                              child: Text(
+                                'No students match the defaulter threshold!',
+                                style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.5)),
+                              ),
+                            )
+                          : SingleChildScrollView(
+                              child: Table(
+                                columnWidths: const {
+                                  0: FixedColumnWidth(100),
+                                  1: FlexColumnWidth(3),
+                                  2: FlexColumnWidth(4),
+                                  3: FixedColumnWidth(100),
+                                },
+                                children: [
+                                  TableRow(
+                                    decoration: BoxDecoration(
+                                      border: Border(bottom: BorderSide(color: theme.dividerColor, width: 1.5)),
                                     ),
-                                    ...defaulters.map((s) {
-                                      final pct = allAttendance[s.id] ?? 0.0;
-                                      final sec = _sections.firstWhere((se) => se.id == s.sectionId, orElse: () => Section(id: '', semesterId: '', name: 'Unknown'));
-                                      final sem = _semesters.firstWhere((se) => se.id == sec.semesterId, orElse: () => Semester(id: '', branchId: '', semesterNumber: 0));
-                                      final b = _branches.firstWhere((br) => br.id == sem.branchId, orElse: () => Branch(id: '', courseId: '', name: 'Unknown'));
-                                      return TableRow(
-                                        decoration: BoxDecoration(
-                                          border: Border(bottom: BorderSide(color: theme.dividerColor.withOpacity(0.4))),
-                                        ),
-                                        children: [
-                                          Padding(padding: const EdgeInsets.symmetric(vertical: 12), child: Text(s.rollNumber)),
-                                          Padding(padding: const EdgeInsets.symmetric(vertical: 12), child: Text(s.name, style: const TextStyle(fontWeight: FontWeight.bold))),
-                                          Padding(padding: const EdgeInsets.symmetric(vertical: 12), child: Text('${b.name} - Sem ${sem.semesterNumber} (${sec.name})')),
-                                          Padding(
-                                            padding: const EdgeInsets.symmetric(vertical: 12),
-                                            child: Text(
-                                              '${pct.toStringAsFixed(1)}%',
-                                              style: TextStyle(
-                                                color: theme.colorScheme.error,
-                                                fontWeight: FontWeight.bold,
-                                              ),
+                                    children: const [
+                                      Padding(padding: EdgeInsets.symmetric(vertical: 10), child: Text('Roll No', style: TextStyle(fontWeight: FontWeight.bold))),
+                                      Padding(padding: EdgeInsets.symmetric(vertical: 10), child: Text('Student Name', style: TextStyle(fontWeight: FontWeight.bold))),
+                                      Padding(padding: EdgeInsets.symmetric(vertical: 10), child: Text('Class Section', style: TextStyle(fontWeight: FontWeight.bold))),
+                                      Padding(padding: EdgeInsets.symmetric(vertical: 10), child: Text('Attendance', style: TextStyle(fontWeight: FontWeight.bold))),
+                                    ],
+                                  ),
+                                  ...defaulters.map((s) {
+                                    final pct = allAttendance[s.id] ?? 0.0;
+                                    final sec = _sections.firstWhere((se) => se.id == s.sectionId, orElse: () => Section(id: '', semesterId: '', name: 'Unknown'));
+                                    final sem = _semesters.firstWhere((se) => se.id == sec.semesterId, orElse: () => Semester(id: '', branchId: '', semesterNumber: 0));
+                                    final b = _branches.firstWhere((br) => br.id == sem.branchId, orElse: () => Branch(id: '', courseId: '', name: 'Unknown'));
+                                    return TableRow(
+                                      decoration: BoxDecoration(
+                                        border: Border(bottom: BorderSide(color: theme.dividerColor.withOpacity(0.4))),
+                                      ),
+                                      children: [
+                                        Padding(padding: const EdgeInsets.symmetric(vertical: 12), child: Text(s.rollNumber)),
+                                        Padding(padding: const EdgeInsets.symmetric(vertical: 12), child: Text(s.name, style: const TextStyle(fontWeight: FontWeight.bold))),
+                                        Padding(padding: const EdgeInsets.symmetric(vertical: 12), child: Text('${b.name} - Sem ${sem.semesterNumber} (${sec.name})')),
+                                        Padding(
+                                          padding: const EdgeInsets.symmetric(vertical: 12),
+                                          child: Text(
+                                            '${pct.toStringAsFixed(1)}%',
+                                            style: TextStyle(
+                                              color: theme.colorScheme.error,
+                                              fontWeight: FontWeight.bold,
                                             ),
                                           ),
-                                        ],
-                                      );
-                                    }),
-                                  ],
-                                ),
+                                        ),
+                                      ],
+                                    );
+                                  }),
+                                ],
                               ),
-                      ),
-                    ],
-                  ),
+                            ),
+                    ),
+                  ],
                 ),
               ),
-            ),
-            const SizedBox(width: 24),
-            // Right - Configuration and Details Card
-            SizedBox(
-              width: 320,
-              child: thresholdCard(),
-            ),
-          ],
+            );
+
+            if (constraints.maxWidth < 1100) {
+              return SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    thresholdCard(),
+                    const SizedBox(height: 24),
+                    SizedBox(
+                      height: 500,
+                      child: defaultersCard,
+                    ),
+                  ],
+                ),
+              );
+            } else {
+              return Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    flex: 3,
+                    child: defaultersCard,
+                  ),
+                  const SizedBox(width: 24),
+                  SizedBox(
+                    width: 320,
+                    child: thresholdCard(),
+                  ),
+                ],
+              );
+            }
+          },
         ),
       );
     }
@@ -440,7 +461,7 @@ class _ReportsDashboardState extends ConsumerState<ReportsDashboard> with Single
                   contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 ),
                 items: _subjects
-                    .map((s) => DropdownMenuItem(value: s.id, child: Text('[${s.code}] ${s.name}')))
+                    .map((s) => DropdownMenuItem(value: s.id, child: Text('[${s.code}] ${s.name}', overflow: TextOverflow.ellipsis)))
                     .toList(),
                 onChanged: (val) {
                   if (val != null) setState(() => _selectedSubjectId = val);
@@ -473,99 +494,119 @@ class _ReportsDashboardState extends ConsumerState<ReportsDashboard> with Single
     if (isDesktop) {
       return Padding(
         padding: const EdgeInsets.all(24.0),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Left Sidebar Filter
-            SizedBox(
-              width: 320,
-              child: filterCard(),
-            ),
-            const SizedBox(width: 24),
-            // Right Detailed Grid/Table
-            Expanded(
-              child: Card(
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  side: BorderSide(color: theme.dividerColor.withOpacity(0.08)),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(24.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Text(
-                        'Roster Attendance Analysis',
-                        style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(height: 16),
-                      Expanded(
-                        child: conductedCount.isEmpty
-                            ? Center(
-                                child: Text(
-                                  'No attendance logs recorded for this subject.',
-                                  style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.5)),
-                                ),
-                              )
-                            : SingleChildScrollView(
-                                child: Table(
-                                  columnWidths: const {
-                                    0: FixedColumnWidth(100),
-                                    1: FlexColumnWidth(3),
-                                    2: FixedColumnWidth(180),
-                                    3: FixedColumnWidth(100),
-                                  },
-                                  children: [
-                                    TableRow(
-                                      decoration: BoxDecoration(
-                                        border: Border(bottom: BorderSide(color: theme.dividerColor, width: 1.5)),
-                                      ),
-                                      children: const [
-                                        Padding(padding: EdgeInsets.symmetric(vertical: 10), child: Text('Roll No', style: TextStyle(fontWeight: FontWeight.bold))),
-                                        Padding(padding: EdgeInsets.symmetric(vertical: 10), child: Text('Student Name', style: TextStyle(fontWeight: FontWeight.bold))),
-                                        Padding(padding: EdgeInsets.symmetric(vertical: 10), child: Text('Attendance Log', style: TextStyle(fontWeight: FontWeight.bold))),
-                                        Padding(padding: EdgeInsets.symmetric(vertical: 10), child: Text('Percentage', style: TextStyle(fontWeight: FontWeight.bold))),
-                                      ],
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final tableCard = Card(
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+                side: BorderSide(color: theme.dividerColor.withOpacity(0.08)),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Text(
+                      'Roster Attendance Analysis',
+                      style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 16),
+                    Expanded(
+                      child: conductedCount.isEmpty
+                          ? Center(
+                              child: Text(
+                                'No attendance logs recorded for this subject.',
+                                style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.5)),
+                              ),
+                            )
+                          : SingleChildScrollView(
+                              child: Table(
+                                columnWidths: const {
+                                  0: FixedColumnWidth(100),
+                                  1: FlexColumnWidth(3),
+                                  2: FixedColumnWidth(180),
+                                  3: FixedColumnWidth(100),
+                                },
+                                children: [
+                                  TableRow(
+                                    decoration: BoxDecoration(
+                                      border: Border(bottom: BorderSide(color: theme.dividerColor, width: 1.5)),
                                     ),
-                                    ...conductedCount.keys.map((studentId) {
-                                      final student = _students.firstWhere((s) => s.id == studentId, orElse: () => Student(id: '', rollNumber: '', name: 'Unknown', sectionId: ''));
-                                       final present = presenceCount[studentId] ?? 0;
-                                       final conducted = conductedCount[studentId] ?? 0;
-                                       final double pct = conducted > 0 ? (present / conducted) * 100 : 0.0;
-                                       final isSafe = pct >= _defaulterThreshold;
+                                    children: const [
+                                      Padding(padding: EdgeInsets.symmetric(vertical: 10), child: Text('Roll No', style: TextStyle(fontWeight: FontWeight.bold))),
+                                      Padding(padding: EdgeInsets.symmetric(vertical: 10), child: Text('Student Name', style: TextStyle(fontWeight: FontWeight.bold))),
+                                      Padding(padding: EdgeInsets.symmetric(vertical: 10), child: Text('Attendance Log', style: TextStyle(fontWeight: FontWeight.bold))),
+                                      Padding(padding: EdgeInsets.symmetric(vertical: 10), child: Text('Percentage', style: TextStyle(fontWeight: FontWeight.bold))),
+                                    ],
+                                  ),
+                                  ...conductedCount.keys.map((studentId) {
+                                    final student = _students.firstWhere((s) => s.id == studentId, orElse: () => Student(id: '', rollNumber: '', name: 'Unknown', sectionId: ''));
+                                     final present = presenceCount[studentId] ?? 0;
+                                     final conducted = conductedCount[studentId] ?? 0;
+                                     final double pct = conducted > 0 ? (present / conducted) * 100 : 0.0;
+                                     final isSafe = pct >= _defaulterThreshold;
 
-                                      return TableRow(
-                                        decoration: BoxDecoration(
-                                          border: Border(bottom: BorderSide(color: theme.dividerColor.withOpacity(0.4))),
-                                        ),
-                                        children: [
-                                          Padding(padding: const EdgeInsets.symmetric(vertical: 12), child: Text(student.rollNumber)),
-                                          Padding(padding: const EdgeInsets.symmetric(vertical: 12), child: Text(student.name, style: const TextStyle(fontWeight: FontWeight.bold))),
-                                          Padding(padding: const EdgeInsets.symmetric(vertical: 12), child: Text('Attended $present / $conducted lectures')),
-                                          Padding(
-                                            padding: const EdgeInsets.symmetric(vertical: 12),
-                                            child: Text(
-                                              '${pct.toStringAsFixed(1)}%',
-                                              style: TextStyle(
-                                                color: isSafe ? const Color(0xFF10B981) : const Color(0xFFEF4444),
-                                                fontWeight: FontWeight.bold,
-                                              ),
+                                    return TableRow(
+                                      decoration: BoxDecoration(
+                                        border: Border(bottom: BorderSide(color: theme.dividerColor.withOpacity(0.4))),
+                                      ),
+                                      children: [
+                                        Padding(padding: const EdgeInsets.symmetric(vertical: 12), child: Text(student.rollNumber)),
+                                        Padding(padding: const EdgeInsets.symmetric(vertical: 12), child: Text(student.name, style: const TextStyle(fontWeight: FontWeight.bold))),
+                                        Padding(padding: const EdgeInsets.symmetric(vertical: 12), child: Text('Attended $present / $conducted lectures')),
+                                        Padding(
+                                          padding: const EdgeInsets.symmetric(vertical: 12),
+                                          child: Text(
+                                            '${pct.toStringAsFixed(1)}%',
+                                            style: TextStyle(
+                                              color: isSafe ? const Color(0xFF10B981) : const Color(0xFFEF4444),
+                                              fontWeight: FontWeight.bold,
                                             ),
                                           ),
-                                        ],
-                                      );
-                                    }),
-                                  ],
-                                ),
+                                        ),
+                                      ],
+                                    );
+                                  }),
+                                ],
                               ),
-                      ),
-                    ],
-                  ),
+                            ),
+                    ),
+                  ],
                 ),
               ),
-            ),
-          ],
+            );
+
+            if (constraints.maxWidth < 1100) {
+              return SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    filterCard(),
+                    const SizedBox(height: 24),
+                    SizedBox(
+                      height: 500,
+                      child: tableCard,
+                    ),
+                  ],
+                ),
+              );
+            } else {
+              return Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(
+                    width: 320,
+                    child: filterCard(),
+                  ),
+                  const SizedBox(width: 24),
+                  Expanded(
+                    child: tableCard,
+                  ),
+                ],
+              );
+            }
+          },
         ),
       );
     }
@@ -681,7 +722,7 @@ class _ReportsDashboardState extends ConsumerState<ReportsDashboard> with Single
                   contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 ),
                 items: _students
-                    .map((s) => DropdownMenuItem(value: s.id, child: Text('${s.name} (${s.rollNumber})')))
+                    .map((s) => DropdownMenuItem(value: s.id, child: Text('${s.name} (${s.rollNumber})', overflow: TextOverflow.ellipsis)))
                     .toList(),
                 onChanged: (val) {
                   if (val != null) setState(() => _selectedStudentId = val);
@@ -713,107 +754,137 @@ class _ReportsDashboardState extends ConsumerState<ReportsDashboard> with Single
     if (isDesktop) {
       return Padding(
         padding: const EdgeInsets.all(24.0),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SizedBox(
-              width: 320,
-              child: selectorCard(),
-            ),
-            const SizedBox(width: 24),
-            Expanded(
-              child: Card(
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  side: BorderSide(color: theme.dividerColor.withOpacity(0.08)),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(24.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Text(
-                        'Subject-wise Report Card',
-                        style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(height: 16),
-                      Expanded(
-                        child: subjectGroup.isEmpty
-                            ? Center(
-                                child: Text(
-                                  'No classes conducted for this student\'s section.',
-                                  style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.5)),
-                                ),
-                              )
-                            : ListView.builder(
-                                itemCount: subjectGroup.length,
-                                itemBuilder: (context, idx) {
-                                  final subId = subjectGroup.keys.elementAt(idx);
-                                  final subSessions = subjectGroup[subId]!;
-                                  final sub = _subjects.firstWhere((s) => s.id == subId, orElse: () => Subject(id: '', code: 'UNK', name: 'Unknown'));
-
-                                  final conducted = subSessions.length;
-                                  int attended = 0;
-                                  for (final sess in subSessions) {
-                                    final rec = studentRecords.firstWhere(
-                                      (r) => r.sessionId == sess.id,
-                                      orElse: () => AttendanceRecord(id: '', sessionId: '', studentId: '', status: 'absent'),
-                                    );
-                                    if (rec.status == 'present') attended++;
-                                  }
-
-                                  final double pct = conducted > 0 ? (attended / conducted) * 100 : 0.0;
-                                  final isSafe = pct >= _defaulterThreshold;
-
-                                  return Container(
-                                    margin: const EdgeInsets.only(bottom: 16),
-                                    padding: const EdgeInsets.all(16),
-                                    decoration: BoxDecoration(
-                                      color: theme.colorScheme.surfaceContainerHighest.withOpacity(0.2),
-                                      borderRadius: BorderRadius.circular(8),
-                                      border: Border.all(color: theme.dividerColor.withOpacity(0.06)),
-                                    ),
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                                      children: [
-                                        Row(
-                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            Text(sub.name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                                            Text(
-                                              '${pct.toStringAsFixed(0)}%',
-                                              style: TextStyle(
-                                                fontWeight: FontWeight.bold,
-                                                color: isSafe ? const Color(0xFF10B981) : const Color(0xFFEF4444),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                        const SizedBox(height: 10),
-                                        LinearProgressIndicator(
-                                          value: pct / 100,
-                                          minHeight: 6,
-                                          borderRadius: BorderRadius.circular(3),
-                                          backgroundColor: theme.colorScheme.primary.withOpacity(0.1),
-                                          valueColor: AlwaysStoppedAnimation<Color>(
-                                            isSafe ? const Color(0xFF10B981) : const Color(0xFFEF4444),
-                                          ),
-                                        ),
-                                        const SizedBox(height: 8),
-                                        Text('Attended $attended / $conducted classes', style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.5), fontSize: 11)),
-                                      ],
-                                    ),
-                                  );
-                                },
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final reportCard = Card(
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+                side: BorderSide(color: theme.dividerColor.withOpacity(0.08)),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Text(
+                      'Subject-wise Report Card',
+                      style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 16),
+                    Expanded(
+                      child: subjectGroup.isEmpty
+                          ? Center(
+                              child: Text(
+                                'No classes conducted for this student\'s section.',
+                                style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.5)),
                               ),
-                      ),
-                    ],
-                  ),
+                            )
+                          : ListView.builder(
+                              itemCount: subjectGroup.length,
+                              itemBuilder: (context, idx) {
+                                final subId = subjectGroup.keys.elementAt(idx);
+                                final subSessions = subjectGroup[subId]!;
+                                final sub = _subjects.firstWhere((s) => s.id == subId, orElse: () => Subject(id: '', code: 'UNK', name: 'Unknown'));
+
+                                final conducted = subSessions.length;
+                                int attended = 0;
+                                for (final sess in subSessions) {
+                                  final rec = studentRecords.firstWhere(
+                                    (r) => r.sessionId == sess.id,
+                                    orElse: () => AttendanceRecord(id: '', sessionId: '', studentId: '', status: 'absent'),
+                                  );
+                                  if (rec.status == 'present') attended++;
+                                }
+
+                                final double pct = conducted > 0 ? (attended / conducted) * 100 : 0.0;
+                                final isSafe = pct >= _defaulterThreshold;
+
+                                return Container(
+                                  margin: const EdgeInsets.only(bottom: 16),
+                                  padding: const EdgeInsets.all(16),
+                                  decoration: BoxDecoration(
+                                    color: theme.colorScheme.surfaceContainerHighest.withOpacity(0.2),
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: Border.all(color: theme.dividerColor.withOpacity(0.06)),
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                                    children: [
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Expanded(
+                                            child: Text(
+                                              sub.name,
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                                            ),
+                                          ),
+                                          const SizedBox(width: 16),
+                                          Text(
+                                            '${pct.toStringAsFixed(0)}%',
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              color: isSafe ? const Color(0xFF10B981) : const Color(0xFFEF4444),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 10),
+                                      LinearProgressIndicator(
+                                        value: pct / 100,
+                                        minHeight: 6,
+                                        borderRadius: BorderRadius.circular(3),
+                                        backgroundColor: theme.colorScheme.primary.withOpacity(0.1),
+                                        valueColor: AlwaysStoppedAnimation<Color>(
+                                          isSafe ? const Color(0xFF10B981) : const Color(0xFFEF4444),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Text('Attended $attended / $conducted classes', style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.5), fontSize: 11)),
+                                    ],
+                                  ),
+                                );
+                              },
+                            ),
+                    ),
+                  ],
                 ),
               ),
-            ),
-          ],
+            );
+
+            if (constraints.maxWidth < 1100) {
+              return SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    selectorCard(),
+                    const SizedBox(height: 24),
+                    SizedBox(
+                      height: 500,
+                      child: reportCard,
+                    ),
+                  ],
+                ),
+              );
+            } else {
+              return Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(
+                    width: 320,
+                    child: selectorCard(),
+                  ),
+                  const SizedBox(width: 24),
+                  Expanded(
+                    child: reportCard,
+                  ),
+                ],
+              );
+            }
+          },
         ),
       );
     }

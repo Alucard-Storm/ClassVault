@@ -203,6 +203,7 @@ Build interactive tables and dialogs for the administrator to manage setup:
 - [x] Implement interactive placeholders (Command Palette search dialog, live notifications tray, and user profile menus).
 - [x] Align application colors and theme with the exact light color scheme from the reference mockup (enforced ThemeMode.light and primary color 0xFF4C5DF4).
 - [x] Fix login screen card alignment and border overflow issue in desktop layout.
+- [x] Resolve screen overflow issues and enable application support for multiple display resolutions (e.g. 720p screens).
 
 ---
 

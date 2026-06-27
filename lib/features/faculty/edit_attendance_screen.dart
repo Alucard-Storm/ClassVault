@@ -295,21 +295,23 @@ class _EditAttendanceScreenState extends ConsumerState<EditAttendanceScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Edit Attendance Console',
-                    style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Select a past session on the left to modify its student records.',
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: theme.colorScheme.onSurface.withOpacity(0.6),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Edit Attendance Console',
+                      style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 4),
+                    Text(
+                      'Select a past session on the left to modify its student records.',
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: theme.colorScheme.onSurface.withOpacity(0.6),
+                      ),
+                    ),
+                  ],
+                ),
               ),
               IconButton.filledTonal(
                 onPressed: _loadSessions,
@@ -320,216 +322,277 @@ class _EditAttendanceScreenState extends ConsumerState<EditAttendanceScreen> {
           ),
           const SizedBox(height: 24),
           Expanded(
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Left Column - Sessions List
-                SizedBox(
-                  width: 380,
-                  child: Card(
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      side: BorderSide(color: theme.dividerColor.withOpacity(0.08)),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          Text(
-                            'Past Attendance Sessions (${_sessions.length})',
-                            style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-                          ),
-                          const SizedBox(height: 12),
-                          Expanded(
-                            child: _sessions.isEmpty
-                                ? Center(
-                                    child: Text(
-                                      'No prior sessions found.',
-                                      style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.5)),
-                                    ),
-                                  )
-                                : ListView.builder(
-                                    itemCount: _sessions.length,
-                                    itemBuilder: (context, idx) {
-                                      final session = _sessions[idx];
-                                      final sub = _subjects.firstWhere((s) => s.id == session.subjectId, orElse: () => Subject(id: '', code: 'UNK', name: 'Unknown'));
-                                      final sec = _sections.firstWhere((s) => s.id == session.sectionId, orElse: () => Section(id: '', semesterId: '', name: 'Unknown'));
-                                      final sem = _semesters.firstWhere((s) => s.id == sec.semesterId, orElse: () => Semester(id: '', branchId: '', semesterNumber: 0));
-                                      final b = _branches.firstWhere((br) => br.id == sem.branchId, orElse: () => Branch(id: '', courseId: '', name: 'Unknown'));
-
-                                      final formattedDate = DateFormat('MMM dd, yyyy').format(session.date);
-                                      final isSelected = _selectedSession?.id == session.id;
-
-                                      return Container(
-                                        margin: const EdgeInsets.only(bottom: 8),
-                                        child: Material(
-                                          color: isSelected
-                                              ? theme.colorScheme.primaryContainer.withOpacity(0.2)
-                                              : theme.colorScheme.surfaceContainerHighest.withOpacity(0.3),
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(8),
-                                            side: isSelected
-                                                ? BorderSide(color: theme.colorScheme.primary.withOpacity(0.3))
-                                                : BorderSide.none,
-                                          ),
-                                          clipBehavior: Clip.antiAlias,
-                                          child: ListTile(
-                                            title: Text(
-                                              '${b.name} - Sem ${sem.semesterNumber} (${sec.name})',
-                                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-                                            ),
-                                            subtitle: Text(
-                                              '${sub.name}\n$formattedDate | ${session.startTime}',
-                                              style: const TextStyle(fontSize: 11),
-                                            ),
-                                            onTap: () => _loadRoster(session),
-                                          ),
-                                        ),
-                                      );
-                                    },
-                                  ),
-                          ),
-                        ],
-                      ),
-                    ),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final sessionsListCard = Card(
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    side: BorderSide(color: theme.dividerColor.withOpacity(0.08)),
                   ),
-                ),
-                const SizedBox(width: 24),
-                // Right Column - Roster checklist editor
-                Expanded(
-                  child: Card(
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      side: BorderSide(color: theme.dividerColor.withOpacity(0.08)),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(20.0),
-                      child: _selectedSession == null
-                          ? Center(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(Icons.edit_note_rounded, size: 64, color: theme.colorScheme.onSurface.withOpacity(0.2)),
-                                  const SizedBox(height: 12),
-                                  Text(
-                                    'Select a past session from the list on the left to edit roster records.',
-                                    textAlign: TextAlign.center,
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Text(
+                          'Past Attendance Sessions (${_sessions.length})',
+                          style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                        ),
+                        const SizedBox(height: 12),
+                        Expanded(
+                          child: _sessions.isEmpty
+                              ? Center(
+                                  child: Text(
+                                    'No prior sessions found.',
                                     style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.5)),
                                   ),
-                                ],
-                              ),
-                            )
-                          : Column(
-                              crossAxisAlignment: CrossAxisAlignment.stretch,
-                              children: [
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(
-                                      'Edit Roster Checklist (${_roster.length} enrolled)',
-                                      style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-                                    ),
-                                    Row(
+                                )
+                              : ListView.builder(
+                                  itemCount: _sessions.length,
+                                  itemBuilder: (context, idx) {
+                                    final session = _sessions[idx];
+                                    final sub = _subjects.firstWhere((s) => s.id == session.subjectId, orElse: () => Subject(id: '', code: 'UNK', name: 'Unknown Subject'));
+                                    final sec = _sections.firstWhere((s) => s.id == session.sectionId, orElse: () => Section(id: '', semesterId: '', name: 'Unknown Section'));
+                                    final sem = _semesters.firstWhere((s) => s.id == sec.semesterId, orElse: () => Semester(id: '', branchId: '', semesterNumber: 0));
+                                    final b = _branches.firstWhere((br) => br.id == sem.branchId, orElse: () => Branch(id: '', courseId: '', name: 'Unknown'));
+
+                                    final formattedDate = DateFormat('MMM dd, yyyy').format(session.date);
+                                    final isSelected = _selectedSession?.id == session.id;
+
+                                    return Container(
+                                      margin: const EdgeInsets.only(bottom: 8),
+                                      child: Material(
+                                        color: isSelected
+                                            ? theme.colorScheme.primaryContainer.withOpacity(0.2)
+                                            : theme.colorScheme.surfaceContainerHighest.withOpacity(0.3),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(8),
+                                          side: isSelected
+                                              ? BorderSide(color: theme.colorScheme.primary.withOpacity(0.3))
+                                              : BorderSide.none,
+                                        ),
+                                        clipBehavior: Clip.antiAlias,
+                                        child: ListTile(
+                                          title: Text(
+                                            '${b.name} - Sem ${sem.semesterNumber} (${sec.name})',
+                                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                                          ),
+                                          subtitle: Text(
+                                            '${sub.name}\n$formattedDate | ${session.startTime}',
+                                            style: const TextStyle(fontSize: 11),
+                                          ),
+                                          onTap: () => _loadRoster(session),
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+
+                final detailPanelCard = Card(
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    side: BorderSide(color: theme.dividerColor.withOpacity(0.08)),
+                  ),
+                  child: _selectedSession == null
+                      ? Center(
+                          child: Text(
+                            'Select a past session from the list to edit records.',
+                            style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.5)),
+                          ),
+                        )
+                      : Padding(
+                          padding: const EdgeInsets.all(20.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
                                         Text(
-                                          'Absentees: $absenteesCount',
-                                          style: TextStyle(color: theme.colorScheme.error, fontWeight: FontWeight.bold),
+                                          'Session Details',
+                                          style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
                                         ),
-                                        const SizedBox(width: 20),
-                                        ElevatedButton.icon(
-                                          style: ElevatedButton.styleFrom(
-                                            backgroundColor: theme.colorScheme.primary,
-                                            foregroundColor: Colors.white,
-                                            minimumSize: const Size(120, 40),
-                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                          ),
-                                          onPressed: _updateAttendance,
-                                          icon: const Icon(Icons.save_rounded, size: 18),
-                                          label: const Text('Save Changes'),
+                                        const SizedBox(height: 2),
+                                        Text(
+                                          'Session ID: ${_selectedSession!.id}',
+                                          style: TextStyle(fontSize: 11, color: theme.colorScheme.onSurface.withOpacity(0.4)),
                                         ),
                                       ],
                                     ),
-                                  ],
-                                ),
-                                const SizedBox(height: 16),
-                                Expanded(
-                                  child: GridView.builder(
-                                    gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                                      maxCrossAxisExtent: 180,
-                                      mainAxisSpacing: 10,
-                                      crossAxisSpacing: 10,
-                                      childAspectRatio: 2.2,
+                                  ),
+                                  ElevatedButton.icon(
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: const Color(0xFF10B981),
+                                      foregroundColor: Colors.white,
+                                      minimumSize: const Size(120, 44),
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                                     ),
-                                    itemCount: _roster.length,
-                                    itemBuilder: (context, idx) {
-                                      final student = _roster[idx];
-                                      final status = _attendanceMap[student.id] ?? 'present';
-                                      final isPresent = status == 'present';
-
-                                      return InkWell(
-                                        onTap: () {
-                                          setState(() {
-                                            _attendanceMap[student.id] = isPresent ? 'absent' : 'present';
-                                          });
-                                        },
+                                    onPressed: _updateAttendance,
+                                    icon: const Icon(Icons.check_rounded, size: 18),
+                                    label: const Text('Save Changes'),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 16),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: Container(
+                                      padding: const EdgeInsets.all(12),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFEF4444).withOpacity(0.08),
                                         borderRadius: BorderRadius.circular(8),
-                                        child: Container(
-                                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                                          decoration: BoxDecoration(
-                                            color: isPresent
-                                                ? theme.colorScheme.primaryContainer.withOpacity(0.15)
-                                                : theme.colorScheme.errorContainer.withOpacity(0.15),
-                                            border: Border.all(
-                                              color: isPresent
-                                                  ? theme.colorScheme.primary.withOpacity(0.2)
-                                                  : theme.colorScheme.error.withOpacity(0.2),
-                                            ),
-                                            borderRadius: BorderRadius.circular(8),
-                                          ),
-                                          child: Row(
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          const Icon(Icons.people_outline_rounded, color: Color(0xFFEF4444)),
+                                          const SizedBox(width: 8),
+                                          Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
                                             children: [
-                                              Expanded(
-                                                child: Column(
-                                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                                  mainAxisAlignment: MainAxisAlignment.center,
-                                                  children: [
-                                                    Text(
-                                                      student.name,
-                                                      maxLines: 1,
-                                                      overflow: TextOverflow.ellipsis,
-                                                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-                                                    ),
-                                                    Text(
-                                                      'Roll: ${student.rollNumber}',
-                                                      style: TextStyle(
-                                                        fontSize: 10,
-                                                        color: theme.colorScheme.onSurface.withOpacity(0.6),
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                              Icon(
-                                                isPresent ? Icons.check_circle_rounded : Icons.cancel_rounded,
-                                                color: isPresent ? theme.colorScheme.primary : theme.colorScheme.error,
-                                                size: 20,
-                                              ),
+                                              const Text('Absentees', style: TextStyle(fontSize: 10, color: Color(0xFFEF4444))),
+                                              Text('$absenteesCount students', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Color(0xFFEF4444))),
                                             ],
                                           ),
-                                        ),
-                                      );
-                                    },
+                                        ],
+                                      ),
+                                    ),
                                   ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Container(
+                                      padding: const EdgeInsets.all(12),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFF3B82F6).withOpacity(0.08),
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          const Icon(Icons.edit_note_rounded, color: Color(0xFF3B82F6)),
+                                          const SizedBox(width: 8),
+                                          Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              const Text('Status', style: TextStyle(fontSize: 10, color: Color(0xFF3B82F6))),
+                                              const Text('Editable Log', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Color(0xFF3B82F6))),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 16),
+                              const Divider(),
+                              const SizedBox(height: 12),
+                              Text(
+                                'Student Records Checklist',
+                                style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
+                              ),
+                              const SizedBox(height: 12),
+                              Expanded(
+                                child: ListView.builder(
+                                  itemCount: _roster.length,
+                                  itemBuilder: (context, idx) {
+                                    final student = _roster[idx];
+                                    final status = _attendanceMap[student.id] ?? 'present';
+                                    final isPresent = status == 'present';
+
+                                    return InkWell(
+                                      onTap: () {
+                                        setState(() {
+                                          _attendanceMap[student.id] = isPresent ? 'absent' : 'present';
+                                        });
+                                      },
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                        decoration: BoxDecoration(
+                                          border: Border(bottom: BorderSide(color: theme.dividerColor.withOpacity(0.04))),
+                                        ),
+                                        child: Row(
+                                          children: [
+                                            Expanded(
+                                              child: Column(
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                children: [
+                                                  Text(
+                                                    student.name,
+                                                    maxLines: 1,
+                                                    overflow: TextOverflow.ellipsis,
+                                                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                                                  ),
+                                                  Text(
+                                                    'Roll: ${student.rollNumber}',
+                                                    style: TextStyle(
+                                                      fontSize: 10,
+                                                      color: theme.colorScheme.onSurface.withOpacity(0.6),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                            Icon(
+                                              isPresent ? Icons.check_circle_rounded : Icons.cancel_rounded,
+                                              color: isPresent ? theme.colorScheme.primary : theme.colorScheme.error,
+                                              size: 20,
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    );
+                                  },
                                 ),
-                              ],
-                            ),
-                  ),
-                ),
-              ),
-              ],
+                              ),
+                            ],
+                          ),
+                        ),
+                );
+
+                if (constraints.maxWidth < 1100) {
+                  return SingleChildScrollView(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        SizedBox(
+                          height: 400,
+                          child: sessionsListCard,
+                        ),
+                        const SizedBox(height: 24),
+                        SizedBox(
+                          height: 600,
+                          child: detailPanelCard,
+                        ),
+                      ],
+                    ),
+                  );
+                } else {
+                  return Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SizedBox(
+                        width: 380,
+                        child: sessionsListCard,
+                      ),
+                      const SizedBox(width: 24),
+                      Expanded(
+                        child: detailPanelCard,
+                      ),
+                    ],
+                  );
+                }
+              },
             ),
           ),
         ],

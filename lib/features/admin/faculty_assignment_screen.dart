@@ -69,6 +69,7 @@ class _FacultyAssignmentScreenState extends ConsumerState<FacultyAssignmentScree
               mainAxisSize: MainAxisSize.min,
               children: [
                 DropdownButtonFormField<String>(
+                  isExpanded: true,
                   value: selectedFacultyId,
                   items: _facultyList
                       .map((f) => DropdownMenuItem(value: f.id, child: Text(f.name)))
@@ -79,6 +80,7 @@ class _FacultyAssignmentScreenState extends ConsumerState<FacultyAssignmentScree
                 ),
                 const SizedBox(height: 16),
                 DropdownButtonFormField<String>(
+                  isExpanded: true,
                   value: selectedMappingId,
                   items: _mappings.map((map) {
                     final sub = _subjects.firstWhere((s) => s.id == map.subjectId, orElse: () => Subject(id: '', code: 'UNK', name: 'Unknown Subject'));
@@ -87,7 +89,10 @@ class _FacultyAssignmentScreenState extends ConsumerState<FacultyAssignmentScree
                     final b = _branches.firstWhere((br) => br.id == sem.branchId, orElse: () => Branch(id: '', courseId: '', name: 'Unknown'));
                     return DropdownMenuItem(
                       value: map.id,
-                      child: Text('${b.name} - Sem ${sem.semesterNumber} (${sec.name}) ➔ ${sub.name}'),
+                      child: Text(
+                        '${b.name} - Sem ${sem.semesterNumber} (${sec.name}) ➔ ${sub.name}',
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     );
                   }).toList(),
                   onChanged: (val) => setStateDialog(() => selectedMappingId = val),
@@ -233,21 +238,23 @@ class _FacultyAssignmentScreenState extends ConsumerState<FacultyAssignmentScree
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Faculty Assignments Console',
-                    style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Map faculty members to class subject mappings.',
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: theme.colorScheme.onSurface.withOpacity(0.6),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Faculty Assignments Console',
+                      style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 4),
+                    Text(
+                      'Map faculty members to class subject mappings.',
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: theme.colorScheme.onSurface.withOpacity(0.6),
+                      ),
+                    ),
+                  ],
+                ),
               ),
               Row(
                 children: [

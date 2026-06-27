@@ -63,13 +63,14 @@ class _StudentsScreenState extends ConsumerState<StudentsScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 DropdownButtonFormField<String>(
+                  isExpanded: true,
                   value: selectedSectionId,
                   items: _sections.map((sec) {
                     final sem = _semesters.firstWhere((s) => s.id == sec.semesterId, orElse: () => Semester(id: '', branchId: '', semesterNumber: 0));
                     final b = _branches.firstWhere((br) => br.id == sem.branchId, orElse: () => Branch(id: '', courseId: '', name: 'Unknown'));
                     return DropdownMenuItem(
                       value: sec.id,
-                      child: Text('${b.name} - Sem ${sem.semesterNumber} (${sec.name})'),
+                      child: Text('${b.name} - Sem ${sem.semesterNumber} (${sec.name})', overflow: TextOverflow.ellipsis),
                     );
                   }).toList(),
                   onChanged: (val) => setStateDialog(() => selectedSectionId = val),

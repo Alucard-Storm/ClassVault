@@ -224,169 +224,180 @@ class FacultyDashboard extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 24),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Left Column: Metrics and Class List
-              Expanded(
-                flex: 3,
-                child: Column(
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final leftColumn = Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Metrics Row
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Card(
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            side: BorderSide(color: theme.dividerColor.withOpacity(0.08)),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(20.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text('Assigned Classes', style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurface.withOpacity(0.5))),
+                                const SizedBox(height: 4),
+                                Text('${facultyAssignments.length}', style: theme.textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold)),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Card(
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            side: BorderSide(color: theme.dividerColor.withOpacity(0.08)),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(20.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text('Lectures Conducted', style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurface.withOpacity(0.5))),
+                                const SizedBox(height: 4),
+                                Text('${sessionsConducted.length}', style: theme.textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold)),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 28),
+                  // Assigned Classes List
+                  Text(
+                    'My Assigned Classes & Subjects',
+                    style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 12),
+                  if (facultyAssignments.isEmpty)
+                    Card(
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        side: BorderSide(color: theme.dividerColor.withOpacity(0.08)),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(24.0),
+                        child: Center(
+                          child: Text(
+                            'No classes assigned to you.',
+                            style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.5)),
+                          ),
+                        ),
+                      ),
+                    )
+                  else
+                    ListView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: facultyAssignments.length,
+                      itemBuilder: (context, idx) {
+                        final fa = facultyAssignments[idx];
+                        final map = mappings.firstWhere((m) => m.id == fa.subjectMappingId, orElse: () => SubjectMapping(id: '', sectionId: '', subjectId: ''));
+                        final sub = subjects.firstWhere((s) => s.id == map.subjectId, orElse: () => Subject(id: '', code: 'UNK', name: 'Unknown Subject'));
+                        final sec = sections.firstWhere((s) => s.id == map.sectionId, orElse: () => Section(id: '', semesterId: '', name: 'Unknown Section'));
+                        final sem = semesters.firstWhere((s) => s.id == sec.semesterId, orElse: () => Semester(id: '', branchId: '', semesterNumber: 0));
+                        final b = branches.firstWhere((br) => br.id == sem.branchId, orElse: () => Branch(id: '', courseId: '', name: 'Unknown'));
+
+                        return Card(
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            side: BorderSide(color: theme.dividerColor.withOpacity(0.08)),
+                          ),
+                          margin: const EdgeInsets.only(bottom: 12),
+                          child: ListTile(
+                            leading: CircleAvatar(
+                              backgroundColor: theme.colorScheme.primary.withOpacity(0.1),
+                              child: Icon(Icons.school_rounded, color: theme.colorScheme.primary),
+                            ),
+                            title: Text(
+                              '${b.name} - Sem ${sem.semesterNumber} (${sec.name})',
+                              style: const TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            subtitle: Text('[${sub.code}] ${sub.name}'),
+                          ),
+                        );
+                      },
+                    ),
+                ],
+              );
+
+              final rightColumn = Card(
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  side: BorderSide(color: theme.dividerColor.withOpacity(0.08)),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Text(
+                        'Quick Actions',
+                        style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 16),
+                      ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          minimumSize: const Size.fromHeight(60),
+                          backgroundColor: theme.colorScheme.primary,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                        onPressed: () => context.go('/faculty/mark-attendance'),
+                        icon: const Icon(Icons.add_task_rounded),
+                        label: const Text('Mark Attendance'),
+                      ),
+                      const SizedBox(height: 12),
+                      OutlinedButton.icon(
+                        style: OutlinedButton.styleFrom(
+                          minimumSize: const Size.fromHeight(60),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                        onPressed: () => context.go('/faculty/edit-attendance'),
+                        icon: const Icon(Icons.edit_note_rounded),
+                        label: const Text('Edit Past Sessions'),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+
+              if (constraints.maxWidth < 1100) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    leftColumn,
+                    const SizedBox(height: 24),
+                    rightColumn,
+                  ],
+                );
+              } else {
+                return Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Metrics Row
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Card(
-                            elevation: 0,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              side: BorderSide(color: theme.dividerColor.withOpacity(0.08)),
-                            ),
-                            child: Padding(
-                              padding: const EdgeInsets.all(20.0),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text('Assigned Classes', style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurface.withOpacity(0.5))),
-                                  const SizedBox(height: 4),
-                                  Text('${facultyAssignments.length}', style: theme.textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold)),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Card(
-                            elevation: 0,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              side: BorderSide(color: theme.dividerColor.withOpacity(0.08)),
-                            ),
-                            child: Padding(
-                              padding: const EdgeInsets.all(20.0),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text('Lectures Conducted', style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurface.withOpacity(0.5))),
-                                  const SizedBox(height: 4),
-                                  Text('${sessionsConducted.length}', style: theme.textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold)),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 28),
-                    // Assigned Classes List
-                    Text(
-                      'My Assigned Classes & Subjects',
-                      style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 12),
-                    if (facultyAssignments.isEmpty)
-                      Card(
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          side: BorderSide(color: theme.dividerColor.withOpacity(0.08)),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(24.0),
-                          child: Center(
-                            child: Text(
-                              'No classes assigned to you.',
-                              style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.5)),
-                            ),
-                          ),
-                        ),
-                      )
-                    else
-                      ListView.builder(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        itemCount: facultyAssignments.length,
-                        itemBuilder: (context, idx) {
-                          final fa = facultyAssignments[idx];
-                          final map = mappings.firstWhere((m) => m.id == fa.subjectMappingId, orElse: () => SubjectMapping(id: '', sectionId: '', subjectId: ''));
-                          final sub = subjects.firstWhere((s) => s.id == map.subjectId, orElse: () => Subject(id: '', code: 'UNK', name: 'Unknown Subject'));
-                          final sec = sections.firstWhere((s) => s.id == map.sectionId, orElse: () => Section(id: '', semesterId: '', name: 'Unknown Section'));
-                          final sem = semesters.firstWhere((s) => s.id == sec.semesterId, orElse: () => Semester(id: '', branchId: '', semesterNumber: 0));
-                          final b = branches.firstWhere((br) => br.id == sem.branchId, orElse: () => Branch(id: '', courseId: '', name: 'Unknown'));
-
-                          return Card(
-                            elevation: 0,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              side: BorderSide(color: theme.dividerColor.withOpacity(0.08)),
-                            ),
-                            margin: const EdgeInsets.only(bottom: 12),
-                            child: ListTile(
-                              leading: CircleAvatar(
-                                backgroundColor: theme.colorScheme.primary.withOpacity(0.1),
-                                child: Icon(Icons.school_rounded, color: theme.colorScheme.primary),
-                              ),
-                              title: Text(
-                                '${b.name} - Sem ${sem.semesterNumber} (${sec.name})',
-                                style: const TextStyle(fontWeight: FontWeight.bold),
-                              ),
-                              subtitle: Text('[${sub.code}] ${sub.name}'),
-                            ),
-                          );
-                        },
-                      ),
+                    Expanded(flex: 3, child: leftColumn),
+                    const SizedBox(width: 24),
+                    Expanded(flex: 2, child: rightColumn),
                   ],
-                ),
-              ),
-              const SizedBox(width: 24),
-              // Right Column: Quick Actions
-              Expanded(
-                flex: 2,
-                child: Card(
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    side: BorderSide(color: theme.dividerColor.withOpacity(0.08)),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(20.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Text(
-                          'Quick Actions',
-                          style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-                        ),
-                        const SizedBox(height: 16),
-                        ElevatedButton.icon(
-                          style: ElevatedButton.styleFrom(
-                            minimumSize: const Size.fromHeight(60),
-                            backgroundColor: theme.colorScheme.primary,
-                            foregroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                          ),
-                          onPressed: () => context.go('/faculty/mark-attendance'),
-                          icon: const Icon(Icons.add_task_rounded),
-                          label: const Text('Mark Attendance'),
-                        ),
-                        const SizedBox(height: 12),
-                        OutlinedButton.icon(
-                          style: OutlinedButton.styleFrom(
-                            minimumSize: const Size.fromHeight(60),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                          ),
-                          onPressed: () => context.go('/faculty/edit-attendance'),
-                          icon: const Icon(Icons.edit_note_rounded),
-                          label: const Text('Edit Past Sessions'),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ],
+                );
+              }
+            },
           ),
         ],
       ),
