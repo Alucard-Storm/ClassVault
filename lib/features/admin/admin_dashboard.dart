@@ -50,24 +50,18 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
         academicRepo.getSections(),
         academicRepo.getSemesters(),
         academicRepo.getBranches(),
+        attendanceRepo.getAllAttendanceRecords(),
       ]);
-
-      final sessions = results[3] as List<AttendanceSession>;
-      final List<AttendanceRecord> allRecords = [];
-      for (final s in sessions) {
-        final recs = await attendanceRepo.getAttendanceRecords(s.id);
-        allRecords.addAll(recs);
-      }
 
       setState(() {
         _students = results[0] as List<Student>;
         _facultyList = results[1] as List<Faculty>;
         _subjects = results[2] as List<Subject>;
-        _sessions = sessions;
+        _sessions = results[3] as List<AttendanceSession>;
         _sections = results[4] as List<Section>;
         _semesters = results[5] as List<Semester>;
         _branches = results[6] as List<Branch>;
-        _allRecords = allRecords;
+        _allRecords = results[7] as List<AttendanceRecord>;
         _isLoading = false;
       });
     } catch (e) {

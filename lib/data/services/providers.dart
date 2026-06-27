@@ -25,20 +25,28 @@ final defaulterCountProvider = FutureProvider<int>((ref) async {
   final academicRepo = ref.read(academicRepositoryProvider);
   final attendanceRepo = ref.read(attendanceRepositoryProvider);
 
-  final students = await academicRepo.getStudents();
-  final sessions = await attendanceRepo.getSessions();
+  final results = await Future.wait([
+    academicRepo.getStudents(),
+    attendanceRepo.getSessions(),
+    attendanceRepo.getAllAttendanceRecords(),
+  ]);
+
+  final students = results[0] as List;
+  final sessions = results[1] as List;
+  final allRecords = results[2] as List;
 
   int count = 0;
   for (final student in students) {
-    final studentSessions = sessions.where((s) => s.sectionId == student.sectionId).toList();
+    final studentSessions =
+        sessions.where((s) => s.sectionId == student.sectionId).toList();
     if (studentSessions.isEmpty) continue;
-    int presentCount = 0;
-    for (final s in studentSessions) {
-      final records = await attendanceRepo.getAttendanceRecords(s.id);
-      if (records.any((r) => r.studentId == student.id && r.status == 'present')) {
-        presentCount++;
-      }
-    }
+    final sessionIds = {for (final s in studentSessions) s.id};
+    final presentCount = allRecords
+        .where((r) =>
+            r.studentId == student.id &&
+            sessionIds.contains(r.sessionId) &&
+            r.status == 'present')
+        .length;
     final pct = (presentCount / studentSessions.length) * 100;
     if (pct < 80.0) count++;
   }

@@ -10,6 +10,7 @@ abstract class AttendanceRepository {
   Future<void> deleteSession(String id);
 
   // Attendance Records
+  Future<List<AttendanceRecord>> getAllAttendanceRecords();
   Future<List<AttendanceRecord>> getAttendanceRecords(String sessionId);
   Future<List<AttendanceRecord>> getAttendanceRecordsForStudent(String studentId);
   Future<void> updateAttendanceRecords(List<AttendanceRecord> records);

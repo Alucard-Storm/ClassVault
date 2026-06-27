@@ -85,6 +85,9 @@ class LocalAttendanceService implements AttendanceRepository {
   }
 
   @override
+  Future<List<AttendanceRecord>> getAllAttendanceRecords() async => List.from(_records);
+
+  @override
   Future<List<AttendanceRecord>> getAttendanceRecords(String sessionId) async {
     return _records.where((r) => r.sessionId == sessionId).toList();
   }
