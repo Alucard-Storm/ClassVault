@@ -207,7 +207,45 @@ Build interactive tables and dialogs for the administrator to manage setup:
 
 ---
 
-## 🌐 Phase 5: Firebase Integration (To be done last)
+## ✨ Phase 5: UX Enhancements
+
+### 5.1 Attendance Marking — Usability
+- [x] Add "Mark All Present" / "Mark All Absent" bulk-toggle buttons above the student roster grid in `mark_attendance_screen.dart`.
+- [x] Add a confirmation dialog before `_saveAttendance()` fires to prevent accidental submission.
+- [x] Add a search/filter bar on the student roster (filter by name or roll number) for large sections.
+- [x] Remove the duplicate student roster fetch inside `_proceedToRoster()` — `_onAssignmentChanged` already loads the roster when the dropdown changes.
+- [x] Replace `TextDecoration.lineThrough` on absent students with reduced opacity + tinted background (less punitive, more readable).
+
+### 5.2 Error & Loading States
+- [x] Add `snapshot.hasError` branches to every `FutureBuilder` (admin dashboard, student dashboard, faculty dashboard, reports dashboard) — currently silently shows nothing on failure.
+- [x] Add `RefreshIndicator` (pull-to-refresh) to all list/dashboard screens — data is stale until the user navigates away and back.
+- [ ] Replace bare `CircularProgressIndicator` loading states with skeleton/shimmer placeholders that reflect the actual content layout.
+
+### 5.3 Student Dashboard — Actionable Insights
+- [x] Add "classes you can still miss" counter using the formula `floor((attended - 0.75 * conducted) / 0.25)` so students know their buffer at a glance.
+- [x] Add subject code (`[CODE]`) to the subject-wise breakdown cards for consistency with the faculty dashboard.
+- [x] Show a trend indicator (improving / declining attendance) on the overall percentage card by comparing the last 5 sessions vs the 5 before that.
+- [x] Align the student warning threshold (currently 75%) with the admin defaulter threshold (80%) via a shared constant.
+
+### 5.4 Admin Dashboard — Real Data
+- [x] Replace hardcoded metric card trend strings ("↑ 8.5% this month", etc.) with real computed values comparing current vs previous month record counts, or remove them entirely.
+- [x] Add y-axis labels and an 80% threshold line to the Weekly Attendance Analytics bar chart.
+- [x] Add a "View All" link on the Defaulter Watchlist card when the list is truncated.
+
+### 5.5 Navigation & Shell
+- [x] Add a `BottomNavigationBar` for mobile/tablet (≤960px) as the primary nav for Faculty — the drawer requires an extra tap for every route switch.
+- [x] Wire the notification badge count to the real computed defaulter list instead of the hardcoded "4".
+- [x] Add a dark/light mode toggle to the user profile `PopupMenuButton` in `ResponsiveScaffold`.
+- [x] Make preset login buttons in `login_screen.dart` auto-submit (fill + login in one tap) for demo convenience.
+
+### 5.6 Code Quality
+- [x] Migrate all `.withOpacity()` calls to `.withValues(alpha:)` (deprecated in Flutter 3.27+).
+- [x] Extract the hardcoded `75.0` / `80.0` attendance thresholds into a shared `AppConstants` class.
+- [x] Fix near-invisible card borders (`dividerColor.withOpacity(0.08)`) in dark mode — raise to `0.15` or use a fixed token color.
+
+---
+
+## 🌐 Phase 6: Firebase Integration (To be done last)
 
 - [ ] Initialize Firebase Core and Auth in `main.dart`.
 - [ ] Implement Firebase Firestore services implementing the repository interfaces.

@@ -241,7 +241,7 @@ class _StudentImportScreenState extends ConsumerState<StudentImportScreen> {
                     const SizedBox(height: 8),
                     Text(
                       'CSV columns required: "Roll Number" and "Student Name" (Header-sensitive).',
-                      style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.5), fontSize: 12),
+                      style: TextStyle(color: theme.colorScheme.onSurface.withValues(alpha: 0.5), fontSize: 12),
                     ),
                     const SizedBox(height: 16),
                     Row(
@@ -293,7 +293,7 @@ class _StudentImportScreenState extends ConsumerState<StudentImportScreen> {
                     final isValid = row['status'] == 'Valid';
                     return ListTile(
                       leading: CircleAvatar(
-                        backgroundColor: isValid ? const Color(0xFF10B981).withOpacity(0.1) : const Color(0xFFEF4444).withOpacity(0.1),
+                        backgroundColor: isValid ? const Color(0xFF10B981).withValues(alpha: 0.1) : const Color(0xFFEF4444).withValues(alpha: 0.1),
                         child: Text(
                           row['roll'] as String,
                           style: TextStyle(
@@ -347,7 +347,7 @@ class _StudentImportScreenState extends ConsumerState<StudentImportScreen> {
           Text(
             'Import class rosters via CSV files directly into specific sections.',
             style: theme.textTheme.bodyMedium?.copyWith(
-              color: theme.colorScheme.onSurface.withOpacity(0.6),
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
             ),
           ),
           const SizedBox(height: 24),
@@ -361,7 +361,7 @@ class _StudentImportScreenState extends ConsumerState<StudentImportScreen> {
                       elevation: 0,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
-                        side: BorderSide(color: theme.dividerColor.withOpacity(0.08)),
+                        side: BorderSide(color: theme.dividerColor.withValues(alpha: 0.15)),
                       ),
                       child: Padding(
                         padding: const EdgeInsets.all(20.0),
@@ -399,7 +399,7 @@ class _StudentImportScreenState extends ConsumerState<StudentImportScreen> {
                       elevation: 0,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
-                        side: BorderSide(color: theme.dividerColor.withOpacity(0.08)),
+                        side: BorderSide(color: theme.dividerColor.withValues(alpha: 0.15)),
                       ),
                       child: Padding(
                         padding: const EdgeInsets.all(20.0),
@@ -410,7 +410,7 @@ class _StudentImportScreenState extends ConsumerState<StudentImportScreen> {
                             const SizedBox(height: 6),
                             Text(
                               'Requires headers: "Roll Number" & "Student Name".',
-                              style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.5), fontSize: 11),
+                              style: TextStyle(color: theme.colorScheme.onSurface.withValues(alpha: 0.5), fontSize: 11),
                             ),
                             const SizedBox(height: 16),
                             Row(
@@ -419,7 +419,7 @@ class _StudentImportScreenState extends ConsumerState<StudentImportScreen> {
                                   child: Container(
                                     padding: const EdgeInsets.all(12),
                                     decoration: BoxDecoration(
-                                      color: theme.colorScheme.surfaceContainerHighest.withOpacity(0.3),
+                                      color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
                                       borderRadius: BorderRadius.circular(8),
                                     ),
                                     child: Text(
@@ -465,7 +465,7 @@ class _StudentImportScreenState extends ConsumerState<StudentImportScreen> {
                   elevation: 0,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
-                    side: BorderSide(color: theme.dividerColor.withOpacity(0.08)),
+                    side: BorderSide(color: theme.dividerColor.withValues(alpha: 0.15)),
                   ),
                   child: Padding(
                     padding: const EdgeInsets.all(20.0),
@@ -482,7 +482,7 @@ class _StudentImportScreenState extends ConsumerState<StudentImportScreen> {
                               ? Center(
                                   child: Text(
                                     'Upload a CSV file on the left to see the parsed roster preview.',
-                                    style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.5)),
+                                    style: TextStyle(color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
                                   ),
                                 )
                               : ListView.builder(
@@ -493,15 +493,15 @@ class _StudentImportScreenState extends ConsumerState<StudentImportScreen> {
                                     return Container(
                                       margin: const EdgeInsets.only(bottom: 8),
                                       child: Material(
-                                        color: isValid ? const Color(0xFF10B981).withOpacity(0.05) : const Color(0xFFEF4444).withOpacity(0.05),
+                                        color: isValid ? const Color(0xFF10B981).withValues(alpha: 0.05) : const Color(0xFFEF4444).withValues(alpha: 0.05),
                                         shape: RoundedRectangleBorder(
                                           borderRadius: BorderRadius.circular(8),
-                                          side: BorderSide(color: isValid ? const Color(0xFF10B981).withOpacity(0.1) : const Color(0xFFEF4444).withOpacity(0.1)),
+                                          side: BorderSide(color: isValid ? const Color(0xFF10B981).withValues(alpha: 0.1) : const Color(0xFFEF4444).withValues(alpha: 0.1)),
                                         ),
                                         clipBehavior: Clip.antiAlias,
                                         child: ListTile(
                                           leading: CircleAvatar(
-                                            backgroundColor: isValid ? const Color(0xFF10B981).withOpacity(0.1) : const Color(0xFFEF4444).withOpacity(0.1),
+                                            backgroundColor: isValid ? const Color(0xFF10B981).withValues(alpha: 0.1) : const Color(0xFFEF4444).withValues(alpha: 0.1),
                                             child: Text(
                                               row['roll'] as String,
                                               style: TextStyle(

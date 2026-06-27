@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'auth_provider.dart';
+import '../../data/services/providers.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -47,6 +48,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       _emailController.text = email;
       _passwordController.text = password;
     });
+    _submit();
   }
 
   Widget _buildFeatureRow(IconData icon, String text) {
@@ -79,8 +81,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               gradient: LinearGradient(
                 colors: [
                   theme.colorScheme.primary,
-                  theme.colorScheme.primary.withOpacity(0.85),
-                  theme.colorScheme.secondary.withOpacity(0.8),
+                  theme.colorScheme.primary.withValues(alpha: 0.85),
+                  theme.colorScheme.secondary.withValues(alpha: 0.8),
                 ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
@@ -96,7 +98,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     height: 400,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: Colors.white.withOpacity(0.06),
+                      color: Colors.white.withValues(alpha: 0.06),
                     ),
                   ),
                 ),
@@ -108,7 +110,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     height: 500,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: Colors.black.withOpacity(0.04),
+                      color: Colors.black.withValues(alpha: 0.04),
                     ),
                   ),
                 ),
@@ -125,7 +127,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               Container(
                                 padding: const EdgeInsets.all(12),
                                 decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.2),
+                                  color: Colors.white.withValues(alpha: 0.2),
                                   borderRadius: BorderRadius.circular(16),
                                 ),
                                 child: const Icon(
@@ -161,7 +163,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             'CampusVault lets administrators, faculty, and students monitor, mark, and analyze class attendances in real-time. Powering educational workflows with absolute precision.',
                             style: TextStyle(
                               fontSize: 16,
-                              color: Colors.white.withOpacity(0.85),
+                              color: Colors.white.withValues(alpha: 0.85),
                               height: 1.5,
                             ),
                           ),
@@ -245,7 +247,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 'Attendance Management System',
                 textAlign: TextAlign.center,
                 style: theme.textTheme.bodyMedium?.copyWith(
-                  color: theme.colorScheme.onSurface.withOpacity(0.6),
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                 ),
               ),
               const SizedBox(height: 32),
@@ -322,7 +324,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     child: Text(
                       'TEST ACCOUNTS',
                       style: theme.textTheme.labelSmall?.copyWith(
-                        color: theme.colorScheme.onSurface.withOpacity(0.5),
+                        color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
                         letterSpacing: 1.2,
                       ),
                     ),
@@ -362,18 +364,54 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       ),
     );
 
+    final themeMode = ref.watch(themeModeProvider);
+
     return Scaffold(
-      body: isDesktop
-          ? _buildDesktopLayout(formCard, theme)
-          : Center(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(24.0),
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 440),
-                  child: formCard,
+      body: Stack(
+        children: [
+          isDesktop
+              ? _buildDesktopLayout(formCard, theme)
+              : Center(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.all(24.0),
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 440),
+                      child: formCard,
+                    ),
+                  ),
+                ),
+          Positioned(
+            top: 16,
+            right: 16,
+            child: SafeArea(
+              child: Tooltip(
+                message: themeMode == ThemeMode.dark ? 'Light Mode' : 'Dark Mode',
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(24),
+                  onTap: () {
+                    ref.read(themeModeProvider.notifier).state =
+                        themeMode == ThemeMode.light ? ThemeMode.dark : ThemeMode.light;
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: isDark
+                          ? Colors.white.withValues(alpha: 0.12)
+                          : Colors.black.withValues(alpha: 0.08),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      isDark ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
+                      size: 20,
+                      color: isDark ? Colors.white : Colors.black87,
+                    ),
+                  ),
                 ),
               ),
             ),
+          ),
+        ],
+      ),
     );
   }
 

@@ -193,7 +193,7 @@ class _SemesterPromotionScreenState extends ConsumerState<SemesterPromotionScree
                   child: Center(
                     child: Text(
                       'No students found in this source section.',
-                      style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.5)),
+                      style: TextStyle(color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
                     ),
                   ),
                 ),
@@ -209,7 +209,7 @@ class _SemesterPromotionScreenState extends ConsumerState<SemesterPromotionScree
                     final student = _sourceStudents[idx];
                     return ListTile(
                       leading: CircleAvatar(
-                        backgroundColor: theme.colorScheme.primary.withOpacity(0.1),
+                        backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.1),
                         child: Text(
                           student.rollNumber,
                           style: TextStyle(color: theme.colorScheme.primary, fontSize: 12, fontWeight: FontWeight.bold),
@@ -253,7 +253,7 @@ class _SemesterPromotionScreenState extends ConsumerState<SemesterPromotionScree
           Text(
             'Promote students in batch from a source semester/section to a destination semester/section.',
             style: theme.textTheme.bodyMedium?.copyWith(
-              color: theme.colorScheme.onSurface.withOpacity(0.6),
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
             ),
           ),
           const SizedBox(height: 24),
@@ -267,7 +267,7 @@ class _SemesterPromotionScreenState extends ConsumerState<SemesterPromotionScree
                       elevation: 0,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
-                        side: BorderSide(color: theme.dividerColor.withOpacity(0.08)),
+                        side: BorderSide(color: theme.dividerColor.withValues(alpha: 0.15)),
                       ),
                       child: Padding(
                         padding: const EdgeInsets.all(20.0),
@@ -341,7 +341,7 @@ class _SemesterPromotionScreenState extends ConsumerState<SemesterPromotionScree
                   elevation: 0,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
-                    side: BorderSide(color: theme.dividerColor.withOpacity(0.08)),
+                    side: BorderSide(color: theme.dividerColor.withValues(alpha: 0.15)),
                   ),
                   child: Padding(
                     padding: const EdgeInsets.all(20.0),
@@ -358,7 +358,7 @@ class _SemesterPromotionScreenState extends ConsumerState<SemesterPromotionScree
                               ? Center(
                                   child: Text(
                                     'No students found in the selected source section.',
-                                    style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.5)),
+                                    style: TextStyle(color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
                                   ),
                                 )
                               : ListView.builder(
@@ -368,14 +368,14 @@ class _SemesterPromotionScreenState extends ConsumerState<SemesterPromotionScree
                                     return Container(
                                       margin: const EdgeInsets.only(bottom: 8),
                                       child: Material(
-                                        color: theme.colorScheme.surfaceContainerHighest.withOpacity(0.3),
+                                        color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
                                         shape: RoundedRectangleBorder(
                                           borderRadius: BorderRadius.circular(8),
                                         ),
                                         clipBehavior: Clip.antiAlias,
                                         child: ListTile(
                                           leading: CircleAvatar(
-                                            backgroundColor: theme.colorScheme.primary.withOpacity(0.1),
+                                            backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.1),
                                             child: Text(
                                               student.rollNumber,
                                               style: TextStyle(

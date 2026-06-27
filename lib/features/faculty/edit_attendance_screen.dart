@@ -163,7 +163,7 @@ class _EditAttendanceScreenState extends ConsumerState<EditAttendanceScreen> {
           padding: const EdgeInsets.all(24.0),
           child: Text(
             'No prior attendance sessions found.',
-            style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.5)),
+            style: TextStyle(color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
           ),
         ),
       );
@@ -185,7 +185,7 @@ class _EditAttendanceScreenState extends ConsumerState<EditAttendanceScreen> {
           margin: const EdgeInsets.only(bottom: 12),
           child: ListTile(
             leading: CircleAvatar(
-              backgroundColor: theme.colorScheme.primary.withOpacity(0.1),
+              backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.1),
               child: Icon(Icons.history_rounded, color: theme.colorScheme.primary),
             ),
             title: Text(
@@ -210,7 +210,7 @@ class _EditAttendanceScreenState extends ConsumerState<EditAttendanceScreen> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Container(
-          color: theme.colorScheme.primary.withOpacity(0.08),
+          color: theme.colorScheme.primary.withValues(alpha: 0.08),
           padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -236,11 +236,11 @@ class _EditAttendanceScreenState extends ConsumerState<EditAttendanceScreen> {
               final isPresent = status == 'present';
 
               return Card(
-                color: isPresent ? null : theme.colorScheme.errorContainer.withOpacity(0.15),
+                color: isPresent ? null : theme.colorScheme.errorContainer.withValues(alpha: 0.15),
                 margin: const EdgeInsets.only(bottom: 10),
                 child: ListTile(
                   leading: CircleAvatar(
-                    backgroundColor: isPresent ? theme.colorScheme.primary.withOpacity(0.1) : theme.colorScheme.error.withOpacity(0.1),
+                    backgroundColor: isPresent ? theme.colorScheme.primary.withValues(alpha: 0.1) : theme.colorScheme.error.withValues(alpha: 0.1),
                     child: Text(
                       student.rollNumber,
                       style: TextStyle(
@@ -307,7 +307,7 @@ class _EditAttendanceScreenState extends ConsumerState<EditAttendanceScreen> {
                     Text(
                       'Select a past session on the left to modify its student records.',
                       style: theme.textTheme.bodyMedium?.copyWith(
-                        color: theme.colorScheme.onSurface.withOpacity(0.6),
+                        color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                       ),
                     ),
                   ],
@@ -328,7 +328,7 @@ class _EditAttendanceScreenState extends ConsumerState<EditAttendanceScreen> {
                   elevation: 0,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
-                    side: BorderSide(color: theme.dividerColor.withOpacity(0.08)),
+                    side: BorderSide(color: theme.dividerColor.withValues(alpha: 0.15)),
                   ),
                   child: Padding(
                     padding: const EdgeInsets.all(16.0),
@@ -345,7 +345,7 @@ class _EditAttendanceScreenState extends ConsumerState<EditAttendanceScreen> {
                               ? Center(
                                   child: Text(
                                     'No prior sessions found.',
-                                    style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.5)),
+                                    style: TextStyle(color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
                                   ),
                                 )
                               : ListView.builder(
@@ -364,12 +364,12 @@ class _EditAttendanceScreenState extends ConsumerState<EditAttendanceScreen> {
                                       margin: const EdgeInsets.only(bottom: 8),
                                       child: Material(
                                         color: isSelected
-                                            ? theme.colorScheme.primaryContainer.withOpacity(0.2)
-                                            : theme.colorScheme.surfaceContainerHighest.withOpacity(0.3),
+                                            ? theme.colorScheme.primaryContainer.withValues(alpha: 0.2)
+                                            : theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
                                         shape: RoundedRectangleBorder(
                                           borderRadius: BorderRadius.circular(8),
                                           side: isSelected
-                                              ? BorderSide(color: theme.colorScheme.primary.withOpacity(0.3))
+                                              ? BorderSide(color: theme.colorScheme.primary.withValues(alpha: 0.3))
                                               : BorderSide.none,
                                         ),
                                         clipBehavior: Clip.antiAlias,
@@ -398,13 +398,13 @@ class _EditAttendanceScreenState extends ConsumerState<EditAttendanceScreen> {
                   elevation: 0,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
-                    side: BorderSide(color: theme.dividerColor.withOpacity(0.08)),
+                    side: BorderSide(color: theme.dividerColor.withValues(alpha: 0.15)),
                   ),
                   child: _selectedSession == null
                       ? Center(
                           child: Text(
                             'Select a past session from the list to edit records.',
-                            style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.5)),
+                            style: TextStyle(color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
                           ),
                         )
                       : Padding(
@@ -426,7 +426,7 @@ class _EditAttendanceScreenState extends ConsumerState<EditAttendanceScreen> {
                                         const SizedBox(height: 2),
                                         Text(
                                           'Session ID: ${_selectedSession!.id}',
-                                          style: TextStyle(fontSize: 11, color: theme.colorScheme.onSurface.withOpacity(0.4)),
+                                          style: TextStyle(fontSize: 11, color: theme.colorScheme.onSurface.withValues(alpha: 0.4)),
                                         ),
                                       ],
                                     ),
@@ -451,7 +451,7 @@ class _EditAttendanceScreenState extends ConsumerState<EditAttendanceScreen> {
                                     child: Container(
                                       padding: const EdgeInsets.all(12),
                                       decoration: BoxDecoration(
-                                        color: const Color(0xFFEF4444).withOpacity(0.08),
+                                        color: const Color(0xFFEF4444).withValues(alpha: 0.08),
                                         borderRadius: BorderRadius.circular(8),
                                       ),
                                       child: Row(
@@ -474,7 +474,7 @@ class _EditAttendanceScreenState extends ConsumerState<EditAttendanceScreen> {
                                     child: Container(
                                       padding: const EdgeInsets.all(12),
                                       decoration: BoxDecoration(
-                                        color: const Color(0xFF3B82F6).withOpacity(0.08),
+                                        color: const Color(0xFF3B82F6).withValues(alpha: 0.08),
                                         borderRadius: BorderRadius.circular(8),
                                       ),
                                       child: Row(
@@ -519,7 +519,7 @@ class _EditAttendanceScreenState extends ConsumerState<EditAttendanceScreen> {
                                       child: Container(
                                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                                         decoration: BoxDecoration(
-                                          border: Border(bottom: BorderSide(color: theme.dividerColor.withOpacity(0.04))),
+                                          border: Border(bottom: BorderSide(color: theme.dividerColor.withValues(alpha: 0.04))),
                                         ),
                                         child: Row(
                                           children: [
@@ -537,7 +537,7 @@ class _EditAttendanceScreenState extends ConsumerState<EditAttendanceScreen> {
                                                     'Roll: ${student.rollNumber}',
                                                     style: TextStyle(
                                                       fontSize: 10,
-                                                      color: theme.colorScheme.onSurface.withOpacity(0.6),
+                                                      color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                                                     ),
                                                   ),
                                                 ],

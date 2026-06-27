@@ -181,7 +181,7 @@ class _FacultyAssignmentScreenState extends ConsumerState<FacultyAssignmentScree
                   ? Center(
                       child: Text(
                         'No faculty assignments registered yet.',
-                        style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.5)),
+                        style: TextStyle(color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
                       ),
                     )
                   : ListView.builder(
@@ -199,7 +199,7 @@ class _FacultyAssignmentScreenState extends ConsumerState<FacultyAssignmentScree
                           margin: const EdgeInsets.only(bottom: 12),
                           child: ListTile(
                             leading: CircleAvatar(
-                              backgroundColor: theme.colorScheme.primary.withOpacity(0.1),
+                              backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.1),
                               child: Icon(Icons.school_rounded, color: theme.colorScheme.primary),
                             ),
                             title: Text(
@@ -250,7 +250,7 @@ class _FacultyAssignmentScreenState extends ConsumerState<FacultyAssignmentScree
                     Text(
                       'Map faculty members to class subject mappings.',
                       style: theme.textTheme.bodyMedium?.copyWith(
-                        color: theme.colorScheme.onSurface.withOpacity(0.6),
+                        color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                       ),
                     ),
                   ],
@@ -283,13 +283,13 @@ class _FacultyAssignmentScreenState extends ConsumerState<FacultyAssignmentScree
               elevation: 0,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
-                side: BorderSide(color: theme.dividerColor.withOpacity(0.08)),
+                side: BorderSide(color: theme.dividerColor.withValues(alpha: 0.15)),
               ),
               child: _assignments.isEmpty
                   ? Center(
                       child: Text(
                         'No faculty assignments registered yet.',
-                        style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.5)),
+                        style: TextStyle(color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
                       ),
                     )
                   : SingleChildScrollView(
@@ -308,7 +308,7 @@ class _FacultyAssignmentScreenState extends ConsumerState<FacultyAssignmentScree
                           children: [
                             TableRow(
                               decoration: BoxDecoration(
-                                border: Border(bottom: BorderSide(color: theme.dividerColor.withOpacity(0.15), width: 2)),
+                                border: Border(bottom: BorderSide(color: theme.dividerColor.withValues(alpha: 0.15), width: 2)),
                               ),
                               children: [
                                 _buildTableHeaderCell('Employee ID'),
@@ -328,7 +328,7 @@ class _FacultyAssignmentScreenState extends ConsumerState<FacultyAssignmentScree
 
                               return TableRow(
                                 decoration: BoxDecoration(
-                                  border: Border(bottom: BorderSide(color: theme.dividerColor.withOpacity(0.08))),
+                                  border: Border(bottom: BorderSide(color: theme.dividerColor.withValues(alpha: 0.15))),
                                 ),
                                 children: [
                                   _buildTableCell(faculty.employeeId),

@@ -145,7 +145,7 @@ class _FacultyScreenState extends ConsumerState<FacultyScreen> {
                         padding: const EdgeInsets.only(top: 40.0),
                         child: Text(
                           'No faculty profiles registered.',
-                          style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.5)),
+                          style: TextStyle(color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
                         ),
                       ),
                     )
@@ -175,7 +175,7 @@ class _FacultyScreenState extends ConsumerState<FacultyScreen> {
                             ),
                             ..._facultyList.map((f) => TableRow(
                               decoration: BoxDecoration(
-                                border: Border(bottom: BorderSide(color: theme.dividerColor.withOpacity(0.4))),
+                                border: Border(bottom: BorderSide(color: theme.dividerColor.withValues(alpha: 0.4))),
                               ),
                               children: [
                                 Padding(padding: const EdgeInsets.symmetric(vertical: 12), child: Text(f.employeeId)),
@@ -209,7 +209,7 @@ class _FacultyScreenState extends ConsumerState<FacultyScreen> {
                           margin: const EdgeInsets.only(bottom: 12),
                           child: ListTile(
                             leading: CircleAvatar(
-                              backgroundColor: theme.colorScheme.primary.withOpacity(0.1),
+                              backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.1),
                               child: Text(
                                 f.name.isNotEmpty ? f.name[0].toUpperCase() : '?',
                                 style: TextStyle(color: theme.colorScheme.primary, fontWeight: FontWeight.bold),

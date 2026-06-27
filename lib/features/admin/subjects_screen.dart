@@ -240,7 +240,7 @@ class _SubjectsScreenState extends ConsumerState<SubjectsScreen> with SingleTick
                       ? Center(
                           child: Text(
                             'No subjects found. Add a subject first.',
-                            style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.5)),
+                            style: TextStyle(color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
                           ),
                         )
                       : ListView.builder(
@@ -300,7 +300,7 @@ class _SubjectsScreenState extends ConsumerState<SubjectsScreen> with SingleTick
                       ? Center(
                           child: Text(
                             'No subject mappings configured.',
-                            style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.5)),
+                            style: TextStyle(color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
                           ),
                         )
                       : ListView.builder(
@@ -362,7 +362,7 @@ class _SubjectsScreenState extends ConsumerState<SubjectsScreen> with SingleTick
                     Text(
                       'Manage your subjects library and map them to class sections.',
                       style: theme.textTheme.bodyMedium?.copyWith(
-                        color: theme.colorScheme.onSurface.withOpacity(0.6),
+                        color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                       ),
                     ),
                   ],
@@ -383,7 +383,7 @@ class _SubjectsScreenState extends ConsumerState<SubjectsScreen> with SingleTick
                   elevation: 0,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
-                    side: BorderSide(color: theme.dividerColor.withOpacity(0.08)),
+                    side: BorderSide(color: theme.dividerColor.withValues(alpha: 0.15)),
                   ),
                   child: Padding(
                     padding: const EdgeInsets.all(20.0),
@@ -410,7 +410,7 @@ class _SubjectsScreenState extends ConsumerState<SubjectsScreen> with SingleTick
                               ? Center(
                                   child: Text(
                                     'No subjects added yet.',
-                                    style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.5)),
+                                    style: TextStyle(color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
                                   ),
                                 )
                               : ListView.builder(
@@ -420,7 +420,7 @@ class _SubjectsScreenState extends ConsumerState<SubjectsScreen> with SingleTick
                                     return Container(
                                       margin: const EdgeInsets.only(bottom: 8),
                                       child: Material(
-                                        color: theme.colorScheme.surfaceContainerHighest.withOpacity(0.3),
+                                        color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
                                         shape: RoundedRectangleBorder(
                                           borderRadius: BorderRadius.circular(8),
                                         ),
@@ -433,7 +433,7 @@ class _SubjectsScreenState extends ConsumerState<SubjectsScreen> with SingleTick
                                           ),
                                           subtitle: Text(
                                             sub.code,
-                                            style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withOpacity(0.6)),
+                                            style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withValues(alpha: 0.6)),
                                           ),
                                           trailing: IconButton(
                                             icon: Icon(Icons.delete_outline_rounded, color: theme.colorScheme.error, size: 20),
@@ -457,7 +457,7 @@ class _SubjectsScreenState extends ConsumerState<SubjectsScreen> with SingleTick
                   elevation: 0,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
-                    side: BorderSide(color: theme.dividerColor.withOpacity(0.08)),
+                    side: BorderSide(color: theme.dividerColor.withValues(alpha: 0.15)),
                   ),
                   child: Padding(
                     padding: const EdgeInsets.all(20.0),
@@ -484,7 +484,7 @@ class _SubjectsScreenState extends ConsumerState<SubjectsScreen> with SingleTick
                               ? Center(
                                   child: Text(
                                     'No mappings registered yet.',
-                                    style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.5)),
+                                    style: TextStyle(color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
                                   ),
                                 )
                               : ListView.builder(
@@ -499,7 +499,7 @@ class _SubjectsScreenState extends ConsumerState<SubjectsScreen> with SingleTick
                                     return Container(
                                       margin: const EdgeInsets.only(bottom: 8),
                                       child: Material(
-                                        color: theme.colorScheme.surfaceContainerHighest.withOpacity(0.3),
+                                        color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
                                         shape: RoundedRectangleBorder(
                                           borderRadius: BorderRadius.circular(8),
                                         ),
@@ -512,7 +512,7 @@ class _SubjectsScreenState extends ConsumerState<SubjectsScreen> with SingleTick
                                           ),
                                           subtitle: Text(
                                             '${sub.code}: ${sub.name}',
-                                            style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withOpacity(0.6)),
+                                            style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withValues(alpha: 0.6)),
                                           ),
                                           trailing: IconButton(
                                             icon: Icon(Icons.delete_outline_rounded, color: theme.colorScheme.error, size: 20),

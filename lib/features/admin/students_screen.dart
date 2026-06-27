@@ -215,7 +215,7 @@ class _StudentsScreenState extends ConsumerState<StudentsScreen> {
                         padding: const EdgeInsets.only(top: 40.0),
                         child: Text(
                           'No students registered under the selected filter.',
-                          style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.5)),
+                          style: TextStyle(color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
                         ),
                       ),
                     )
@@ -249,7 +249,7 @@ class _StudentsScreenState extends ConsumerState<StudentsScreen> {
                               final b = _branches.firstWhere((br) => br.id == sem.branchId, orElse: () => Branch(id: '', courseId: '', name: 'Unknown'));
                               return TableRow(
                                 decoration: BoxDecoration(
-                                  border: Border(bottom: BorderSide(color: theme.dividerColor.withOpacity(0.4))),
+                                  border: Border(bottom: BorderSide(color: theme.dividerColor.withValues(alpha: 0.4))),
                                 ),
                                 children: [
                                   Padding(padding: const EdgeInsets.symmetric(vertical: 12), child: Text(s.rollNumber)),
@@ -288,7 +288,7 @@ class _StudentsScreenState extends ConsumerState<StudentsScreen> {
                           margin: const EdgeInsets.only(bottom: 12),
                           child: ListTile(
                             leading: CircleAvatar(
-                              backgroundColor: theme.colorScheme.primary.withOpacity(0.1),
+                              backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.1),
                               child: Text(
                                 s.rollNumber,
                                 style: TextStyle(

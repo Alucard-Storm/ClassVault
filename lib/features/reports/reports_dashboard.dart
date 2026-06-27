@@ -151,7 +151,7 @@ class _ReportsDashboardState extends ConsumerState<ReportsDashboard> with Single
         elevation: 0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
-          side: BorderSide(color: theme.dividerColor.withOpacity(0.08)),
+          side: BorderSide(color: theme.dividerColor.withValues(alpha: 0.15)),
         ),
         child: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -210,7 +210,7 @@ class _ReportsDashboardState extends ConsumerState<ReportsDashboard> with Single
               elevation: 0,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
-                side: BorderSide(color: theme.dividerColor.withOpacity(0.08)),
+                side: BorderSide(color: theme.dividerColor.withValues(alpha: 0.15)),
               ),
               child: Padding(
                 padding: const EdgeInsets.all(24.0),
@@ -240,7 +240,7 @@ class _ReportsDashboardState extends ConsumerState<ReportsDashboard> with Single
                           ? Center(
                               child: Text(
                                 'No students match the defaulter threshold!',
-                                style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.5)),
+                                style: TextStyle(color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
                               ),
                             )
                           : SingleChildScrollView(
@@ -270,7 +270,7 @@ class _ReportsDashboardState extends ConsumerState<ReportsDashboard> with Single
                                     final b = _branches.firstWhere((br) => br.id == sem.branchId, orElse: () => Branch(id: '', courseId: '', name: 'Unknown'));
                                     return TableRow(
                                       decoration: BoxDecoration(
-                                        border: Border(bottom: BorderSide(color: theme.dividerColor.withOpacity(0.4))),
+                                        border: Border(bottom: BorderSide(color: theme.dividerColor.withValues(alpha: 0.4))),
                                       ),
                                       children: [
                                         Padding(padding: const EdgeInsets.symmetric(vertical: 12), child: Text(s.rollNumber)),
@@ -351,7 +351,7 @@ class _ReportsDashboardState extends ConsumerState<ReportsDashboard> with Single
                 ? Center(
                     child: Text(
                       'No students match the defaulter threshold!',
-                      style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.5)),
+                      style: TextStyle(color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
                     ),
                   )
                 : ListView.builder(
@@ -367,7 +367,7 @@ class _ReportsDashboardState extends ConsumerState<ReportsDashboard> with Single
                         margin: const EdgeInsets.only(bottom: 12),
                         child: ListTile(
                           leading: CircleAvatar(
-                            backgroundColor: theme.colorScheme.error.withOpacity(0.1),
+                            backgroundColor: theme.colorScheme.error.withValues(alpha: 0.1),
                             child: Text(
                               '${pct.toStringAsFixed(0)}%',
                               style: TextStyle(color: theme.colorScheme.error, fontWeight: FontWeight.bold, fontSize: 11),
@@ -389,9 +389,9 @@ class _ReportsDashboardState extends ConsumerState<ReportsDashboard> with Single
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.06),
+        color: color.withValues(alpha: 0.06),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color.withOpacity(0.15)),
+        border: Border.all(color: color.withValues(alpha: 0.15)),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -440,7 +440,7 @@ class _ReportsDashboardState extends ConsumerState<ReportsDashboard> with Single
         elevation: 0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
-          side: BorderSide(color: theme.dividerColor.withOpacity(0.08)),
+          side: BorderSide(color: theme.dividerColor.withValues(alpha: 0.15)),
         ),
         child: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -500,7 +500,7 @@ class _ReportsDashboardState extends ConsumerState<ReportsDashboard> with Single
               elevation: 0,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
-                side: BorderSide(color: theme.dividerColor.withOpacity(0.08)),
+                side: BorderSide(color: theme.dividerColor.withValues(alpha: 0.15)),
               ),
               child: Padding(
                 padding: const EdgeInsets.all(24.0),
@@ -517,7 +517,7 @@ class _ReportsDashboardState extends ConsumerState<ReportsDashboard> with Single
                           ? Center(
                               child: Text(
                                 'No attendance logs recorded for this subject.',
-                                style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.5)),
+                                style: TextStyle(color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
                               ),
                             )
                           : SingleChildScrollView(
@@ -549,7 +549,7 @@ class _ReportsDashboardState extends ConsumerState<ReportsDashboard> with Single
 
                                     return TableRow(
                                       decoration: BoxDecoration(
-                                        border: Border(bottom: BorderSide(color: theme.dividerColor.withOpacity(0.4))),
+                                        border: Border(bottom: BorderSide(color: theme.dividerColor.withValues(alpha: 0.4))),
                                       ),
                                       children: [
                                         Padding(padding: const EdgeInsets.symmetric(vertical: 12), child: Text(student.rollNumber)),
@@ -629,7 +629,7 @@ class _ReportsDashboardState extends ConsumerState<ReportsDashboard> with Single
                 ? Center(
                     child: Text(
                       'No attendance logs recorded for this subject.',
-                      style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.5)),
+                      style: TextStyle(color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
                     ),
                   )
                 : ListView.builder(
@@ -701,7 +701,7 @@ class _ReportsDashboardState extends ConsumerState<ReportsDashboard> with Single
         elevation: 0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
-          side: BorderSide(color: theme.dividerColor.withOpacity(0.08)),
+          side: BorderSide(color: theme.dividerColor.withValues(alpha: 0.15)),
         ),
         child: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -760,7 +760,7 @@ class _ReportsDashboardState extends ConsumerState<ReportsDashboard> with Single
               elevation: 0,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
-                side: BorderSide(color: theme.dividerColor.withOpacity(0.08)),
+                side: BorderSide(color: theme.dividerColor.withValues(alpha: 0.15)),
               ),
               child: Padding(
                 padding: const EdgeInsets.all(24.0),
@@ -777,7 +777,7 @@ class _ReportsDashboardState extends ConsumerState<ReportsDashboard> with Single
                           ? Center(
                               child: Text(
                                 'No classes conducted for this student\'s section.',
-                                style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.5)),
+                                style: TextStyle(color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
                               ),
                             )
                           : ListView.builder(
@@ -804,9 +804,9 @@ class _ReportsDashboardState extends ConsumerState<ReportsDashboard> with Single
                                   margin: const EdgeInsets.only(bottom: 16),
                                   padding: const EdgeInsets.all(16),
                                   decoration: BoxDecoration(
-                                    color: theme.colorScheme.surfaceContainerHighest.withOpacity(0.2),
+                                    color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.2),
                                     borderRadius: BorderRadius.circular(8),
-                                    border: Border.all(color: theme.dividerColor.withOpacity(0.06)),
+                                    border: Border.all(color: theme.dividerColor.withValues(alpha: 0.06)),
                                   ),
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -837,13 +837,13 @@ class _ReportsDashboardState extends ConsumerState<ReportsDashboard> with Single
                                         value: pct / 100,
                                         minHeight: 6,
                                         borderRadius: BorderRadius.circular(3),
-                                        backgroundColor: theme.colorScheme.primary.withOpacity(0.1),
+                                        backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.1),
                                         valueColor: AlwaysStoppedAnimation<Color>(
                                           isSafe ? const Color(0xFF10B981) : const Color(0xFFEF4444),
                                         ),
                                       ),
                                       const SizedBox(height: 8),
-                                      Text('Attended $attended / $conducted classes', style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.5), fontSize: 11)),
+                                      Text('Attended $attended / $conducted classes', style: TextStyle(color: theme.colorScheme.onSurface.withValues(alpha: 0.5), fontSize: 11)),
                                     ],
                                   ),
                                 );
@@ -907,7 +907,7 @@ class _ReportsDashboardState extends ConsumerState<ReportsDashboard> with Single
                 ? Center(
                     child: Text(
                       'No classes conducted for this student\'s section.',
-                      style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.5)),
+                      style: TextStyle(color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
                     ),
                   )
                 : ListView.builder(
@@ -953,13 +953,13 @@ class _ReportsDashboardState extends ConsumerState<ReportsDashboard> with Single
                               LinearProgressIndicator(
                                 value: pct / 100,
                                 minHeight: 6,
-                                backgroundColor: theme.colorScheme.primary.withOpacity(0.1),
+                                backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.1),
                                 valueColor: AlwaysStoppedAnimation<Color>(
                                   pct >= _defaulterThreshold ? const Color(0xFF10B981) : const Color(0xFFEF4444),
                                 ),
                               ),
                               const SizedBox(height: 8),
-                              Text('Attended $attended / $conducted classes', style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.5), fontSize: 11)),
+                              Text('Attended $attended / $conducted classes', style: TextStyle(color: theme.colorScheme.onSurface.withValues(alpha: 0.5), fontSize: 11)),
                             ],
                           ),
                         ),
@@ -990,7 +990,7 @@ class _ReportsDashboardState extends ConsumerState<ReportsDashboard> with Single
       return Center(
         child: Text(
           'No faculty members registered.',
-          style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.5)),
+          style: TextStyle(color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
         ),
       );
     }
@@ -1002,7 +1002,7 @@ class _ReportsDashboardState extends ConsumerState<ReportsDashboard> with Single
           elevation: 0,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
-            side: BorderSide(color: theme.dividerColor.withOpacity(0.08)),
+            side: BorderSide(color: theme.dividerColor.withValues(alpha: 0.15)),
           ),
           child: Padding(
             padding: const EdgeInsets.all(24.0),
@@ -1039,7 +1039,7 @@ class _ReportsDashboardState extends ConsumerState<ReportsDashboard> with Single
                           final conductedCount = _sessions.where((s) => s.facultyId == f.id).length;
                           return TableRow(
                             decoration: BoxDecoration(
-                              border: Border(bottom: BorderSide(color: theme.dividerColor.withOpacity(0.4))),
+                              border: Border(bottom: BorderSide(color: theme.dividerColor.withValues(alpha: 0.4))),
                             ),
                             children: [
                               Padding(padding: const EdgeInsets.symmetric(vertical: 12), child: Text(f.employeeId)),
@@ -1091,7 +1091,7 @@ class _ReportsDashboardState extends ConsumerState<ReportsDashboard> with Single
                   margin: const EdgeInsets.only(bottom: 12),
                   child: ListTile(
                     leading: CircleAvatar(
-                      backgroundColor: theme.colorScheme.primary.withOpacity(0.1),
+                      backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.1),
                       child: Icon(Icons.school_rounded, color: theme.colorScheme.primary),
                     ),
                     title: Text(f.name, style: const TextStyle(fontWeight: FontWeight.bold)),
@@ -1099,7 +1099,7 @@ class _ReportsDashboardState extends ConsumerState<ReportsDashboard> with Single
                     trailing: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                       decoration: BoxDecoration(
-                        color: theme.colorScheme.primary.withOpacity(0.1),
+                        color: theme.colorScheme.primary.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(

@@ -374,7 +374,7 @@ class _AcademicSetupScreenState extends ConsumerState<AcademicSetupScreen> with 
                     Text(
                       'Configure your academic structure: courses, branches, semesters, and sections.',
                       style: theme.textTheme.bodyMedium?.copyWith(
-                        color: theme.colorScheme.onSurface.withOpacity(0.6),
+                        color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                       ),
                     ),
                   ],
@@ -484,7 +484,7 @@ class _AcademicSetupScreenState extends ConsumerState<AcademicSetupScreen> with 
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
-        side: BorderSide(color: theme.dividerColor.withOpacity(0.08)),
+        side: BorderSide(color: theme.dividerColor.withValues(alpha: 0.15)),
       ),
       child: Padding(
         padding: const EdgeInsets.all(20.0),
@@ -511,7 +511,7 @@ class _AcademicSetupScreenState extends ConsumerState<AcademicSetupScreen> with 
                   ? Center(
                       child: Text(
                         'No ${title}s added yet.',
-                        style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.5)),
+                        style: TextStyle(color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
                       ),
                     )
                   : ListView.builder(
@@ -522,7 +522,7 @@ class _AcademicSetupScreenState extends ConsumerState<AcademicSetupScreen> with 
                         return Container(
                           margin: const EdgeInsets.only(bottom: 8),
                           child: Material(
-                            color: theme.colorScheme.surfaceContainerHighest.withOpacity(0.3),
+                            color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8),
                             ),
@@ -586,7 +586,7 @@ class _AcademicSetupScreenState extends ConsumerState<AcademicSetupScreen> with 
                 ? Center(
                     child: Text(
                       'No ${title}s added yet.',
-                      style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.5)),
+                      style: TextStyle(color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
                     ),
                   )
                 : ListView.builder(
