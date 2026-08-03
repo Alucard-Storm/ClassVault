@@ -2,6 +2,37 @@ import 'package:flutter/material.dart';
 import 'app_color_scheme.dart';
 
 class AppTheme {
+  static ThemeData fromDynamic(ColorScheme? dynamicScheme, {required bool isDark}) {
+    if (dynamicScheme != null) {
+      final base = isDark ? dark : light;
+      final colorScheme = dynamicScheme.copyWith(
+        surface: isDark ? const Color(0xFF1E293B) : Colors.white,
+      );
+      return base.copyWith(
+        colorScheme: colorScheme,
+        scaffoldBackgroundColor: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+        appBarTheme: base.appBarTheme.copyWith(
+          backgroundColor: isDark ? const Color(0xFF1E293B) : Colors.white,
+          foregroundColor: colorScheme.onSurface,
+        ),
+        cardTheme: base.cardTheme.copyWith(
+          color: isDark ? const Color(0xFF1E293B) : Colors.white,
+        ),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: colorScheme.primary,
+            foregroundColor: colorScheme.onPrimary,
+            minimumSize: const Size.fromHeight(50),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            elevation: 0,
+            textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+          ),
+        ),
+      );
+    }
+    return isDark ? dark : light;
+  }
+
   static ThemeData get light {
     const primaryColor = Color(0xFF4C5DF4); // CampusVault brand blue-indigo
     const secondaryColor = Color(0xFF475569); // Slate Grey

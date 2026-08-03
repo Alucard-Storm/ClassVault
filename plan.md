@@ -243,6 +243,12 @@ Build interactive tables and dialogs for the administrator to manage setup:
 - [x] Extract the hardcoded `75.0` / `80.0` attendance thresholds into a shared `AppConstants` class.
 - [x] Fix near-invisible card borders (`dividerColor.withOpacity(0.08)`) in dark mode — raise to `0.15` or use a fixed token color.
 
+### 5.7 Animations & Visual Polish
+- [x] Integrate `flutter_animate` package in `pubspec.yaml`.
+- [x] Apply smooth entrance, fade, slide, and scale animations across `LoginScreen`, `AdminDashboard`, `StudentDashboard`, `FacultyDashboard`, and `ReportsDashboard`.
+- [x] Implement dynamic `ThemeMode.system` (auto switching light/dark based on system settings).
+- [x] Integrate `dynamic_color` package for Android Monet dynamic color extraction from device wallpaper (Material You).
+
 ---
 
 ## 🌐 Phase 6: Firebase Integration (To be done last)

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../auth/auth_provider.dart';
 import '../../data/models/models.dart';
@@ -129,7 +128,6 @@ class _EditAttendanceScreenState extends ConsumerState<EditAttendanceScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final isDesktop = MediaQuery.of(context).size.width > 960;
 
     if (_isLoading) {

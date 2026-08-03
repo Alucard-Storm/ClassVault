@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../auth/auth_provider.dart';
@@ -256,7 +257,7 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
                 style: const TextStyle(fontWeight: FontWeight.w600),
               ),
             ],
-          ),
+          ).animate().fadeIn(duration: 400.ms).slideY(begin: -0.1, end: 0),
           const SizedBox(height: 28),
           LayoutBuilder(
             builder: (context, constraints) {
@@ -275,6 +276,50 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
                           ? 2.2
                           : 3.0;
 
+              final metrics = [
+                _buildMetricCard(
+                  context,
+                  title: 'Total Students',
+                  value: NumberFormat('#,###').format(studentsCount),
+                  icon: Icons.group_outlined,
+                  color: theme.colorScheme.primary,
+                ),
+                _buildMetricCard(
+                  context,
+                  title: 'Total Faculty',
+                  value: '$facultyCount',
+                  icon: Icons.badge_outlined,
+                  color: theme.appColors.info,
+                ),
+                _buildMetricCard(
+                  context,
+                  title: 'Total Subjects',
+                  value: '$subjectsCount',
+                  icon: Icons.auto_stories_outlined,
+                  color: theme.colorScheme.primary,
+                ),
+                _buildMetricCard(
+                  context,
+                  title: 'Attendance Today',
+                  value: _sessions.isEmpty ? 'N/A' : '${attendanceToday.toStringAsFixed(0)}%',
+                  icon: Icons.calendar_today_outlined,
+                  color: theme.appColors.warning,
+                  trendText: attendanceTodayLabel,
+                  trendColor: attendanceTodayLabelColor,
+                ),
+                _buildMetricCard(
+                  context,
+                  title: 'Defaulters',
+                  value: '$defaultersCount',
+                  icon: Icons.gpp_bad_outlined,
+                  color: theme.appColors.danger,
+                  trendText: defaultersCount > 0 ? 'Action required' : 'All clear',
+                  trendColor: defaultersCount > 0
+                      ? theme.appColors.danger
+                      : theme.appColors.success,
+                ),
+              ];
+
               return GridView.count(
                 crossAxisCount: crossAxisCount,
                 shrinkWrap: true,
@@ -282,49 +327,13 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
                 crossAxisSpacing: 16,
                 mainAxisSpacing: 16,
                 childAspectRatio: childAspectRatio,
-                children: [
-                  _buildMetricCard(
-                    context,
-                    title: 'Total Students',
-                    value: NumberFormat('#,###').format(studentsCount),
-                    icon: Icons.group_outlined,
-                    color: theme.colorScheme.primary,
-                  ),
-                  _buildMetricCard(
-                    context,
-                    title: 'Total Faculty',
-                    value: '$facultyCount',
-                    icon: Icons.badge_outlined,
-                    color: theme.appColors.info,
-                  ),
-                  _buildMetricCard(
-                    context,
-                    title: 'Total Subjects',
-                    value: '$subjectsCount',
-                    icon: Icons.auto_stories_outlined,
-                    color: theme.colorScheme.primary,
-                  ),
-                  _buildMetricCard(
-                    context,
-                    title: 'Attendance Today',
-                    value: _sessions.isEmpty ? 'N/A' : '${attendanceToday.toStringAsFixed(0)}%',
-                    icon: Icons.calendar_today_outlined,
-                    color: theme.appColors.warning,
-                    trendText: attendanceTodayLabel,
-                    trendColor: attendanceTodayLabelColor,
-                  ),
-                  _buildMetricCard(
-                    context,
-                    title: 'Defaulters',
-                    value: '$defaultersCount',
-                    icon: Icons.gpp_bad_outlined,
-                    color: theme.appColors.danger,
-                    trendText: defaultersCount > 0 ? 'Action required' : 'All clear',
-                    trendColor: defaultersCount > 0
-                        ? theme.appColors.danger
-                        : theme.appColors.success,
-                  ),
-                ],
+                children: List.generate(
+                  metrics.length,
+                  (index) => metrics[index]
+                      .animate()
+                      .fadeIn(delay: (index * 60).ms, duration: 400.ms)
+                      .slideY(begin: 0.15, end: 0),
+                ),
               );
             },
           ),
@@ -334,18 +343,27 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
               final leftColumn = Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  _buildAttendanceChart(theme, _sessions, _allRecords),
+                  _buildAttendanceChart(theme, _sessions, _allRecords)
+                      .animate()
+                      .fadeIn(delay: 300.ms, duration: 500.ms)
+                      .scale(begin: const Offset(0.97, 0.97), end: const Offset(1, 1)),
                   const SizedBox(height: 24),
                   _buildRecentSessionsCard(
-                      theme, recentSessions, _subjects, _sections, _semesters, _branches),
+                          theme, recentSessions, _subjects, _sections, _semesters, _branches)
+                      .animate()
+                      .fadeIn(delay: 400.ms, duration: 500.ms),
                 ],
               );
               final rightColumn = Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  _buildDefaulterWatchlistCard(theme, dynamicDefaulters, context),
+                  _buildDefaulterWatchlistCard(theme, dynamicDefaulters, context)
+                      .animate()
+                      .fadeIn(delay: 350.ms, duration: 500.ms),
                   const SizedBox(height: 24),
-                  _buildFacultyLoadCard(theme, _facultyList, _sessions),
+                  _buildFacultyLoadCard(theme, _facultyList, _sessions)
+                      .animate()
+                      .fadeIn(delay: 450.ms, duration: 500.ms),
                 ],
               );
 

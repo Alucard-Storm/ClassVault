@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'auth_provider.dart';
 import '../../data/services/providers.dart';
 
@@ -51,7 +52,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     _submit();
   }
 
-  Widget _buildFeatureRow(IconData icon, String text) {
+  Widget _buildFeatureRow(IconData icon, String text, int index) {
     return Row(
       children: [
         Icon(icon, color: Colors.white, size: 22),
@@ -67,7 +68,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           ),
         ),
       ],
-    );
+    ).animate().fadeIn(delay: (300 + index * 100).ms, duration: 400.ms).slideX(begin: -0.1, end: 0);
   }
 
   Widget _buildDesktopLayout(Widget loginFormCard, ThemeData theme) {
@@ -147,7 +148,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                 ),
                               ),
                             ],
-                          ),
+                          ).animate().fadeIn(duration: 400.ms).slideY(begin: -0.2, end: 0),
                           const SizedBox(height: 48),
                           const Text(
                             'Academic attendance management\nsimplified for everyone.',
@@ -157,7 +158,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               color: Colors.white,
                               height: 1.3,
                             ),
-                          ),
+                          ).animate().fadeIn(delay: 150.ms, duration: 400.ms).slideY(begin: 0.1, end: 0),
                           const SizedBox(height: 24),
                           Text(
                             'CampusVault lets administrators, faculty, and students monitor, mark, and analyze class attendances in real-time. Powering educational workflows with absolute precision.',
@@ -166,15 +167,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               color: Colors.white.withValues(alpha: 0.85),
                               height: 1.5,
                             ),
-                          ),
+                          ).animate().fadeIn(delay: 250.ms, duration: 400.ms),
                           const SizedBox(height: 48),
-                          _buildFeatureRow(Icons.check_circle_outline_rounded, 'Real-time Attendance Marking'),
+                          _buildFeatureRow(Icons.check_circle_outline_rounded, 'Real-time Attendance Marking', 0),
                           const SizedBox(height: 16),
-                          _buildFeatureRow(Icons.upload_file_rounded, 'Bulk Student CSV Imports'),
+                          _buildFeatureRow(Icons.upload_file_rounded, 'Bulk Student CSV Imports', 1),
                           const SizedBox(height: 16),
-                          _buildFeatureRow(Icons.trending_up_rounded, 'Automated Semester Promotions'),
+                          _buildFeatureRow(Icons.trending_up_rounded, 'Automated Semester Promotions', 2),
                           const SizedBox(height: 16),
-                          _buildFeatureRow(Icons.analytics_outlined, 'Defaulters & Subject Analytics'),
+                          _buildFeatureRow(Icons.analytics_outlined, 'Defaulters & Subject Analytics', 3),
                         ],
                       ),
                     ),
@@ -232,7 +233,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 Icons.lock_person_rounded,
                 size: 64,
                 color: theme.colorScheme.primary,
-              ),
+              ).animate().fadeIn(duration: 400.ms).scale(begin: const Offset(0.8, 0.8), end: const Offset(1, 1)),
               const SizedBox(height: 16),
               Text(
                 'CampusVault',
@@ -241,7 +242,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   fontWeight: FontWeight.bold,
                   color: theme.colorScheme.onSurface,
                 ),
-              ),
+              ).animate().fadeIn(delay: 100.ms, duration: 400.ms),
               const SizedBox(height: 8),
               Text(
                 'Attendance Management System',
@@ -249,7 +250,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 style: theme.textTheme.bodyMedium?.copyWith(
                   color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                 ),
-              ),
+              ).animate().fadeIn(delay: 150.ms, duration: 400.ms),
               const SizedBox(height: 32),
 
               // Email input
@@ -269,7 +270,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   }
                   return null;
                 },
-              ),
+              ).animate().fadeIn(delay: 200.ms, duration: 400.ms).slideY(begin: 0.1, end: 0),
               const SizedBox(height: 16),
 
               // Password input
@@ -296,7 +297,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   }
                   return null;
                 },
-              ),
+              ).animate().fadeIn(delay: 250.ms, duration: 400.ms).slideY(begin: 0.1, end: 0),
               const SizedBox(height: 24),
 
               // Submit button
@@ -312,7 +313,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         ),
                       )
                     : const Text('Login'),
-              ),
+              ).animate().fadeIn(delay: 300.ms, duration: 400.ms).scaleXY(begin: 0.95, end: 1.0),
               const SizedBox(height: 32),
 
               // Presets Divider
@@ -331,7 +332,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   ),
                   Expanded(child: Divider(color: theme.dividerColor)),
                 ],
-              ),
+              ).animate().fadeIn(delay: 350.ms, duration: 400.ms),
               const SizedBox(height: 16),
 
               // Preset login buttons
@@ -357,7 +358,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     theme: theme,
                   ),
                 ],
-              ),
+              ).animate().fadeIn(delay: 400.ms, duration: 400.ms).slideY(begin: 0.15, end: 0),
             ],
           ),
         ),

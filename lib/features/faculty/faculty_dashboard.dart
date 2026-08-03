@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 import '../auth/auth_provider.dart';
 import '../../data/models/models.dart';
@@ -234,7 +235,7 @@ class _FacultyDashboardState extends ConsumerState<FacultyDashboard> {
                               theme, 'Lectures Conducted', '${_sessionsConducted.length}',
                               elevated: true)),
                     ],
-                  ),
+                  ).animate().fadeIn(duration: 400.ms).slideY(begin: 0.15, end: 0),
                   const SizedBox(height: 28),
                   Text('My Assigned Classes & Subjects',
                       style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
@@ -258,8 +259,13 @@ class _FacultyDashboardState extends ConsumerState<FacultyDashboard> {
                       ),
                     )
                   else
-                    ...List.generate(_assignments.length,
-                        (idx) => _buildAssignmentCard(theme, idx, elevated: true)),
+                    ...List.generate(
+                      _assignments.length,
+                      (idx) => _buildAssignmentCard(theme, idx, elevated: true)
+                          .animate()
+                          .fadeIn(delay: (200 + idx * 80).ms, duration: 400.ms)
+                          .slideY(begin: 0.1, end: 0),
+                    ),
                 ],
               );
 
@@ -301,7 +307,7 @@ class _FacultyDashboardState extends ConsumerState<FacultyDashboard> {
                     ],
                   ),
                 ),
-              );
+              ).animate().fadeIn(delay: 350.ms, duration: 500.ms);
 
               if (constraints.maxWidth < 1100) {
                 return Column(

@@ -45,9 +45,12 @@ class ResponsiveScaffold extends ConsumerWidget {
         : const AsyncData(0);
     final notifCount = defaulterCountAsync.valueOrNull ?? 0;
 
-    void toggleTheme() {
-      ref.read(themeModeProvider.notifier).state =
-          themeMode == ThemeMode.light ? ThemeMode.dark : ThemeMode.light;
+    void cycleThemeMode() {
+      final current = ref.read(themeModeProvider);
+      final next = current == ThemeMode.system
+          ? ThemeMode.light
+          : (current == ThemeMode.light ? ThemeMode.dark : ThemeMode.system);
+      ref.read(themeModeProvider.notifier).state = next;
     }
 
     final Widget mainLayout;
@@ -464,13 +467,19 @@ class ResponsiveScaffold extends ConsumerWidget {
                             child: Row(
                               children: [
                                 Icon(
-                                  isDark ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
+                                  themeMode == ThemeMode.system
+                                      ? Icons.brightness_auto_rounded
+                                      : (isDark ? Icons.light_mode_rounded : Icons.dark_mode_rounded),
                                   size: 18,
                                   color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
                                 ),
                                 const SizedBox(width: 12),
-                                Text(isDark ? 'Light Mode' : 'Dark Mode',
-                                    style: const TextStyle(fontSize: 13)),
+                                Text(
+                                  themeMode == ThemeMode.system
+                                      ? 'Theme: Auto (System)'
+                                      : (isDark ? 'Theme: Dark Mode' : 'Theme: Light Mode'),
+                                  style: const TextStyle(fontSize: 13),
+                                ),
                               ],
                             ),
                           ),
@@ -492,7 +501,7 @@ class ResponsiveScaffold extends ConsumerWidget {
                         ];
                       },
                       onSelected: (val) {
-                        if (val == 1) toggleTheme();
+                        if (val == 1) cycleThemeMode();
                         if (val == 2) ref.read(authStateProvider.notifier).logout();
                       },
                     ),
@@ -587,16 +596,21 @@ class ResponsiveScaffold extends ConsumerWidget {
                     const Divider(),
                     ListTile(
                       leading: Icon(
-                        isDark ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
+                        themeMode == ThemeMode.system
+                            ? Icons.brightness_auto_rounded
+                            : (isDark ? Icons.light_mode_rounded : Icons.dark_mode_rounded),
                         color: theme.colorScheme.primary,
                       ),
-                      title: Text(isDark ? 'Light Mode' : 'Dark Mode',
+                      title: Text(
+                          themeMode == ThemeMode.system
+                              ? 'Theme: Auto (System)'
+                              : (isDark ? 'Theme: Dark Mode' : 'Theme: Light Mode'),
                           style: TextStyle(
                               color: theme.colorScheme.primary,
                               fontWeight: FontWeight.bold)),
                       onTap: () {
                         Navigator.pop(context);
-                        toggleTheme();
+                        cycleThemeMode();
                       },
                     ),
                     ListTile(

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import '../../data/models/models.dart';
 import '../../data/services/providers.dart';
 import '../../core/widgets/responsive_scaffold.dart';
@@ -198,7 +199,7 @@ class _ReportsDashboardState extends ConsumerState<ReportsDashboard> with Single
             ],
           ),
         ),
-      );
+      ).animate().fadeIn(duration: 400.ms).slideY(begin: 0.1, end: 0);
     }
 
     if (isDesktop) {
@@ -488,7 +489,7 @@ class _ReportsDashboardState extends ConsumerState<ReportsDashboard> with Single
             ],
           ),
         ),
-      );
+      ).animate().fadeIn(duration: 400.ms).slideY(begin: 0.1, end: 0);
     }
 
     if (isDesktop) {

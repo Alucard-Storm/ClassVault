@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:intl/intl.dart';
 import '../auth/auth_provider.dart';
 import '../../data/models/models.dart';
@@ -298,7 +299,10 @@ class _StudentDashboardState extends ConsumerState<StudentDashboard> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _buildOverallCard(theme, totalAttended, totalConducted, overallPercentage,
-                      canMissMore, trendDelta),
+                          canMissMore, trendDelta)
+                      .animate()
+                      .fadeIn(duration: 450.ms)
+                      .scale(begin: const Offset(0.96, 0.96), end: const Offset(1, 1)),
                   const SizedBox(height: 28),
                   Text('Subject-wise Breakdown',
                       style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
@@ -322,13 +326,20 @@ class _StudentDashboardState extends ConsumerState<StudentDashboard> {
                       ),
                     )
                   else
-                    ...subjectStats.entries.map((entry) => _buildSubjectCard(
-                          theme,
-                          entry.key,
-                          entry.value,
-                          elevated: true,
-                          margin: const EdgeInsets.only(bottom: 12),
-                        )),
+                    ...subjectStats.entries.toList().asMap().entries.map((mapEntry) {
+                      final idx = mapEntry.key;
+                      final entry = mapEntry.value;
+                      return _buildSubjectCard(
+                        theme,
+                        entry.key,
+                        entry.value,
+                        elevated: true,
+                        margin: const EdgeInsets.only(bottom: 12),
+                      )
+                          .animate()
+                          .fadeIn(delay: (200 + idx * 80).ms, duration: 400.ms)
+                          .slideY(begin: 0.1, end: 0);
+                    }),
                 ],
               );
 
@@ -350,7 +361,7 @@ class _StudentDashboardState extends ConsumerState<StudentDashboard> {
                     ],
                   ),
                 ),
-              );
+              ).animate().fadeIn(delay: 350.ms, duration: 500.ms);
 
               if (constraints.maxWidth < 1100) {
                 return Column(
