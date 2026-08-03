@@ -534,9 +534,15 @@ class ResponsiveScaffold extends ConsumerWidget {
           actions: actions ??
               [
                 IconButton(
-                  icon: Icon(isDark ? Icons.light_mode_rounded : Icons.dark_mode_rounded),
-                  onPressed: toggleTheme,
-                  tooltip: isDark ? 'Light Mode' : 'Dark Mode',
+                  icon: Icon(
+                    themeMode == ThemeMode.system
+                        ? Icons.brightness_auto_rounded
+                        : (isDark ? Icons.light_mode_rounded : Icons.dark_mode_rounded),
+                  ),
+                  onPressed: cycleThemeMode,
+                  tooltip: themeMode == ThemeMode.system
+                      ? 'Theme: Auto (System)'
+                      : (isDark ? 'Theme: Dark Mode' : 'Theme: Light Mode'),
                 ),
                 IconButton(
                   icon: const Icon(Icons.logout_rounded),

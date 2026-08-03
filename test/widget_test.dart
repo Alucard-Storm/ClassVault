@@ -10,6 +10,7 @@ void main() {
         child: ClassVaultApp(),
       ),
     );
+    await tester.pumpAndSettle();
 
     // Verify that CampusVault title is present.
     expect(find.text('CampusVault'), findsOneWidget);
