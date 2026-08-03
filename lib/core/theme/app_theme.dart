@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'app_color_scheme.dart';
 
 class AppTheme {
   static ThemeData get light {
@@ -83,6 +84,9 @@ class AppTheme {
           textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
         ),
       ),
+      extensions: <ThemeExtension<dynamic>>[
+        AppColorScheme.light,
+      ],
     );
   }
 
@@ -167,6 +171,9 @@ class AppTheme {
           textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
         ),
       ),
+      extensions: <ThemeExtension<dynamic>>[
+        AppColorScheme.dark,
+      ],
     );
   }
 }

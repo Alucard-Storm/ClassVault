@@ -6,7 +6,9 @@ import '../auth/auth_provider.dart';
 import '../../data/models/models.dart';
 import '../../data/services/providers.dart';
 import '../../core/widgets/responsive_scaffold.dart';
+import '../../core/widgets/skeleton_loaders.dart';
 import '../../core/constants/app_constants.dart';
+import '../../core/theme/app_color_scheme.dart';
 
 class AdminDashboard extends ConsumerStatefulWidget {
   const AdminDashboard({super.key});
@@ -79,10 +81,13 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
     final isDesktop = MediaQuery.of(context).size.width > 960;
 
     if (_isLoading) {
-      return const ResponsiveScaffold(
+      return ResponsiveScaffold(
         title: 'Admin Portal',
         currentPath: '/admin',
-        body: Center(child: CircularProgressIndicator()),
+        body: RefreshIndicator(
+          onRefresh: _load,
+          child: const SkeletonDashboard(),
+        ),
       );
     }
 
@@ -138,7 +143,7 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
 
     double attendanceToday = 0.0;
     String attendanceTodayLabel = 'No sessions yet';
-    Color attendanceTodayColor = const Color(0xFF64748B);
+    Color attendanceTodayColor = theme.colorScheme.onSurfaceVariant;
 
     if (_sessions.isNotEmpty) {
       final mostRecent = _sessions.reduce((a, b) => a.date.isAfter(b.date) ? a : b);
@@ -157,12 +162,11 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
             attendanceTodayLabel = diff >= 0
                 ? '↑ ${diff.toStringAsFixed(1)}% vs prev'
                 : '↓ ${diff.abs().toStringAsFixed(1)}% vs prev';
-            attendanceTodayColor =
-                diff >= 0 ? const Color(0xFF10B981) : const Color(0xFFEF4444);
+            attendanceTodayColor = diff >= 0 ? theme.appColors.success : theme.appColors.danger;
           }
         } else {
           attendanceTodayLabel = 'First session';
-          attendanceTodayColor = const Color(0xFF10B981);
+          attendanceTodayColor = theme.appColors.success;
         }
       }
     }
@@ -284,28 +288,28 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
                     title: 'Total Students',
                     value: NumberFormat('#,###').format(studentsCount),
                     icon: Icons.group_outlined,
-                    color: const Color(0xFF4C5DF4),
+                    color: theme.colorScheme.primary,
                   ),
                   _buildMetricCard(
                     context,
                     title: 'Total Faculty',
                     value: '$facultyCount',
                     icon: Icons.badge_outlined,
-                    color: const Color(0xFF0D9488),
+                    color: theme.appColors.info,
                   ),
                   _buildMetricCard(
                     context,
                     title: 'Total Subjects',
                     value: '$subjectsCount',
                     icon: Icons.auto_stories_outlined,
-                    color: const Color(0xFF3B82F6),
+                    color: theme.colorScheme.primary,
                   ),
                   _buildMetricCard(
                     context,
                     title: 'Attendance Today',
                     value: _sessions.isEmpty ? 'N/A' : '${attendanceToday.toStringAsFixed(0)}%',
                     icon: Icons.calendar_today_outlined,
-                    color: const Color(0xFFF59E0B),
+                    color: theme.appColors.warning,
                     trendText: attendanceTodayLabel,
                     trendColor: attendanceTodayLabelColor,
                   ),
@@ -314,11 +318,11 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
                     title: 'Defaulters',
                     value: '$defaultersCount',
                     icon: Icons.gpp_bad_outlined,
-                    color: const Color(0xFFEF4444),
+                    color: theme.appColors.danger,
                     trendText: defaultersCount > 0 ? 'Action required' : 'All clear',
                     trendColor: defaultersCount > 0
-                        ? const Color(0xFFEF4444)
-                        : const Color(0xFF10B981),
+                        ? theme.appColors.danger
+                        : theme.appColors.success,
                   ),
                 ],
               );
@@ -409,27 +413,27 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
                   title: 'Students',
                   value: '$studentsCount',
                   icon: Icons.people_rounded,
-                  color: const Color(0xFF4C5DF4)),
+                  color: theme.colorScheme.primary),
               _buildMetricCard(context,
                   title: 'Faculty',
                   value: '$facultyCount',
                   icon: Icons.school_rounded,
-                  color: const Color(0xFF0D9488)),
+                  color: theme.appColors.info),
               _buildMetricCard(context,
                   title: 'Subjects',
                   value: '$subjectsCount',
                   icon: Icons.book_rounded,
-                  color: const Color(0xFF3B82F6)),
+                  color: theme.colorScheme.primary),
               _buildMetricCard(context,
                   title: 'Attendance Today',
                   value: _sessions.isEmpty ? 'N/A' : '${attendanceToday.toStringAsFixed(0)}%',
                   icon: Icons.calendar_today_outlined,
-                  color: const Color(0xFFF59E0B)),
+                  color: theme.appColors.warning),
               _buildMetricCard(context,
                   title: 'Defaulters',
                   value: '$defaultersCount',
                   icon: Icons.warning_amber_rounded,
-                  color: const Color(0xFFEF4444)),
+                  color: theme.appColors.danger),
             ],
           ),
           const SizedBox(height: 32),
@@ -742,13 +746,13 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
                             padding:
                                 const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                             decoration: BoxDecoration(
-                              color: Colors.green.withValues(alpha: 0.1),
+                              color: theme.appColors.successContainer,
                               borderRadius: BorderRadius.circular(4),
                             ),
-                            child: const Text(
+                            child: Text(
                               'Submitted',
                               style: TextStyle(
-                                  color: Colors.green,
+                                  color: theme.appColors.success,
                                   fontSize: 10,
                                   fontWeight: FontWeight.bold),
                             ),
@@ -777,8 +781,8 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.check_circle_outline_rounded,
-                  color: Color(0xFF10B981), size: 48),
+              Icon(Icons.check_circle_outline_rounded,
+                  color: theme.appColors.success, size: 48),
               const SizedBox(height: 12),
               Text('All Students On Track',
                   style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
@@ -916,15 +920,14 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
     Color? trendColor,
   }) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
     return Card(
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
         side: BorderSide(
-            color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
+            color: theme.dividerColor.withValues(alpha: 0.2)),
       ),
-      color: isDark ? const Color(0xFF1E293B) : Colors.white,
+      color: theme.cardColor,
       child: Padding(
         padding: const EdgeInsets.all(20.0),
         child: Row(
@@ -948,7 +951,7 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: theme.textTheme.bodySmall?.copyWith(
-                      color: isDark ? Colors.white70 : const Color(0xFF64748B),
+                      color: theme.colorScheme.onSurfaceVariant,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -957,7 +960,7 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
                     value,
                     style: theme.textTheme.headlineMedium?.copyWith(
                       fontWeight: FontWeight.bold,
-                      color: isDark ? Colors.white : const Color(0xFF0F172A),
+                      color: theme.colorScheme.onSurface,
                     ),
                   ),
                   if (trendText != null) ...[
@@ -968,7 +971,7 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
                         fontSize: 11,
                         fontWeight: FontWeight.bold,
                         color: trendColor ??
-                            (isDark ? Colors.white60 : const Color(0xFF64748B)),
+                            theme.colorScheme.onSurfaceVariant,
                       ),
                     ),
                   ],

@@ -6,6 +6,7 @@ import '../../data/models/models.dart';
 import '../../data/services/providers.dart';
 import '../../core/widgets/responsive_scaffold.dart';
 import '../../core/constants/app_constants.dart';
+import '../../core/theme/app_color_scheme.dart';
 
 class StudentDashboard extends ConsumerStatefulWidget {
   const StudentDashboard({super.key});
@@ -407,7 +408,7 @@ class _StudentDashboardState extends ConsumerState<StudentDashboard> {
                     strokeWidth: 10,
                     backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.1),
                     valueColor: AlwaysStoppedAnimation<Color>(
-                      isOnTrack ? const Color(0xFF10B981) : const Color(0xFFEF4444),
+                      isOnTrack ? theme.appColors.success : theme.appColors.danger,
                     ),
                   ),
                   Center(
@@ -436,17 +437,17 @@ class _StudentDashboardState extends ConsumerState<StudentDashboard> {
                   ),
                   const SizedBox(height: 6),
                   if (isOnTrack)
-                    Row(
+Row(
                       children: [
-                        const Icon(Icons.check_circle_outline_rounded,
-                            size: 14, color: Color(0xFF10B981)),
+                        Icon(Icons.check_circle_outline_rounded,
+                            size: 14, color: theme.appColors.success),
                         const SizedBox(width: 4),
                         Text(
                           canMissMore > 0
                               ? 'On Track — can miss $canMissMore more'
                               : 'On Track! Attendance is good.',
-                          style: const TextStyle(
-                              color: Color(0xFF10B981), fontSize: 11, fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                              color: theme.appColors.success, fontSize: 11, fontWeight: FontWeight.bold),
                         ),
                       ],
                     )
