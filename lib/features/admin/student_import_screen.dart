@@ -1,12 +1,20 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:csv/csv.dart';
 import 'package:go_router/go_router.dart';
 import '../../data/models/models.dart';
 import '../../data/services/providers.dart';
 import '../../core/widgets/responsive_scaffold.dart';
+import '../../core/widgets/console_header.dart';
+import '../../core/widgets/app_data_table.dart';
+import '../../core/widgets/app_snackbar.dart';
+import '../../core/widgets/skeleton_loaders.dart';
+import '../../core/widgets/responsive_two_pane.dart';
+import '../../core/theme/app_color_scheme.dart';
+import '../../core/theme/app_tokens.dart';
 
 class StudentImportScreen extends ConsumerStatefulWidget {
   const StudentImportScreen({super.key});
@@ -56,9 +64,7 @@ class _StudentImportScreenState extends ConsumerState<StudentImportScreen> {
 
   Future<void> _pickAndParseFile() async {
     if (_selectedSectionId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select a target Section first!'), backgroundColor: Color(0xFFEF4444)),
-      );
+      AppSnackBar.error(context, 'Please select a target Section first!');
       return;
     }
 
@@ -131,26 +137,60 @@ class _StudentImportScreenState extends ConsumerState<StudentImportScreen> {
     } catch (e) {
       setState(() => _isLoading = false);
       if (mounted) {
-        showDialog(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: const Text('Parsing Error'),
-            content: Text(e.toString().replaceAll('Exception: ', '')),
-            actions: [
-              TextButton(onPressed: () => Navigator.pop(context), child: const Text('OK')),
-            ],
-          ),
-        );
+        _showParsingErrorDialog(e.toString().replaceAll('Exception: ', ''));
       }
     }
+  }
+
+  void _showParsingErrorDialog(String message) {
+    final theme = Theme.of(context);
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.card)),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 400),
+          child: Padding(
+            padding: const EdgeInsets.all(AppSpacing.xl),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(AppSpacing.md),
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.error.withValues(alpha: 0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(Icons.error_outline_rounded, color: theme.colorScheme.error),
+                ),
+                const SizedBox(height: AppSpacing.lg),
+                Text('Parsing Error',
+                    style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+                const SizedBox(height: AppSpacing.sm),
+                Text(message,
+                    style: theme.textTheme.bodyMedium
+                        ?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
+                const SizedBox(height: AppSpacing.xl),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: FilledButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('OK'),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   Future<void> _commitImport() async {
     final validRows = _parsedRows.where((r) => r['status'] == 'Valid').toList();
     if (validRows.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No valid students to import!'), backgroundColor: Color(0xFFF59E0B)),
-      );
+      AppSnackBar.warning(context, 'No valid students to import!');
       return;
     }
 
@@ -168,9 +208,7 @@ class _StudentImportScreenState extends ConsumerState<StudentImportScreen> {
     await repo.addStudentsBulk(list);
 
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Successfully imported ${list.length} students!'), backgroundColor: const Color(0xFF10B981)),
-      );
+      AppSnackBar.success(context, 'Successfully imported ${list.length} students!');
       context.go('/admin/students');
     }
   }
@@ -178,397 +216,209 @@ class _StudentImportScreenState extends ConsumerState<StudentImportScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDesktop = MediaQuery.of(context).size.width > 960;
+    final isDesktop = MediaQuery.of(context).size.width > AppBreakpoints.desktop;
+    final validCount = _parsedRows.where((r) => r['status'] == 'Valid').length;
 
     if (_isLoading) {
       return ResponsiveScaffold(
         title: 'Bulk Student Import',
         currentPath: '/admin/students/import',
-        body: const Center(child: CircularProgressIndicator()),
+        body: const Padding(padding: EdgeInsets.all(24.0), child: SkeletonCard(height: 400)),
       );
     }
 
     return ResponsiveScaffold(
       title: 'Bulk Student Import',
       currentPath: '/admin/students/import',
-      body: isDesktop
-          ? _buildDesktopLayout()
-          : SingleChildScrollView(
+      body: Padding(
         padding: const EdgeInsets.all(24.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Step 1: Select Target Class Section', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 12),
-                    DropdownButtonFormField<String>(
-                      isExpanded: true,
-                      value: _selectedSectionId,
-                      items: _sections.map((sec) {
-                        final sem = _semesters.firstWhere((s) => s.id == sec.semesterId, orElse: () => Semester(id: '', branchId: '', semesterNumber: 0));
-                        final b = _branches.firstWhere((br) => br.id == sem.branchId, orElse: () => Branch(id: '', courseId: '', name: 'Unknown'));
-                        return DropdownMenuItem(
-                          value: sec.id,
-                          child: Text('${b.name} - Sem ${sem.semesterNumber} (${sec.name})'),
-                        );
-                      }).toList(),
-                      onChanged: (val) {
-                        setState(() {
-                          _selectedSectionId = val;
-                          _parsedRows.clear();
-                          _fileName = null;
-                        });
-                      },
-                      decoration: const InputDecoration(labelText: 'Class Section'),
-                    ),
-                  ],
-                ),
+            ConsoleHeader(
+              title: 'Bulk Student Import Console',
+              subtitle: 'Import class rosters via CSV files directly into specific sections.',
+            ).animate().fadeIn(duration: 250.ms).slideY(begin: -0.05, curve: Curves.easeOut),
+            const SizedBox(height: AppSpacing.xl),
+            Expanded(
+              child: ResponsiveTwoPane(
+                left: SingleChildScrollView(child: _buildFormPanel(theme, validCount)),
+                right: _buildPreviewPanel(theme, isDesktop),
               ),
             ),
-            const SizedBox(height: 16),
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Step 2: Upload CSV File', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 8),
-                    Text(
-                      'CSV columns required: "Roll Number" and "Student Name" (Header-sensitive).',
-                      style: TextStyle(color: theme.colorScheme.onSurface.withValues(alpha: 0.5), fontSize: 12),
-                    ),
-                    const SizedBox(height: 16),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Container(
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              color: theme.inputDecorationTheme.fillColor,
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Text(
-                              _fileName ?? 'No file selected',
-                              style: TextStyle(color: _fileName == null ? theme.hintColor : theme.colorScheme.onSurface),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        ElevatedButton.icon(
-                          style: ElevatedButton.styleFrom(
-                            minimumSize: const Size(120, 56),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                          ),
-                          onPressed: _pickAndParseFile,
-                          icon: const Icon(Icons.attach_file_rounded),
-                          label: const Text('Browse'),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            if (_parsedRows.isNotEmpty) ...[
-              const SizedBox(height: 24),
-              Text(
-                'Step 3: Preview and Save',
-                style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 12),
-              Card(
-                child: ListView.separated(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: _parsedRows.length,
-                  separatorBuilder: (context, index) => const Divider(height: 1),
-                  itemBuilder: (context, idx) {
-                    final row = _parsedRows[idx];
-                    final isValid = row['status'] == 'Valid';
-                    return ListTile(
-                      leading: CircleAvatar(
-                        backgroundColor: isValid ? const Color(0xFF10B981).withValues(alpha: 0.1) : const Color(0xFFEF4444).withValues(alpha: 0.1),
-                        child: Text(
-                          row['roll'] as String,
-                          style: TextStyle(
-                            color: isValid ? const Color(0xFF10B981) : const Color(0xFFEF4444),
-                            fontWeight: FontWeight.bold,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ),
-                      title: Text(row['name'] as String, style: const TextStyle(fontWeight: FontWeight.bold)),
-                      subtitle: Text('Status: ${row['status']}'),
-                      trailing: Icon(
-                        isValid ? Icons.check_circle_outline_rounded : Icons.error_outline_rounded,
-                        color: isValid ? const Color(0xFF10B981) : const Color(0xFFEF4444),
-                      ),
-                    );
-                  },
-                ),
-              ),
-              const SizedBox(height: 20),
-              ElevatedButton.icon(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF10B981),
-                  minimumSize: const Size.fromHeight(56),
-                ),
-                onPressed: _commitImport,
-                icon: const Icon(Icons.save_rounded),
-                label: Text('Commit Valid Imports (${_parsedRows.where((r) => r['status'] == 'Valid').length})'),
-              ),
-            ],
           ],
         ),
       ),
     );
   }
 
-  Widget _buildDesktopLayout() {
-    final theme = Theme.of(context);
-    final validCount = _parsedRows.where((r) => r['status'] == 'Valid').length;
-
-    return Padding(
-      padding: const EdgeInsets.all(24.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Text(
-            'Bulk Student Import Console',
-            style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+  Widget _buildFormPanel(ThemeData theme, int validCount) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Card(
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppRadius.card),
+            side: BorderSide(color: theme.dividerColor.withValues(alpha: 0.15)),
           ),
-          const SizedBox(height: 4),
-          Text(
-            'Import class rosters via CSV files directly into specific sections.',
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('1. Select Target Section', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                const SizedBox(height: AppSpacing.md),
+                DropdownButtonFormField<String>(
+                  isExpanded: true,
+                  value: _selectedSectionId,
+                  items: _sections.map((sec) {
+                    final sem = _semesters.firstWhere((s) => s.id == sec.semesterId, orElse: () => Semester(id: '', branchId: '', semesterNumber: 0));
+                    final b = _branches.firstWhere((br) => br.id == sem.branchId, orElse: () => Branch(id: '', courseId: '', name: 'Unknown'));
+                    return DropdownMenuItem(
+                      value: sec.id,
+                      child: Text('${b.name} - Sem ${sem.semesterNumber} (${sec.name})', overflow: TextOverflow.ellipsis),
+                    );
+                  }).toList(),
+                  onChanged: (val) {
+                    setState(() {
+                      _selectedSectionId = val;
+                      _parsedRows.clear();
+                      _fileName = null;
+                    });
+                  },
+                  decoration: const InputDecoration(labelText: 'Class Section'),
+                ),
+              ],
             ),
           ),
-          const SizedBox(height: 24),
-          Expanded(
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                final leftColumn = Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
+        ),
+        const SizedBox(height: AppSpacing.lg),
+        Card(
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppRadius.card),
+            side: BorderSide(color: theme.dividerColor.withValues(alpha: 0.15)),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('2. Upload CSV File', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                const SizedBox(height: AppSpacing.xs),
+                Text(
+                  'Requires headers: "Roll Number" & "Student Name".',
+                  style: TextStyle(color: theme.colorScheme.onSurfaceVariant, fontSize: 11),
+                ),
+                const SizedBox(height: AppSpacing.lg),
+                Row(
                   children: [
-                    Card(
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        side: BorderSide(color: theme.dividerColor.withValues(alpha: 0.15)),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(20.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text('1. Select Target Section', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
-                            const SizedBox(height: 12),
-                            DropdownButtonFormField<String>(
-                              isExpanded: true,
-                              value: _selectedSectionId,
-                              items: _sections.map((sec) {
-                                final sem = _semesters.firstWhere((s) => s.id == sec.semesterId, orElse: () => Semester(id: '', branchId: '', semesterNumber: 0));
-                                final b = _branches.firstWhere((br) => br.id == sem.branchId, orElse: () => Branch(id: '', courseId: '', name: 'Unknown'));
-                                return DropdownMenuItem(
-                                  value: sec.id,
-                                  child: Text('${b.name} - Sem ${sem.semesterNumber} (${sec.name})', overflow: TextOverflow.ellipsis),
-                                );
-                              }).toList(),
-                              onChanged: (val) {
-                                setState(() {
-                                  _selectedSectionId = val;
-                                  _parsedRows.clear();
-                                  _fileName = null;
-                                });
-                              },
-                              decoration: const InputDecoration(labelText: 'Class Section'),
-                            ),
-                          ],
+                    Expanded(
+                      child: Container(
+                        padding: const EdgeInsets.all(AppSpacing.md),
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+                          borderRadius: BorderRadius.circular(AppRadius.control),
+                        ),
+                        child: Text(
+                          _fileName ?? 'No file selected',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(fontSize: 13, color: _fileName == null ? theme.hintColor : theme.colorScheme.onSurface),
                         ),
                       ),
                     ),
-                    const SizedBox(height: 16),
-                    Card(
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        side: BorderSide(color: theme.dividerColor.withValues(alpha: 0.15)),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(20.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text('2. Upload CSV File', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
-                            const SizedBox(height: 6),
-                            Text(
-                              'Requires headers: "Roll Number" & "Student Name".',
-                              style: TextStyle(color: theme.colorScheme.onSurface.withValues(alpha: 0.5), fontSize: 11),
-                            ),
-                            const SizedBox(height: 16),
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: Container(
-                                    padding: const EdgeInsets.all(12),
-                                    decoration: BoxDecoration(
-                                      color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    child: Text(
-                                      _fileName ?? 'No file selected',
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: TextStyle(fontSize: 13, color: _fileName == null ? theme.hintColor : theme.colorScheme.onSurface),
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(width: 8),
-                                ElevatedButton(
-                                  style: ElevatedButton.styleFrom(
-                                    minimumSize: const Size(90, 44),
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                  ),
-                                  onPressed: _pickAndParseFile,
-                                  child: const Text('Browse'),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
+                    const SizedBox(width: AppSpacing.sm),
+                    ElevatedButton(
+                      onPressed: _pickAndParseFile,
+                      child: const Text('Browse'),
                     ),
-                    const SizedBox(height: 16),
-                    if (_parsedRows.isNotEmpty)
-                      ElevatedButton.icon(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF10B981),
-                          foregroundColor: Colors.white,
-                          minimumSize: const Size.fromHeight(56),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                        ),
-                        onPressed: _commitImport,
-                        icon: const Icon(Icons.save_rounded),
-                        label: Text('Commit Valid Imports ($validCount)'),
-                      ),
                   ],
-                );
-
-                final rightColumn = Card(
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    side: BorderSide(color: theme.dividerColor.withValues(alpha: 0.15)),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(20.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Text(
-                          'Parsed Student Roster Preview (${_parsedRows.length} rows)',
-                          style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-                        ),
-                        const SizedBox(height: 16),
-                        Expanded(
-                          child: _parsedRows.isEmpty
-                              ? Center(
-                                  child: Text(
-                                    'Upload a CSV file on the left to see the parsed roster preview.',
-                                    style: TextStyle(color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
-                                  ),
-                                )
-                              : ListView.builder(
-                                  itemCount: _parsedRows.length,
-                                  itemBuilder: (context, idx) {
-                                    final row = _parsedRows[idx];
-                                    final isValid = row['status'] == 'Valid';
-                                    return Container(
-                                      margin: const EdgeInsets.only(bottom: 8),
-                                      child: Material(
-                                        color: isValid ? const Color(0xFF10B981).withValues(alpha: 0.05) : const Color(0xFFEF4444).withValues(alpha: 0.05),
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(8),
-                                          side: BorderSide(color: isValid ? const Color(0xFF10B981).withValues(alpha: 0.1) : const Color(0xFFEF4444).withValues(alpha: 0.1)),
-                                        ),
-                                        clipBehavior: Clip.antiAlias,
-                                        child: ListTile(
-                                          leading: CircleAvatar(
-                                            backgroundColor: isValid ? const Color(0xFF10B981).withValues(alpha: 0.1) : const Color(0xFFEF4444).withValues(alpha: 0.1),
-                                            child: Text(
-                                              row['roll'] as String,
-                                              style: TextStyle(
-                                                color: isValid ? const Color(0xFF10B981) : const Color(0xFFEF4444),
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: 11,
-                                              ),
-                                            ),
-                                          ),
-                                          title: Text(
-                                            row['name'] as String,
-                                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-                                          ),
-                                          subtitle: Text(
-                                            'Status: ${row['status']}',
-                                            style: TextStyle(fontSize: 12, color: isValid ? const Color(0xFF047857) : const Color(0xFFB91C1C)),
-                                          ),
-                                          trailing: Icon(
-                                            isValid ? Icons.check_circle_outline_rounded : Icons.error_outline_rounded,
-                                            color: isValid ? const Color(0xFF10B981) : const Color(0xFFEF4444),
-                                          ),
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                ),
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-
-                if (constraints.maxWidth < 1100) {
-                  return SingleChildScrollView(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        leftColumn,
-                        const SizedBox(height: 24),
-                        SizedBox(
-                          height: 500,
-                          child: rightColumn,
-                        ),
-                      ],
-                    ),
-                  );
-                } else {
-                  return Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      SizedBox(
-                        width: 380,
-                        child: leftColumn,
-                      ),
-                      const SizedBox(width: 24),
-                      Expanded(
-                        child: rightColumn,
-                      ),
-                    ],
-                  );
-                }
-              },
+                ),
+              ],
             ),
           ),
-        ],
+        ),
+        const SizedBox(height: AppSpacing.lg),
+        if (_parsedRows.isNotEmpty)
+          ElevatedButton.icon(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: theme.appColors.success,
+              foregroundColor: Colors.white,
+              minimumSize: const Size.fromHeight(56),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.card)),
+            ),
+            onPressed: _commitImport,
+            icon: const Icon(Icons.save_rounded),
+            label: Text('Commit Valid Imports ($validCount)'),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildPreviewPanel(ThemeData theme, bool isDesktop) {
+    return Card(
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppRadius.card),
+        side: BorderSide(color: theme.dividerColor.withValues(alpha: 0.15)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              'Parsed Student Roster Preview (${_parsedRows.length} rows)',
+              style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: AppSpacing.lg),
+            Expanded(
+              child: SingleChildScrollView(
+                child: AppDataTable(
+                  isDesktop: isDesktop,
+                  columns: const ['Roll No.', 'Name', 'Status'],
+                  columnFlex: const [1, 2, 2],
+                  emptyIcon: Icons.upload_file_outlined,
+                  emptyTitle: 'No file parsed yet',
+                  emptyMessage: 'Upload a CSV file to see the parsed roster preview.',
+                  rows: _parsedRows.map((row) {
+                    final isValid = row['status'] == 'Valid';
+                    final statusColor = isValid ? theme.appColors.success : theme.appColors.danger;
+                    final statusWidget = Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          isValid ? Icons.check_circle_outline_rounded : Icons.error_outline_rounded,
+                          color: statusColor,
+                          size: 16,
+                        ),
+                        const SizedBox(width: AppSpacing.xs),
+                        Flexible(
+                          child: Text(row['status'] as String,
+                              style: TextStyle(color: statusColor, fontSize: 12, fontWeight: FontWeight.w600)),
+                        ),
+                      ],
+                    );
+                    return AppDataRow(
+                      mobileTitle: row['name'] as String,
+                      mobileSubtitle: 'Roll: ${row['roll']}',
+                      mobileLeadingText: row['roll'] as String,
+                      mobileTrailing: statusWidget,
+                      cells: [
+                        Text(row['roll'] as String),
+                        Text(row['name'] as String, style: const TextStyle(fontWeight: FontWeight.w600)),
+                        statusWidget,
+                      ],
+                    );
+                  }).toList(),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 }
-

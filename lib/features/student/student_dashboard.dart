@@ -1,13 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:fl_chart/fl_chart.dart';
 import 'package:intl/intl.dart';
 import '../auth/auth_provider.dart';
 import '../../data/models/models.dart';
 import '../../data/services/providers.dart';
 import '../../core/widgets/responsive_scaffold.dart';
+import '../../core/widgets/skeleton_loaders.dart';
+import '../../core/widgets/empty_state.dart';
+import '../../core/widgets/responsive_two_pane.dart';
 import '../../core/constants/app_constants.dart';
 import '../../core/theme/app_color_scheme.dart';
+import '../../core/theme/app_tokens.dart';
 
 class StudentDashboard extends ConsumerStatefulWidget {
   const StudentDashboard({super.key});
@@ -85,7 +90,7 @@ class _StudentDashboardState extends ConsumerState<StudentDashboard> {
       return const ResponsiveScaffold(
         title: 'Student Portal',
         currentPath: '/student',
-        body: Center(child: CircularProgressIndicator()),
+        body: SkeletonDashboard(),
       );
     }
 
@@ -98,9 +103,9 @@ class _StudentDashboardState extends ConsumerState<StudentDashboard> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(Icons.error_outline_rounded, size: 64, color: theme.colorScheme.error),
-              const SizedBox(height: 16),
+              const SizedBox(height: AppSpacing.lg),
               Text('Failed to load your data', style: theme.textTheme.titleMedium),
-              const SizedBox(height: 8),
+              const SizedBox(height: AppSpacing.sm),
               ElevatedButton(onPressed: _load, child: const Text('Retry')),
             ],
           ),
@@ -182,21 +187,38 @@ class _StudentDashboardState extends ConsumerState<StudentDashboard> {
       }
     }
 
-    final isDesktop = MediaQuery.of(context).size.width > 960;
+    final isDesktop = MediaQuery.of(context).size.width > AppBreakpoints.desktop;
 
     return ResponsiveScaffold(
       title: 'Student Portal',
       currentPath: '/student',
-      body: isDesktop
-          ? _buildDesktopLayout(context, student, b, sem, sec, totalAttended, totalConducted,
-              overallPercentage, canMissMore, trendDelta, subjectStats, sortedSessions)
-          : RefreshIndicator(
-              onRefresh: _load,
-              child: _buildMobileLayout(context, student, b, sem, sec, totalAttended,
-                  totalConducted, overallPercentage, canMissMore, trendDelta, subjectStats,
-                  sortedSessions),
-            ),
+      body: RefreshIndicator(
+        onRefresh: _load,
+        child: isDesktop
+            ? _buildDesktopLayout(context, student, b, sem, sec, totalAttended, totalConducted,
+                overallPercentage, canMissMore, trendDelta, subjectStats, sortedSessions)
+            : _buildMobileLayout(context, student, b, sem, sec, totalAttended, totalConducted,
+                overallPercentage, canMissMore, trendDelta, subjectStats, sortedSessions),
+      ),
     );
+  }
+
+  Widget _buildHeader(ThemeData theme, Student student, Branch b, Semester sem, Section sec) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Welcome, ${student.name}',
+          style: theme.textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
+        ),
+        Text(
+          'Class: ${b.name} - Sem ${sem.semesterNumber} (${sec.name}) | Roll No: ${student.rollNumber}',
+          style: theme.textTheme.bodyMedium?.copyWith(
+            color: theme.colorScheme.onSurfaceVariant,
+          ),
+        ),
+      ],
+    ).animate().fadeIn(duration: AppMotion.entrance);
   }
 
   Widget _buildMobileLayout(
@@ -216,46 +238,38 @@ class _StudentDashboardState extends ConsumerState<StudentDashboard> {
     final theme = Theme.of(context);
     return SingleChildScrollView(
       physics: const AlwaysScrollableScrollPhysics(),
-      padding: const EdgeInsets.all(24.0),
+      padding: const EdgeInsets.all(AppSpacing.xl),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Welcome, ${student.name}',
-            style: theme.textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
-          ),
-          Text(
-            'Class: ${b.name} - Sem ${sem.semesterNumber} (${sec.name}) | Roll No: ${student.rollNumber}',
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
-            ),
-          ),
-          const SizedBox(height: 24),
+          _buildHeader(theme, student, b, sem, sec),
+          const SizedBox(height: AppSpacing.xl),
           _buildOverallCard(theme, totalAttended, totalConducted, overallPercentage, canMissMore,
-              trendDelta),
-          const SizedBox(height: 28),
+                  trendDelta)
+              .animate()
+              .fadeIn(delay: AppMotion.stagger, duration: AppMotion.entrance)
+              .slideY(begin: 0.06, curve: Curves.easeOut),
+          const SizedBox(height: AppSpacing.xxl - AppSpacing.xs),
           Text('Subject-wise Breakdown',
               style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
-          const SizedBox(height: 12),
+          const SizedBox(height: AppSpacing.md),
           if (subjectStats.isEmpty)
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(24.0),
-                child: Center(
-                  child: Text(
-                    'No lectures conducted for your class yet.',
-                    style: TextStyle(color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
-                  ),
-                ),
-              ),
+            const EmptyState(
+              icon: Icons.menu_book_outlined,
+              title: 'No lectures yet',
+              message: 'No lectures conducted for your class yet.',
             )
           else
-            ...subjectStats.entries.map((entry) =>
-                _buildSubjectCard(theme, entry.key, entry.value, margin: const EdgeInsets.only(bottom: 12))),
-          const SizedBox(height: 28),
+            ...subjectStats.entries.toList().asMap().entries.map((e) => _buildSubjectCard(
+                    theme, e.value.key, e.value.value, margin: const EdgeInsets.only(bottom: AppSpacing.md))
+                .animate()
+                .fadeIn(delay: ((e.key + 2) * AppMotion.stagger.inMilliseconds).ms,
+                    duration: AppMotion.entrance)
+                .slideY(begin: 0.06, curve: Curves.easeOut)),
+          const SizedBox(height: AppSpacing.xxl - AppSpacing.xs),
           Text('Recent Activity History',
               style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
-          const SizedBox(height: 12),
+          const SizedBox(height: AppSpacing.md),
           _buildRecentActivity(theme, sortedSessions, limit: 5),
         ],
       ),
@@ -278,110 +292,74 @@ class _StudentDashboardState extends ConsumerState<StudentDashboard> {
   ) {
     final theme = Theme.of(context);
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(24.0),
+      padding: const EdgeInsets.all(AppSpacing.xl),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Welcome, ${student.name}',
-            style: theme.textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
-          ),
-          Text(
-            'Class: ${b.name} - Sem ${sem.semesterNumber} (${sec.name}) | Roll No: ${student.rollNumber}',
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
-            ),
-          ),
-          const SizedBox(height: 24),
-          LayoutBuilder(
-            builder: (context, constraints) {
-              final leftColumn = Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildOverallCard(theme, totalAttended, totalConducted, overallPercentage,
-                          canMissMore, trendDelta)
-                      .animate()
-                      .fadeIn(duration: 450.ms)
-                      .scale(begin: const Offset(0.96, 0.96), end: const Offset(1, 1)),
-                  const SizedBox(height: 28),
-                  Text('Subject-wise Breakdown',
-                      style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 12),
-                  if (subjectStats.isEmpty)
-                    Card(
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        side: BorderSide(color: theme.dividerColor.withValues(alpha: 0.15)),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(24.0),
-                        child: Center(
-                          child: Text(
-                            'No lectures conducted for your class yet.',
-                            style:
-                                TextStyle(color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
-                          ),
-                        ),
-                      ),
+          _buildHeader(theme, student, b, sem, sec),
+          const SizedBox(height: AppSpacing.xl),
+          ResponsiveTwoPane.flex(
+            left: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildOverallCard(theme, totalAttended, totalConducted, overallPercentage,
+                        canMissMore, trendDelta)
+                    .animate()
+                    .fadeIn(duration: 450.ms)
+                    .scale(begin: const Offset(0.96, 0.96), end: const Offset(1, 1)),
+                const SizedBox(height: AppSpacing.xxl - AppSpacing.xs),
+                Text('Subject-wise Breakdown',
+                    style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                const SizedBox(height: AppSpacing.md),
+                if (subjectStats.isEmpty)
+                  Card(
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(AppRadius.card),
+                      side: BorderSide(color: theme.dividerColor.withValues(alpha: 0.15)),
+                    ),
+                    child: const EmptyState(
+                      icon: Icons.menu_book_outlined,
+                      title: 'No lectures yet',
+                      message: 'No lectures conducted for your class yet.',
+                    ),
+                  )
+                else
+                  ...subjectStats.entries.toList().asMap().entries.map((mapEntry) {
+                    final idx = mapEntry.key;
+                    final entry = mapEntry.value;
+                    return _buildSubjectCard(
+                      theme,
+                      entry.key,
+                      entry.value,
+                      elevated: true,
+                      margin: const EdgeInsets.only(bottom: AppSpacing.md),
                     )
-                  else
-                    ...subjectStats.entries.toList().asMap().entries.map((mapEntry) {
-                      final idx = mapEntry.key;
-                      final entry = mapEntry.value;
-                      return _buildSubjectCard(
-                        theme,
-                        entry.key,
-                        entry.value,
-                        elevated: true,
-                        margin: const EdgeInsets.only(bottom: 12),
-                      )
-                          .animate()
-                          .fadeIn(delay: (200 + idx * 80).ms, duration: 400.ms)
-                          .slideY(begin: 0.1, end: 0);
-                    }),
-                ],
-              );
-
-              final rightColumn = Card(
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  side: BorderSide(color: theme.dividerColor.withValues(alpha: 0.15)),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(20.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Text('Recent Activity History',
-                          style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
-                      const SizedBox(height: 16),
-                      _buildRecentActivity(theme, sortedSessions, limit: 8, compact: true),
-                    ],
-                  ),
-                ),
-              ).animate().fadeIn(delay: 350.ms, duration: 500.ms);
-
-              if (constraints.maxWidth < 1100) {
-                return Column(
+                        .animate()
+                        .fadeIn(delay: (200 + idx * 80).ms, duration: 400.ms)
+                        .slideY(begin: 0.1, end: 0);
+                  }),
+              ],
+            ),
+            right: Card(
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(AppRadius.card),
+                side: BorderSide(color: theme.dividerColor.withValues(alpha: 0.15)),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(AppSpacing.xl - AppSpacing.xs),
+                child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    leftColumn,
-                    const SizedBox(height: 24),
-                    rightColumn,
+                    Text('Recent Activity History',
+                        style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                    const SizedBox(height: AppSpacing.lg),
+                    _buildRecentActivity(theme, sortedSessions, limit: 8, compact: true),
                   ],
-                );
-              }
-              return Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(flex: 3, child: leftColumn),
-                  const SizedBox(width: 24),
-                  Expanded(flex: 2, child: rightColumn),
-                ],
-              );
-            },
+                ),
+              ),
+            ).animate().fadeIn(delay: 350.ms, duration: 500.ms),
           ),
         ],
       ),
@@ -397,58 +375,37 @@ class _StudentDashboardState extends ConsumerState<StudentDashboard> {
     double? trendDelta,
   ) {
     final isOnTrack = overallPercentage >= AppConstants.minAttendanceThreshold;
+    final ringColor = isOnTrack ? theme.appColors.success : theme.appColors.danger;
 
     return Card(
       elevation: 0,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppRadius.card),
         side: BorderSide(color: theme.dividerColor.withValues(alpha: 0.15)),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(24.0),
+        padding: const EdgeInsets.all(AppSpacing.xl),
         child: Row(
           children: [
-            SizedBox(
-              height: 90,
-              width: 90,
-              child: Stack(
-                fit: StackFit.expand,
-                children: [
-                  CircularProgressIndicator(
-                    value: overallPercentage / 100,
-                    strokeWidth: 10,
-                    backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.1),
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                      isOnTrack ? theme.appColors.success : theme.appColors.danger,
-                    ),
-                  ),
-                  Center(
-                    child: Text(
-                      '${overallPercentage.toStringAsFixed(1)}%',
-                      style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(width: 24),
+            _buildAttendanceRing(theme, overallPercentage, ringColor),
+            const SizedBox(width: AppSpacing.xl),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text('Overall Attendance',
                       style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: AppSpacing.xs),
                   Text(
                     'Attended $totalAttended out of $totalConducted sessions.',
                     style: TextStyle(
-                      color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                      color: theme.colorScheme.onSurfaceVariant,
                       fontSize: 13,
                     ),
                   ),
                   const SizedBox(height: 6),
                   if (isOnTrack)
-Row(
+                    Row(
                       children: [
                         Icon(Icons.check_circle_outline_rounded,
                             size: 14, color: theme.appColors.success),
@@ -465,13 +422,13 @@ Row(
                   else
                     Row(
                       children: [
-                        Icon(Icons.warning_amber_rounded, size: 14, color: theme.colorScheme.error),
+                        Icon(Icons.warning_amber_rounded, size: 14, color: theme.appColors.danger),
                         const SizedBox(width: 4),
                         Expanded(
                           child: Text(
                             'Low Attendance! Min ${AppConstants.minAttendanceThreshold.toInt()}% required.',
                             style: TextStyle(
-                                color: theme.colorScheme.error,
+                                color: theme.appColors.danger,
                                 fontSize: 11,
                                 fontWeight: FontWeight.bold),
                           ),
@@ -485,7 +442,7 @@ Row(
                         Icon(
                           trendDelta >= 0 ? Icons.trending_up_rounded : Icons.trending_down_rounded,
                           size: 14,
-                          color: trendDelta >= 0 ? const Color(0xFF10B981) : const Color(0xFFEF4444),
+                          color: trendDelta >= 0 ? theme.appColors.success : theme.appColors.danger,
                         ),
                         const SizedBox(width: 4),
                         Text(
@@ -493,9 +450,7 @@ Row(
                           style: TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.bold,
-                            color: trendDelta >= 0
-                                ? const Color(0xFF10B981)
-                                : const Color(0xFFEF4444),
+                            color: trendDelta >= 0 ? theme.appColors.success : theme.appColors.danger,
                           ),
                         ),
                       ],
@@ -506,6 +461,48 @@ Row(
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  /// A real donut chart (fl_chart) for the overall percentage, replacing a
+  /// plain `CircularProgressIndicator` repurposed as a faux ring.
+  Widget _buildAttendanceRing(ThemeData theme, double percentage, Color color) {
+    final clamped = percentage.clamp(0, 100).toDouble();
+    return SizedBox(
+      height: 90,
+      width: 90,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          PieChart(
+            PieChartData(
+              startDegreeOffset: -90,
+              sectionsSpace: 0,
+              centerSpaceRadius: 32,
+              sections: [
+                PieChartSectionData(
+                  value: clamped,
+                  color: color,
+                  showTitle: false,
+                  radius: 13,
+                ),
+                PieChartSectionData(
+                  value: 100 - clamped,
+                  color: theme.colorScheme.primary.withValues(alpha: 0.1),
+                  showTitle: false,
+                  radius: 13,
+                ),
+              ],
+            ),
+          ),
+          Center(
+            child: Text(
+              '${percentage.toStringAsFixed(1)}%',
+              style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -524,18 +521,19 @@ Row(
     final double pct =
         stats['conducted']! > 0 ? (stats['attended']! / stats['conducted']!) * 100 : 100.0;
     final isSafe = pct >= AppConstants.minAttendanceThreshold;
+    final statusColor = isSafe ? theme.appColors.success : theme.appColors.danger;
 
     return Card(
       elevation: 0,
       shape: elevated
           ? RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(AppRadius.card),
               side: BorderSide(color: theme.dividerColor.withValues(alpha: 0.15)),
             )
           : null,
       margin: margin,
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(AppSpacing.lg),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -556,39 +554,32 @@ Row(
                         '[${sub.code}]',
                         style: TextStyle(
                           fontSize: 11,
-                          color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                          color: theme.colorScheme.onSurfaceVariant,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(width: 16),
+                const SizedBox(width: AppSpacing.lg),
                 Text(
                   '${pct.toStringAsFixed(0)}%',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                    color: isSafe ? const Color(0xFF10B981) : const Color(0xFFEF4444),
-                  ),
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: statusColor),
                 ),
               ],
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: AppSpacing.sm),
             LinearProgressIndicator(
               value: pct / 100,
               minHeight: 8,
               borderRadius: BorderRadius.circular(4),
               backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.1),
-              valueColor: AlwaysStoppedAnimation<Color>(
-                isSafe ? const Color(0xFF10B981) : const Color(0xFFEF4444),
-              ),
+              valueColor: AlwaysStoppedAnimation<Color>(statusColor),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppSpacing.xs),
             Text(
               'Attended ${stats['attended']} / ${stats['conducted']} classes',
-              style: TextStyle(
-                  color: theme.colorScheme.onSurface.withValues(alpha: 0.5), fontSize: 11),
+              style: TextStyle(color: theme.colorScheme.onSurfaceVariant, fontSize: 11),
             ),
           ],
         ),
@@ -603,11 +594,10 @@ Row(
     bool compact = false,
   }) {
     if (sessions.isEmpty) {
-      return Center(
-        child: Text(
-          'No recent attendance markings.',
-          style: TextStyle(color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
-        ),
+      return const EmptyState(
+        icon: Icons.event_note_outlined,
+        title: 'No activity yet',
+        message: 'No recent attendance markings.',
       );
     }
 
@@ -629,6 +619,7 @@ Row(
               AttendanceRecord(id: '', sessionId: '', studentId: '', status: 'absent'),
         );
         final isPresent = rec.status == 'present';
+        final statusColor = isPresent ? theme.appColors.success : theme.appColors.danger;
         final dateStr = DateFormat('MMM dd, yyyy').format(sess.date);
 
         return ListTile(
@@ -639,20 +630,14 @@ Row(
           subtitle: Text('$dateStr | ${sess.startTime}',
               style: TextStyle(fontSize: compact ? 11 : 12)),
           trailing: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: 4),
             decoration: BoxDecoration(
-              color: isPresent
-                  ? const Color(0xFF10B981).withValues(alpha: 0.1)
-                  : const Color(0xFFEF4444).withValues(alpha: 0.1),
+              color: statusColor.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(4),
             ),
             child: Text(
               isPresent ? 'PRESENT' : 'ABSENT',
-              style: TextStyle(
-                color: isPresent ? const Color(0xFF10B981) : const Color(0xFFEF4444),
-                fontSize: 10,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(color: statusColor, fontSize: 10, fontWeight: FontWeight.bold),
             ),
           ),
         );

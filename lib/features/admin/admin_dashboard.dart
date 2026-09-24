@@ -3,13 +3,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:fl_chart/fl_chart.dart';
 import '../auth/auth_provider.dart';
 import '../../data/models/models.dart';
 import '../../data/services/providers.dart';
 import '../../core/widgets/responsive_scaffold.dart';
 import '../../core/widgets/skeleton_loaders.dart';
+import '../../core/widgets/stat_card.dart';
+import '../../core/widgets/app_data_table.dart';
 import '../../core/constants/app_constants.dart';
 import '../../core/theme/app_color_scheme.dart';
+import '../../core/theme/app_tokens.dart';
 
 class AdminDashboard extends ConsumerStatefulWidget {
   const AdminDashboard({super.key});
@@ -277,39 +281,34 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
                           : 3.0;
 
               final metrics = [
-                _buildMetricCard(
-                  context,
-                  title: 'Total Students',
+                StatCard(
+                  label: 'Total Students',
                   value: NumberFormat('#,###').format(studentsCount),
                   icon: Icons.group_outlined,
                   color: theme.colorScheme.primary,
                 ),
-                _buildMetricCard(
-                  context,
-                  title: 'Total Faculty',
+                StatCard(
+                  label: 'Total Faculty',
                   value: '$facultyCount',
                   icon: Icons.badge_outlined,
                   color: theme.appColors.info,
                 ),
-                _buildMetricCard(
-                  context,
-                  title: 'Total Subjects',
+                StatCard(
+                  label: 'Total Subjects',
                   value: '$subjectsCount',
                   icon: Icons.auto_stories_outlined,
                   color: theme.colorScheme.primary,
                 ),
-                _buildMetricCard(
-                  context,
-                  title: 'Attendance Today',
+                StatCard(
+                  label: 'Attendance Today',
                   value: _sessions.isEmpty ? 'N/A' : '${attendanceToday.toStringAsFixed(0)}%',
                   icon: Icons.calendar_today_outlined,
                   color: theme.appColors.warning,
                   trendText: attendanceTodayLabel,
                   trendColor: attendanceTodayLabelColor,
                 ),
-                _buildMetricCard(
-                  context,
-                  title: 'Defaulters',
+                StatCard(
+                  label: 'Defaulters',
                   value: '$defaultersCount',
                   icon: Icons.gpp_bad_outlined,
                   color: theme.appColors.danger,
@@ -427,28 +426,28 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
             mainAxisSpacing: 12,
             childAspectRatio: 1.5,
             children: [
-              _buildMetricCard(context,
-                  title: 'Students',
+              StatCard(
+                  label: 'Students',
                   value: '$studentsCount',
                   icon: Icons.people_rounded,
                   color: theme.colorScheme.primary),
-              _buildMetricCard(context,
-                  title: 'Faculty',
+              StatCard(
+                  label: 'Faculty',
                   value: '$facultyCount',
                   icon: Icons.school_rounded,
                   color: theme.appColors.info),
-              _buildMetricCard(context,
-                  title: 'Subjects',
+              StatCard(
+                  label: 'Subjects',
                   value: '$subjectsCount',
                   icon: Icons.book_rounded,
                   color: theme.colorScheme.primary),
-              _buildMetricCard(context,
-                  title: 'Attendance Today',
+              StatCard(
+                  label: 'Attendance Today',
                   value: _sessions.isEmpty ? 'N/A' : '${attendanceToday.toStringAsFixed(0)}%',
                   icon: Icons.calendar_today_outlined,
                   color: theme.appColors.warning),
-              _buildMetricCard(context,
-                  title: 'Defaulters',
+              StatCard(
+                  label: 'Defaulters',
                   value: '$defaultersCount',
                   icon: Icons.warning_amber_rounded,
                   color: theme.appColors.danger),
@@ -468,36 +467,36 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
             mainAxisSpacing: 16,
             childAspectRatio: 2.2,
             children: [
-              _buildMenuCard(context,
+              ActionTile(
                   title: 'Academic Setup',
                   description: 'Manage Courses, Branches, Semesters, and Sections.',
                   icon: Icons.account_tree_rounded,
-                  route: '/admin/academic'),
-              _buildMenuCard(context,
+                  onTap: () => context.go('/admin/academic')),
+              ActionTile(
                   title: 'Subjects Management',
                   description: 'View, add, edit, and map subjects to classes.',
                   icon: Icons.library_books_rounded,
-                  route: '/admin/subjects'),
-              _buildMenuCard(context,
+                  onTap: () => context.go('/admin/subjects')),
+              ActionTile(
                   title: 'Faculty & Assignments',
                   description: 'Manage teachers and map them to class subjects.',
                   icon: Icons.badge_rounded,
-                  route: '/admin/faculty'),
-              _buildMenuCard(context,
+                  onTap: () => context.go('/admin/faculty')),
+              ActionTile(
                   title: 'Student Directory',
                   description: 'CRUD student profiles and batch import CSV lists.',
                   icon: Icons.face_rounded,
-                  route: '/admin/students'),
-              _buildMenuCard(context,
+                  onTap: () => context.go('/admin/students')),
+              ActionTile(
                   title: 'Semester Promotion',
                   description: 'Promote student batches to the next semester.',
                   icon: Icons.upgrade_rounded,
-                  route: '/admin/promotion'),
-              _buildMenuCard(context,
+                  onTap: () => context.go('/admin/promotion')),
+              ActionTile(
                   title: 'Analytics & Reports',
                   description: 'View defaulters, subject reports, and export logs.',
                   icon: Icons.analytics_rounded,
-                  route: '/reports'),
+                  onTap: () => context.go('/reports')),
             ],
           ),
         ],
@@ -541,11 +540,7 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
     final double avgPercentage =
         percentages.isNotEmpty ? percentages.reduce((a, b) => a + b) / percentages.length : 0.0;
 
-    const barAreaHeight = 140.0;
-    const labelAreaHeight = 24.0;
     const thresholdPct = AppConstants.defaulterThreshold;
-    // Position from bottom = label area + bar height at threshold
-    const thresholdBottom = labelAreaHeight + barAreaHeight * (thresholdPct / 100);
 
     return Card(
       child: Padding(
@@ -579,86 +574,91 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
             ),
             const SizedBox(height: 32),
             SizedBox(
-              height: barAreaHeight + labelAreaHeight + 32,
-              child: Stack(
-                clipBehavior: Clip.none,
-                children: [
-                  // Threshold line at defaulterThreshold%
-                  Positioned(
-                    bottom: thresholdBottom,
-                    left: 0,
-                    right: 0,
-                    child: Row(
-                      children: [
-                        Text(
-                          '${thresholdPct.toInt()}%',
-                          style: TextStyle(
-                            fontSize: 9,
-                            fontWeight: FontWeight.bold,
-                            color: theme.colorScheme.error.withValues(alpha: 0.7),
-                          ),
-                        ),
-                        const SizedBox(width: 4),
-                        Expanded(
-                          child: CustomPaint(
-                            size: const Size(double.infinity, 1),
-                            painter: _DashedLinePainter(
-                              color: theme.colorScheme.error.withValues(alpha: 0.5),
-                            ),
-                          ),
-                        ),
-                      ],
+              height: 220,
+              child: BarChart(
+                BarChartData(
+                  maxY: 100,
+                  minY: 0,
+                  alignment: BarChartAlignment.spaceAround,
+                  gridData: FlGridData(
+                    show: true,
+                    drawVerticalLine: false,
+                    horizontalInterval: 25,
+                    getDrawingHorizontalLine: (value) => FlLine(
+                      color: theme.colorScheme.outlineVariant.withValues(alpha: 0.4),
+                      strokeWidth: 1,
                     ),
                   ),
-                  // Bars
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: List.generate(days.length, (idx) {
-                      final day = days[idx];
-                      final pct = percentages[idx];
-                      final isBelow = pct < thresholdPct;
-                      return Column(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          Text(
-                            '${pct.toStringAsFixed(0)}%',
-                            style: TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold,
-                              color: isBelow
-                                  ? theme.colorScheme.error
-                                  : theme.colorScheme.primary,
+                  borderData: FlBorderData(show: false),
+                  titlesData: FlTitlesData(
+                    topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                    rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                    leftTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        reservedSize: 36,
+                        interval: 25,
+                        getTitlesWidget: (value, meta) => Text(
+                          '${value.toInt()}%',
+                          style: theme.textTheme.labelSmall
+                              ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                        ),
+                      ),
+                    ),
+                    bottomTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        getTitlesWidget: (value, meta) {
+                          final idx = value.toInt();
+                          if (idx < 0 || idx >= days.length) return const SizedBox.shrink();
+                          return Padding(
+                            padding: const EdgeInsets.only(top: 8),
+                            child: Text(
+                              days[idx],
+                              style: theme.textTheme.labelSmall?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: theme.colorScheme.onSurfaceVariant),
                             ),
-                          ),
-                          const SizedBox(height: 6),
-                          Container(
-                            width: 38,
-                            height: barAreaHeight * (pct / 100),
-                            decoration: BoxDecoration(
-                              color: isBelow
-                                  ? theme.colorScheme.error.withValues(alpha: 0.7)
-                                  : theme.colorScheme.primary,
-                              borderRadius: const BorderRadius.only(
-                                topLeft: Radius.circular(8),
-                                topRight: Radius.circular(8),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          Text(
-                            day,
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                              color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
-                            ),
-                          ),
-                        ],
-                      );
-                    }),
+                          );
+                        },
+                      ),
+                    ),
                   ),
-                ],
+                  extraLinesData: ExtraLinesData(horizontalLines: [
+                    HorizontalLine(
+                      y: thresholdPct,
+                      color: theme.colorScheme.error.withValues(alpha: 0.6),
+                      strokeWidth: 1.5,
+                      dashArray: const [6, 4],
+                      label: HorizontalLineLabel(
+                        show: true,
+                        alignment: Alignment.topRight,
+                        style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                            color: theme.colorScheme.error),
+                        labelResolver: (line) => '${thresholdPct.toInt()}% threshold',
+                      ),
+                    ),
+                  ]),
+                  barGroups: List.generate(days.length, (idx) {
+                    final pct = percentages[idx];
+                    final isBelow = pct < thresholdPct;
+                    return BarChartGroupData(x: idx, barRods: [
+                      BarChartRodData(
+                        toY: pct,
+                        width: 28,
+                        color: isBelow
+                            ? theme.colorScheme.error.withValues(alpha: 0.7)
+                            : theme.colorScheme.primary,
+                        borderRadius: const BorderRadius.only(
+                          topLeft: Radius.circular(8),
+                          topRight: Radius.circular(8),
+                        ),
+                      ),
+                    ]);
+                  }),
+                ),
               ),
             ),
           ],
@@ -686,101 +686,51 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
               style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
-            if (sessions.isEmpty)
-              const Padding(
-                padding: EdgeInsets.symmetric(vertical: 24.0),
-                child: Center(child: Text('No attendance sessions conducted yet.')),
-              )
-            else
-              Table(
-                columnWidths: const {
-                  0: FlexColumnWidth(2),
-                  1: FlexColumnWidth(2),
-                  2: FlexColumnWidth(1.5),
-                  3: FlexColumnWidth(1.5),
-                  4: FixedColumnWidth(100),
-                },
-                children: [
-                  TableRow(
-                    decoration: BoxDecoration(
-                      border: Border(
-                          bottom: BorderSide(color: theme.dividerColor, width: 1.5)),
-                    ),
-                    children: const [
-                      Padding(
-                          padding: EdgeInsets.symmetric(vertical: 10),
-                          child: Text('Class Section',
-                              style: TextStyle(fontWeight: FontWeight.bold))),
-                      Padding(
-                          padding: EdgeInsets.symmetric(vertical: 10),
-                          child:
-                              Text('Subject', style: TextStyle(fontWeight: FontWeight.bold))),
-                      Padding(
-                          padding: EdgeInsets.symmetric(vertical: 10),
-                          child: Text('Date', style: TextStyle(fontWeight: FontWeight.bold))),
-                      Padding(
-                          padding: EdgeInsets.symmetric(vertical: 10),
-                          child: Text('Time Slot',
-                              style: TextStyle(fontWeight: FontWeight.bold))),
-                      Padding(
-                          padding: EdgeInsets.symmetric(vertical: 10),
-                          child:
-                              Text('Status', style: TextStyle(fontWeight: FontWeight.bold))),
-                    ],
+            AppDataTable(
+              isDesktop: true,
+              columns: const ['Class Section', 'Subject', 'Date', 'Time Slot', 'Status'],
+              columnFlex: const [2, 2, 1, 1, 1],
+              emptyIcon: Icons.event_busy_rounded,
+              emptyTitle: 'No sessions yet',
+              emptyMessage: 'No attendance sessions conducted yet.',
+              rows: sessions.take(5).map((s) {
+                final sub = subjects.firstWhere((sb) => sb.id == s.subjectId,
+                    orElse: () => Subject(id: '', code: 'UNK', name: 'Unknown'));
+                final sec = sections.firstWhere((sc) => sc.id == s.sectionId,
+                    orElse: () => Section(id: '', semesterId: '', name: 'Unknown'));
+                final sem = semesters.firstWhere((se) => se.id == sec.semesterId,
+                    orElse: () => Semester(id: '', branchId: '', semesterNumber: 0));
+                final b = branches.firstWhere((br) => br.id == sem.branchId,
+                    orElse: () => Branch(id: '', courseId: '', name: 'Unknown'));
+                final className = '${b.name} - Sem ${sem.semesterNumber} (${sec.name})';
+                final statusChip = Container(
+                  alignment: Alignment.center,
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: theme.appColors.successContainer,
+                    borderRadius: BorderRadius.circular(AppRadius.control / 2),
                   ),
-                  ...sessions.take(5).map((s) {
-                    final sub = subjects.firstWhere((sb) => sb.id == s.subjectId,
-                        orElse: () => Subject(id: '', code: 'UNK', name: 'Unknown'));
-                    final sec = sections.firstWhere((sc) => sc.id == s.sectionId,
-                        orElse: () => Section(id: '', semesterId: '', name: 'Unknown'));
-                    final sem = semesters.firstWhere((se) => se.id == sec.semesterId,
-                        orElse: () => Semester(id: '', branchId: '', semesterNumber: 0));
-                    final b = branches.firstWhere((br) => br.id == sem.branchId,
-                        orElse: () => Branch(id: '', courseId: '', name: 'Unknown'));
-                    return TableRow(
-                      decoration: BoxDecoration(
-                        border: Border(
-                            bottom:
-                                BorderSide(color: theme.dividerColor.withValues(alpha: 0.4))),
-                      ),
-                      children: [
-                        Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                            child: Text(
-                                '${b.name} - Sem ${sem.semesterNumber} (${sec.name})')),
-                        Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                            child: Text(sub.name)),
-                        Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                            child: Text(DateFormat('MMM dd, yyyy').format(s.date))),
-                        Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                            child: Text(s.startTime)),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 10),
-                          child: Container(
-                            alignment: Alignment.center,
-                            padding:
-                                const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: theme.appColors.successContainer,
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                            child: Text(
-                              'Submitted',
-                              style: TextStyle(
-                                  color: theme.appColors.success,
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.bold),
-                            ),
-                          ),
-                        ),
-                      ],
-                    );
-                  }),
-                ],
-              ),
+                  child: Text(
+                    'Submitted',
+                    style: TextStyle(
+                        color: theme.appColors.success, fontSize: 10, fontWeight: FontWeight.bold),
+                  ),
+                );
+                return AppDataRow(
+                  mobileTitle: className,
+                  mobileSubtitle: '${sub.name} · ${DateFormat('MMM dd, yyyy').format(s.date)}',
+                  mobileLeadingIcon: Icons.event_available_rounded,
+                  mobileTrailing: statusChip,
+                  cells: [
+                    Text(className),
+                    Text(sub.name),
+                    Text(DateFormat('MMM dd, yyyy').format(s.date)),
+                    Text(s.startTime),
+                    statusChip,
+                  ],
+                );
+              }).toList(),
+            ),
           ],
         ),
       ),
@@ -928,147 +878,4 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
     );
   }
 
-  Widget _buildMetricCard(
-    BuildContext context, {
-    required String title,
-    required String value,
-    required IconData icon,
-    required Color color,
-    String? trendText,
-    Color? trendColor,
-  }) {
-    final theme = Theme.of(context);
-    return Card(
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: BorderSide(
-            color: theme.dividerColor.withValues(alpha: 0.2)),
-      ),
-      color: theme.cardColor,
-      child: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(icon, color: color, size: 28),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    value,
-                    style: theme.textTheme.headlineMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: theme.colorScheme.onSurface,
-                    ),
-                  ),
-                  if (trendText != null) ...[
-                    const SizedBox(height: 4),
-                    Text(
-                      trendText,
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.bold,
-                        color: trendColor ??
-                            theme.colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                  ],
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildMenuCard(
-    BuildContext context, {
-    required String title,
-    required String description,
-    required IconData icon,
-    required String route,
-  }) {
-    final theme = Theme.of(context);
-    return Card(
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: () => context.go(route),
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.primary.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(icon, color: theme.colorScheme.primary, size: 28),
-              ),
-              const Spacer(),
-              Text(
-                title,
-                style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                description,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _DashedLinePainter extends CustomPainter {
-  final Color color;
-  _DashedLinePainter({required this.color});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = color
-      ..strokeWidth = 1.5
-      ..style = PaintingStyle.stroke;
-
-    const dashWidth = 6.0;
-    const dashSpace = 4.0;
-    double x = 0;
-    while (x < size.width) {
-      canvas.drawLine(Offset(x, 0), Offset(x + dashWidth, 0), paint);
-      x += dashWidth + dashSpace;
-    }
-  }
-
-  @override
-  bool shouldRepaint(_DashedLinePainter old) => old.color != color;
 }

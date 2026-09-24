@@ -1,9 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 import '../../data/models/models.dart';
 import '../../data/services/providers.dart';
 import '../../core/widgets/responsive_scaffold.dart';
+import '../../core/widgets/console_header.dart';
+import '../../core/widgets/entity_list_tile.dart';
+import '../../core/widgets/empty_state.dart';
+import '../../core/widgets/app_dialogs.dart';
+import '../../core/widgets/app_snackbar.dart';
+import '../../core/widgets/skeleton_loaders.dart';
+import '../../core/widgets/responsive_two_pane.dart';
+import '../../core/theme/app_color_scheme.dart';
+import '../../core/theme/app_tokens.dart';
 
 class SemesterPromotionScreen extends ConsumerStatefulWidget {
   const SemesterPromotionScreen({super.key});
@@ -21,6 +31,7 @@ class _SemesterPromotionScreenState extends ConsumerState<SemesterPromotionScree
   List<Branch> _branches = [];
   List<Student> _sourceStudents = [];
   bool _isLoading = true;
+  Object? _error;
 
   @override
   void initState() {
@@ -29,22 +40,34 @@ class _SemesterPromotionScreenState extends ConsumerState<SemesterPromotionScree
   }
 
   Future<void> _loadData() async {
-    setState(() => _isLoading = true);
-    final repo = ref.read(academicRepositoryProvider);
-    final sections = await repo.getSections();
-    final semesters = await repo.getSemesters();
-    final branches = await repo.getBranches();
-
     setState(() {
-      _sections = sections;
-      _semesters = semesters;
-      _branches = branches;
-      _isLoading = false;
+      _isLoading = true;
+      _error = null;
     });
+    try {
+      final repo = ref.read(academicRepositoryProvider);
+      final sections = await repo.getSections();
+      final semesters = await repo.getSemesters();
+      final branches = await repo.getBranches();
 
-    if (_sections.isNotEmpty) {
-      _sourceSectionId = _sections.first.id;
-      _loadSourceStudents();
+      setState(() {
+        _sections = sections;
+        _semesters = semesters;
+        _branches = branches;
+        _isLoading = false;
+      });
+
+      if (_sections.isNotEmpty) {
+        _sourceSectionId = _sections.first.id;
+        _loadSourceStudents();
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _error = e;
+          _isLoading = false;
+        });
+      }
     }
   }
 
@@ -61,43 +84,29 @@ class _SemesterPromotionScreenState extends ConsumerState<SemesterPromotionScree
 
   void _promoteBatch() async {
     if (_sourceSectionId == null || _destSectionId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select both source and destination sections!'), backgroundColor: Color(0xFFEF4444)),
-      );
+      AppSnackBar.error(context, 'Please select both source and destination sections!');
       return;
     }
 
     if (_sourceSectionId == _destSectionId) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Source and Destination sections cannot be the same!'), backgroundColor: Color(0xFFEF4444)),
-      );
+      AppSnackBar.error(context, 'Source and Destination sections cannot be the same!');
       return;
     }
 
-    final confirm = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Confirm Batch Promotion'),
-        content: Text('Are you sure you want to promote ${_sourceStudents.length} students to the selected destination section?'),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF10B981), foregroundColor: Colors.white),
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('Promote'),
-          ),
-        ],
-      ),
+    final confirm = await AppConfirmDialog.show(
+      context,
+      title: 'Confirm Batch Promotion',
+      message: 'Are you sure you want to promote ${_sourceStudents.length} students to the selected destination section?',
+      confirmLabel: 'Promote',
+      icon: Icons.upgrade_rounded,
     );
 
-    if (confirm == true) {
+    if (confirm) {
       setState(() => _isLoading = true);
       final repo = ref.read(academicRepositoryProvider);
       await repo.promoteStudents(_sourceSectionId!, _destSectionId!);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Batch promotion completed successfully!'), backgroundColor: Color(0xFF10B981)),
-        );
+        AppSnackBar.success(context, 'Batch promotion completed successfully!');
         context.go('/admin');
       }
     }
@@ -106,335 +115,178 @@ class _SemesterPromotionScreenState extends ConsumerState<SemesterPromotionScree
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDesktop = MediaQuery.of(context).size.width > 960;
 
     if (_isLoading) {
       return ResponsiveScaffold(
         title: 'Semester Promotion',
         currentPath: '/admin/promotion',
-        body: const Center(child: CircularProgressIndicator()),
+        body: const Padding(padding: EdgeInsets.all(24.0), child: SkeletonCard(height: 400)),
+      );
+    }
+
+    if (_error != null) {
+      return ResponsiveScaffold(
+        title: 'Semester Promotion',
+        currentPath: '/admin/promotion',
+        body: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.error_outline_rounded, size: 64, color: theme.colorScheme.error),
+              const SizedBox(height: AppSpacing.lg),
+              Text('Failed to load promotion data', style: theme.textTheme.titleMedium),
+              const SizedBox(height: AppSpacing.sm),
+              ElevatedButton(onPressed: _loadData, child: const Text('Retry')),
+            ],
+          ),
+        ),
       );
     }
 
     return ResponsiveScaffold(
       title: 'Semester Promotion',
       currentPath: '/admin/promotion',
-      body: isDesktop
-          ? _buildDesktopLayout()
-          : SingleChildScrollView(
+      body: Padding(
         padding: const EdgeInsets.all(24.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Source & Destination Selectors
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Select Promotion Path', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 16),
-                    DropdownButtonFormField<String>(
-                      isExpanded: true,
-                      value: _sourceSectionId,
-                      decoration: const InputDecoration(labelText: 'Source Section (Current Class)'),
-                      items: _sections.map((sec) {
-                        final sem = _semesters.firstWhere((s) => s.id == sec.semesterId, orElse: () => Semester(id: '', branchId: '', semesterNumber: 0));
-                        final b = _branches.firstWhere((br) => br.id == sem.branchId, orElse: () => Branch(id: '', courseId: '', name: 'Unknown'));
-                        return DropdownMenuItem(
-                          value: sec.id,
-                          child: Text('${b.name} - Sem ${sem.semesterNumber} (${sec.name})'),
-                        );
-                      }).toList(),
-                      onChanged: (val) {
-                        setState(() {
-                          _sourceSectionId = val;
-                        });
-                        _loadSourceStudents();
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                    DropdownButtonFormField<String>(
-                      isExpanded: true,
-                      value: _destSectionId,
-                      decoration: const InputDecoration(labelText: 'Destination Section (New Class)'),
-                      items: _sections.map((sec) {
-                        final sem = _semesters.firstWhere((s) => s.id == sec.semesterId, orElse: () => Semester(id: '', branchId: '', semesterNumber: 0));
-                        final b = _branches.firstWhere((br) => br.id == sem.branchId, orElse: () => Branch(id: '', courseId: '', name: 'Unknown'));
-                        return DropdownMenuItem(
-                          value: sec.id,
-                          child: Text('${b.name} - Sem ${sem.semesterNumber} (${sec.name})'),
-                        );
-                      }).toList(),
-                      onChanged: (val) {
-                        setState(() {
-                          _destSectionId = val;
-                        });
-                      },
-                    ),
-                  ],
-                ),
+            ConsoleHeader(
+              title: 'Semester Promotion Console',
+              subtitle: 'Promote students in batch from a source semester/section to a destination semester/section.',
+            ).animate().fadeIn(duration: 250.ms).slideY(begin: -0.05, curve: Curves.easeOut),
+            const SizedBox(height: AppSpacing.xl),
+            Expanded(
+              child: ResponsiveTwoPane(
+                left: _buildSelectorPanel(theme),
+                right: _buildRosterPanel(theme),
               ),
             ),
-            const SizedBox(height: 24),
-
-            // Students in source section
-            Text(
-              'Students in Source Section (${_sourceStudents.length})',
-              style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 12),
-
-            if (_sourceStudents.isEmpty)
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(24.0),
-                  child: Center(
-                    child: Text(
-                      'No students found in this source section.',
-                      style: TextStyle(color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
-                    ),
-                  ),
-                ),
-              )
-            else ...[
-              Card(
-                child: ListView.separated(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: _sourceStudents.length,
-                  separatorBuilder: (context, index) => const Divider(height: 1),
-                  itemBuilder: (context, idx) {
-                    final student = _sourceStudents[idx];
-                    return ListTile(
-                      leading: CircleAvatar(
-                        backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.1),
-                        child: Text(
-                          student.rollNumber,
-                          style: TextStyle(color: theme.colorScheme.primary, fontSize: 12, fontWeight: FontWeight.bold),
-                        ),
-                      ),
-                      title: Text(student.name, style: const TextStyle(fontWeight: FontWeight.bold)),
-                    );
-                  },
-                ),
-              ),
-              const SizedBox(height: 24),
-              ElevatedButton.icon(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF10B981),
-                  foregroundColor: Colors.white,
-                  minimumSize: const Size.fromHeight(56),
-                ),
-                onPressed: _promoteBatch,
-                icon: const Icon(Icons.upgrade_rounded),
-                label: const Text('Promote Batch Now'),
-              ),
-            ],
           ],
         ),
       ),
     );
   }
 
-  Widget _buildDesktopLayout() {
-    final theme = Theme.of(context);
-    return Padding(
-      padding: const EdgeInsets.all(24.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Text(
-            'Semester Promotion Console',
-            style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+  Widget _buildSelectorPanel(ThemeData theme) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Card(
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppRadius.card),
+            side: BorderSide(color: theme.dividerColor.withValues(alpha: 0.15)),
           ),
-          const SizedBox(height: 4),
-          Text(
-            'Promote students in batch from a source semester/section to a destination semester/section.',
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Select Promotion Path',
+                  style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: AppSpacing.lg),
+                DropdownButtonFormField<String>(
+                  isExpanded: true,
+                  value: _sourceSectionId,
+                  decoration: const InputDecoration(labelText: 'Source Section (Current Class)'),
+                  items: _sections.map((sec) {
+                    final sem = _semesters.firstWhere((s) => s.id == sec.semesterId, orElse: () => Semester(id: '', branchId: '', semesterNumber: 0));
+                    final b = _branches.firstWhere((br) => br.id == sem.branchId, orElse: () => Branch(id: '', courseId: '', name: 'Unknown'));
+                    return DropdownMenuItem(
+                      value: sec.id,
+                      child: Text('${b.name} - Sem ${sem.semesterNumber} (${sec.name})', overflow: TextOverflow.ellipsis),
+                    );
+                  }).toList(),
+                  onChanged: (val) {
+                    setState(() {
+                      _sourceSectionId = val;
+                    });
+                    _loadSourceStudents();
+                  },
+                ),
+                const SizedBox(height: AppSpacing.lg),
+                DropdownButtonFormField<String>(
+                  isExpanded: true,
+                  value: _destSectionId,
+                  decoration: const InputDecoration(labelText: 'Destination Section (New Class)'),
+                  items: _sections.map((sec) {
+                    final sem = _semesters.firstWhere((s) => s.id == sec.semesterId, orElse: () => Semester(id: '', branchId: '', semesterNumber: 0));
+                    final b = _branches.firstWhere((br) => br.id == sem.branchId, orElse: () => Branch(id: '', courseId: '', name: 'Unknown'));
+                    return DropdownMenuItem(
+                      value: sec.id,
+                      child: Text('${b.name} - Sem ${sem.semesterNumber} (${sec.name})', overflow: TextOverflow.ellipsis),
+                    );
+                  }).toList(),
+                  onChanged: (val) {
+                    setState(() {
+                      _destSectionId = val;
+                    });
+                  },
+                ),
+              ],
             ),
           ),
-          const SizedBox(height: 24),
-          Expanded(
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                final leftColumn = Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Card(
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        side: BorderSide(color: theme.dividerColor.withValues(alpha: 0.15)),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(20.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Select Promotion Path',
-                              style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-                            ),
-                            const SizedBox(height: 16),
-                            DropdownButtonFormField<String>(
-                              isExpanded: true,
-                              value: _sourceSectionId,
-                              decoration: const InputDecoration(labelText: 'Source Section (Current Class)'),
-                              items: _sections.map((sec) {
-                                final sem = _semesters.firstWhere((s) => s.id == sec.semesterId, orElse: () => Semester(id: '', branchId: '', semesterNumber: 0));
-                                final b = _branches.firstWhere((br) => br.id == sem.branchId, orElse: () => Branch(id: '', courseId: '', name: 'Unknown'));
-                                return DropdownMenuItem(
-                                  value: sec.id,
-                                  child: Text('${b.name} - Sem ${sem.semesterNumber} (${sec.name})', overflow: TextOverflow.ellipsis),
-                                );
-                              }).toList(),
-                              onChanged: (val) {
-                                setState(() {
-                                  _sourceSectionId = val;
-                                });
-                                _loadSourceStudents();
-                              },
-                            ),
-                            const SizedBox(height: 16),
-                            DropdownButtonFormField<String>(
-                              isExpanded: true,
-                              value: _destSectionId,
-                              decoration: const InputDecoration(labelText: 'Destination Section (New Class)'),
-                              items: _sections.map((sec) {
-                                final sem = _semesters.firstWhere((s) => s.id == sec.semesterId, orElse: () => Semester(id: '', branchId: '', semesterNumber: 0));
-                                final b = _branches.firstWhere((br) => br.id == sem.branchId, orElse: () => Branch(id: '', courseId: '', name: 'Unknown'));
-                                return DropdownMenuItem(
-                                  value: sec.id,
-                                  child: Text('${b.name} - Sem ${sem.semesterNumber} (${sec.name})', overflow: TextOverflow.ellipsis),
-                                );
-                              }).toList(),
-                              onChanged: (val) {
-                                setState(() {
-                                  _destSectionId = val;
-                                });
-                              },
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    if (_sourceStudents.isNotEmpty)
-                      ElevatedButton.icon(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF10B981),
-                          foregroundColor: Colors.white,
-                          minimumSize: const Size.fromHeight(56),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                        ),
-                        onPressed: _promoteBatch,
-                        icon: const Icon(Icons.upgrade_rounded),
-                        label: const Text('Promote Batch Now'),
-                      ),
-                  ],
-                );
-
-                final rightColumn = Card(
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    side: BorderSide(color: theme.dividerColor.withValues(alpha: 0.15)),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(20.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Text(
-                          'Students in Source Section (${_sourceStudents.length})',
-                          style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-                        ),
-                        const SizedBox(height: 16),
-                        Expanded(
-                          child: _sourceStudents.isEmpty
-                              ? Center(
-                                  child: Text(
-                                    'No students found in the selected source section.',
-                                    style: TextStyle(color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
-                                  ),
-                                )
-                              : ListView.builder(
-                                  itemCount: _sourceStudents.length,
-                                  itemBuilder: (context, idx) {
-                                    final student = _sourceStudents[idx];
-                                    return Container(
-                                      margin: const EdgeInsets.only(bottom: 8),
-                                      child: Material(
-                                        color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(8),
-                                        ),
-                                        clipBehavior: Clip.antiAlias,
-                                        child: ListTile(
-                                          leading: CircleAvatar(
-                                            backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.1),
-                                            child: Text(
-                                              student.rollNumber,
-                                              style: TextStyle(
-                                                color: theme.colorScheme.primary,
-                                                fontSize: 12,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            ),
-                                          ),
-                                          title: Text(
-                                            student.name,
-                                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-                                          ),
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                ),
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-
-                if (constraints.maxWidth < 1100) {
-                  return SingleChildScrollView(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        leftColumn,
-                        const SizedBox(height: 24),
-                        SizedBox(
-                          height: 500,
-                          child: rightColumn,
-                        ),
-                      ],
-                    ),
-                  );
-                } else {
-                  return Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      SizedBox(
-                        width: 380,
-                        child: leftColumn,
-                      ),
-                      const SizedBox(width: 24),
-                      Expanded(
-                        child: rightColumn,
-                      ),
-                    ],
-                  );
-                }
-              },
+        ),
+        const SizedBox(height: AppSpacing.lg),
+        if (_sourceStudents.isNotEmpty)
+          ElevatedButton.icon(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: theme.appColors.success,
+              foregroundColor: Colors.white,
+              minimumSize: const Size.fromHeight(56),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.card)),
             ),
+            onPressed: _promoteBatch,
+            icon: const Icon(Icons.upgrade_rounded),
+            label: const Text('Promote Batch Now'),
           ),
-        ],
+      ],
+    );
+  }
+
+  Widget _buildRosterPanel(ThemeData theme) {
+    return Card(
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppRadius.card),
+        side: BorderSide(color: theme.dividerColor.withValues(alpha: 0.15)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              'Students in Source Section (${_sourceStudents.length})',
+              style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: AppSpacing.lg),
+            Expanded(
+              child: _sourceStudents.isEmpty
+                  ? const EmptyState(
+                      icon: Icons.groups_outlined,
+                      title: 'No students found',
+                      message: 'The selected source section has no students yet.',
+                    )
+                  : ListView.separated(
+                      itemCount: _sourceStudents.length,
+                      separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.sm),
+                      itemBuilder: (context, idx) {
+                        final student = _sourceStudents[idx];
+                        return EntityListTile(
+                          title: student.name,
+                          subtitle: 'Roll No: ${student.rollNumber}',
+                          leadingText: student.rollNumber,
+                        ).animate().fadeIn(duration: 200.ms, delay: (idx * 20).ms);
+                      },
+                    ),
+            ),
+          ],
+        ),
       ),
     );
   }
 }
-

@@ -1,8 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import '../../data/models/models.dart';
 import '../../data/services/providers.dart';
 import '../../core/widgets/responsive_scaffold.dart';
+import '../../core/widgets/console_header.dart';
+import '../../core/widgets/entity_list_tile.dart';
+import '../../core/widgets/empty_state.dart';
+import '../../core/widgets/app_dialogs.dart';
+import '../../core/widgets/skeleton_loaders.dart';
+import '../../core/theme/app_tokens.dart';
 
 class AcademicSetupScreen extends ConsumerStatefulWidget {
   const AcademicSetupScreen({super.key});
@@ -13,7 +20,6 @@ class AcademicSetupScreen extends ConsumerStatefulWidget {
 
 class _AcademicSetupScreenState extends ConsumerState<AcademicSetupScreen> with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  final _formKey = GlobalKey<FormState>();
 
   // Fetch lists
   List<Course> _courses = [];
@@ -21,6 +27,7 @@ class _AcademicSetupScreenState extends ConsumerState<AcademicSetupScreen> with 
   List<Semester> _semesters = [];
   List<Section> _sections = [];
   bool _isLoading = true;
+  Object? _error;
 
   @override
   void initState() {
@@ -36,71 +43,83 @@ class _AcademicSetupScreenState extends ConsumerState<AcademicSetupScreen> with 
   }
 
   Future<void> _loadData() async {
-    setState(() => _isLoading = true);
-    final repo = ref.read(academicRepositoryProvider);
-    final courses = await repo.getCourses();
-    final branches = await repo.getBranches();
-    final semesters = await repo.getSemesters();
-    final sections = await repo.getSections();
-    if (mounted) {
-      setState(() {
-        _courses = courses;
-        _branches = branches;
-        _semesters = semesters;
-        _sections = sections;
-        _isLoading = false;
-      });
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+    try {
+      final repo = ref.read(academicRepositoryProvider);
+      final courses = await repo.getCourses();
+      final branches = await repo.getBranches();
+      final semesters = await repo.getSemesters();
+      final sections = await repo.getSections();
+      if (mounted) {
+        setState(() {
+          _courses = courses;
+          _branches = branches;
+          _semesters = semesters;
+          _sections = sections;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _error = e;
+          _isLoading = false;
+        });
+      }
     }
   }
 
   // Course Actions
   void _addCourseDialog() {
+    final formKey = GlobalKey<FormState>();
     final nameController = TextEditingController();
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Add Course'),
-        content: Form(
-          key: _formKey,
+      builder: (context) => AppFormDialog(
+        title: 'Add Course',
+        icon: Icons.school_rounded,
+        confirmLabel: 'Add',
+        child: Form(
+          key: formKey,
           child: TextFormField(
             controller: nameController,
             decoration: const InputDecoration(labelText: 'Course Name'),
             validator: (v) => v == null || v.isEmpty ? 'Enter course name' : null,
           ),
         ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
-          ElevatedButton(
-            onPressed: () async {
-              if (_formKey.currentState!.validate()) {
-                final newCourse = Course(
-                  id: 'c_${DateTime.now().millisecondsSinceEpoch}',
-                  name: nameController.text,
-                );
-                await ref.read(academicRepositoryProvider).addCourse(newCourse);
-                Navigator.pop(context);
-                _loadData();
-              }
-            },
-            child: const Text('Add'),
-          ),
-        ],
+        onConfirm: () async {
+          if (formKey.currentState!.validate()) {
+            final newCourse = Course(
+              id: 'c_${DateTime.now().millisecondsSinceEpoch}',
+              name: nameController.text,
+            );
+            await ref.read(academicRepositoryProvider).addCourse(newCourse);
+            if (context.mounted) Navigator.pop(context);
+            _loadData();
+          }
+        },
       ),
-    );
+    ).whenComplete(nameController.dispose);
   }
 
   // Branch Actions
   void _addBranchDialog() {
+    final formKey = GlobalKey<FormState>();
     final nameController = TextEditingController();
     String? selectedCourseId = _courses.isNotEmpty ? _courses.first.id : null;
 
     showDialog(
       context: context,
       builder: (context) => StatefulBuilder(
-        builder: (context, setStateDialog) => AlertDialog(
-          title: const Text('Add Branch'),
-          content: Form(
-            key: _formKey,
+        builder: (context, setStateDialog) => AppFormDialog(
+          title: 'Add Branch',
+          icon: Icons.account_tree_rounded,
+          confirmLabel: 'Add',
+          child: Form(
+            key: formKey,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -114,7 +133,7 @@ class _AcademicSetupScreenState extends ConsumerState<AcademicSetupScreen> with 
                   decoration: const InputDecoration(labelText: 'Parent Course'),
                   validator: (v) => v == null ? 'Select parent course' : null,
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: AppSpacing.lg),
                 TextFormField(
                   controller: nameController,
                   decoration: const InputDecoration(labelText: 'Branch Name'),
@@ -123,41 +142,38 @@ class _AcademicSetupScreenState extends ConsumerState<AcademicSetupScreen> with 
               ],
             ),
           ),
-          actions: [
-            TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
-            ElevatedButton(
-              onPressed: () async {
-                if (_formKey.currentState!.validate() && selectedCourseId != null) {
-                  final newBranch = Branch(
-                    id: 'b_${DateTime.now().millisecondsSinceEpoch}',
-                    courseId: selectedCourseId!,
-                    name: nameController.text,
-                  );
-                  await ref.read(academicRepositoryProvider).addBranch(newBranch);
-                  Navigator.pop(context);
-                  _loadData();
-                }
-              },
-              child: const Text('Add'),
-            ),
-          ],
+          onConfirm: () async {
+            if (formKey.currentState!.validate() && selectedCourseId != null) {
+              final newBranch = Branch(
+                id: 'b_${DateTime.now().millisecondsSinceEpoch}',
+                courseId: selectedCourseId!,
+                name: nameController.text,
+              );
+              await ref.read(academicRepositoryProvider).addBranch(newBranch);
+              if (context.mounted) Navigator.pop(context);
+              _loadData();
+            }
+          },
         ),
       ),
-    );
+    ).whenComplete(nameController.dispose);
   }
 
   // Semester Actions
   void _addSemesterDialog() {
+    final formKey = GlobalKey<FormState>();
     final numberController = TextEditingController();
     String? selectedBranchId = _branches.isNotEmpty ? _branches.first.id : null;
 
     showDialog(
       context: context,
       builder: (context) => StatefulBuilder(
-        builder: (context, setStateDialog) => AlertDialog(
-          title: const Text('Add Semester'),
-          content: Form(
-            key: _formKey,
+        builder: (context, setStateDialog) => AppFormDialog(
+          title: 'Add Semester',
+          icon: Icons.calendar_view_month_rounded,
+          confirmLabel: 'Add',
+          child: Form(
+            key: formKey,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -171,7 +187,7 @@ class _AcademicSetupScreenState extends ConsumerState<AcademicSetupScreen> with 
                   decoration: const InputDecoration(labelText: 'Parent Branch'),
                   validator: (v) => v == null ? 'Select parent branch' : null,
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: AppSpacing.lg),
                 TextFormField(
                   controller: numberController,
                   keyboardType: TextInputType.number,
@@ -181,41 +197,38 @@ class _AcademicSetupScreenState extends ConsumerState<AcademicSetupScreen> with 
               ],
             ),
           ),
-          actions: [
-            TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
-            ElevatedButton(
-              onPressed: () async {
-                if (_formKey.currentState!.validate() && selectedBranchId != null) {
-                  final newSem = Semester(
-                    id: 'sem_${DateTime.now().millisecondsSinceEpoch}',
-                    branchId: selectedBranchId!,
-                    semesterNumber: int.parse(numberController.text),
-                  );
-                  await ref.read(academicRepositoryProvider).addSemester(newSem);
-                  Navigator.pop(context);
-                  _loadData();
-                }
-              },
-              child: const Text('Add'),
-            ),
-          ],
+          onConfirm: () async {
+            if (formKey.currentState!.validate() && selectedBranchId != null) {
+              final newSem = Semester(
+                id: 'sem_${DateTime.now().millisecondsSinceEpoch}',
+                branchId: selectedBranchId!,
+                semesterNumber: int.parse(numberController.text),
+              );
+              await ref.read(academicRepositoryProvider).addSemester(newSem);
+              if (context.mounted) Navigator.pop(context);
+              _loadData();
+            }
+          },
         ),
       ),
-    );
+    ).whenComplete(numberController.dispose);
   }
 
   // Section Actions
   void _addSectionDialog() {
+    final formKey = GlobalKey<FormState>();
     final nameController = TextEditingController();
     String? selectedSemesterId = _semesters.isNotEmpty ? _semesters.first.id : null;
 
     showDialog(
       context: context,
       builder: (context) => StatefulBuilder(
-        builder: (context, setStateDialog) => AlertDialog(
-          title: const Text('Add Section'),
-          content: Form(
-            key: _formKey,
+        builder: (context, setStateDialog) => AppFormDialog(
+          title: 'Add Section',
+          icon: Icons.groups_rounded,
+          confirmLabel: 'Add',
+          child: Form(
+            key: formKey,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -233,7 +246,7 @@ class _AcademicSetupScreenState extends ConsumerState<AcademicSetupScreen> with 
                   decoration: const InputDecoration(labelText: 'Parent Semester'),
                   validator: (v) => v == null ? 'Select parent semester' : null,
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: AppSpacing.lg),
                 TextFormField(
                   controller: nameController,
                   decoration: const InputDecoration(labelText: 'Section Name (e.g. Section A)'),
@@ -242,27 +255,21 @@ class _AcademicSetupScreenState extends ConsumerState<AcademicSetupScreen> with 
               ],
             ),
           ),
-          actions: [
-            TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
-            ElevatedButton(
-              onPressed: () async {
-                if (_formKey.currentState!.validate() && selectedSemesterId != null) {
-                  final newSec = Section(
-                    id: 'sec_${DateTime.now().millisecondsSinceEpoch}',
-                    semesterId: selectedSemesterId!,
-                    name: nameController.text,
-                  );
-                  await ref.read(academicRepositoryProvider).addSection(newSec);
-                  Navigator.pop(context);
-                  _loadData();
-                }
-              },
-              child: const Text('Add'),
-            ),
-          ],
+          onConfirm: () async {
+            if (formKey.currentState!.validate() && selectedSemesterId != null) {
+              final newSec = Section(
+                id: 'sec_${DateTime.now().millisecondsSinceEpoch}',
+                semesterId: selectedSemesterId!,
+                name: nameController.text,
+              );
+              await ref.read(academicRepositoryProvider).addSection(newSec);
+              if (context.mounted) Navigator.pop(context);
+              _loadData();
+            }
+          },
         ),
       ),
-    );
+    ).whenComplete(nameController.dispose);
   }
 
   @override
@@ -273,7 +280,36 @@ class _AcademicSetupScreenState extends ConsumerState<AcademicSetupScreen> with 
       return ResponsiveScaffold(
         title: 'Academic Setup',
         currentPath: '/admin/academic',
-        body: const Center(child: CircularProgressIndicator()),
+        body: const Padding(
+          padding: EdgeInsets.all(24.0),
+          child: Column(
+            children: [
+              SkeletonCard(height: 220),
+              SizedBox(height: 16),
+              SkeletonCard(height: 220),
+            ],
+          ),
+        ),
+      );
+    }
+
+    if (_error != null) {
+      final theme = Theme.of(context);
+      return ResponsiveScaffold(
+        title: 'Academic Setup',
+        currentPath: '/admin/academic',
+        body: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.error_outline_rounded, size: 64, color: theme.colorScheme.error),
+              const SizedBox(height: 16),
+              Text('Failed to load academic data', style: theme.textTheme.titleMedium),
+              const SizedBox(height: 8),
+              ElevatedButton(onPressed: _loadData, child: const Text('Retry')),
+            ],
+          ),
+        ),
       );
     }
 
@@ -352,41 +388,17 @@ class _AcademicSetupScreenState extends ConsumerState<AcademicSetupScreen> with 
   }
 
   Widget _buildDesktopLayout() {
-    final theme = Theme.of(context);
     return Padding(
       padding: const EdgeInsets.all(24.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Academic Setup Console',
-                      style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Configure your academic structure: courses, branches, semesters, and sections.',
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              IconButton.filledTonal(
-                onPressed: _loadData,
-                icon: const Icon(Icons.refresh),
-                tooltip: 'Refresh Data',
-              ),
-            ],
-          ),
-          const SizedBox(height: 24),
+          ConsoleHeader(
+            title: 'Academic Setup Console',
+            subtitle: 'Configure your academic structure: courses, branches, semesters, and sections.',
+            onRefresh: _loadData,
+          ).animate().fadeIn(duration: 250.ms).slideY(begin: -0.05, curve: Curves.easeOut),
+          const SizedBox(height: AppSpacing.xl),
           Expanded(
             child: Row(
               children: [
@@ -482,7 +494,7 @@ class _AcademicSetupScreenState extends ConsumerState<AcademicSetupScreen> with 
     return Card(
       elevation: 0,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppRadius.card),
         side: BorderSide(color: theme.dividerColor.withValues(alpha: 0.15)),
       ),
       child: Padding(
@@ -504,41 +516,30 @@ class _AcademicSetupScreenState extends ConsumerState<AcademicSetupScreen> with 
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppSpacing.md),
             Expanded(
               child: items.isEmpty
-                  ? Center(
-                      child: Text(
-                        'No ${title}s added yet.',
-                        style: TextStyle(color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
-                      ),
+                  ? EmptyState(
+                      icon: Icons.inbox_rounded,
+                      title: 'No ${title}s yet',
+                      message: 'Add a $title to get started.',
                     )
-                  : ListView.builder(
+                  : ListView.separated(
                       itemCount: items.length,
+                      separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.sm),
                       itemBuilder: (context, idx) {
                         final item = items[idx];
                         final id = (item as dynamic).id as String;
-                        return Container(
-                          margin: const EdgeInsets.only(bottom: 8),
-                          child: Material(
-                            color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            clipBehavior: Clip.antiAlias,
-                            child: ListTile(
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                            title: Text(
-                              labelBuilder(item),
-                              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
-                            ),
-                            trailing: IconButton(
-                              icon: Icon(Icons.delete_outline_rounded, color: theme.colorScheme.error, size: 20),
-                              onPressed: () => onDelete(id),
-                            ),
+                        return EntityListTile(
+                          title: labelBuilder(item),
+                          leadingIcon: Icons.circle,
+                          trailing: IconButton(
+                            icon: Icon(Icons.delete_outline_rounded,
+                                color: theme.colorScheme.error, size: 20),
+                            tooltip: 'Delete ${labelBuilder(item)}',
+                            onPressed: () => onDelete(id),
                           ),
-                        ),
-                      );
+                        ).animate().fadeIn(duration: 200.ms, delay: (idx * 30).ms);
                       },
                     ),
             ),
@@ -571,7 +572,7 @@ class _AcademicSetupScreenState extends ConsumerState<AcademicSetupScreen> with 
               ElevatedButton.icon(
                 style: ElevatedButton.styleFrom(
                   minimumSize: const Size(120, 44),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.control)),
                 ),
                 onPressed: onAdd,
                 icon: const Icon(Icons.add, size: 18),
@@ -579,33 +580,29 @@ class _AcademicSetupScreenState extends ConsumerState<AcademicSetupScreen> with 
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: AppSpacing.lg),
           Expanded(
             child: items.isEmpty
-                ? Center(
-                    child: Text(
-                      'No ${title}s added yet.',
-                      style: TextStyle(color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
-                    ),
+                ? EmptyState(
+                    icon: Icons.inbox_rounded,
+                    title: 'No ${title}s yet',
+                    message: 'Add a $title to get started.',
                   )
-                : ListView.builder(
+                : ListView.separated(
                     itemCount: items.length,
+                    separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.sm),
                     itemBuilder: (context, idx) {
                       final item = items[idx];
                       final id = (item as dynamic).id as String;
-                      return Card(
-                        margin: const EdgeInsets.only(bottom: 12),
-                        child: ListTile(
-                          title: Text(
-                            labelBuilder(item),
-                            style: const TextStyle(fontWeight: FontWeight.w600),
-                          ),
-                          trailing: IconButton(
-                            icon: Icon(Icons.delete_outline_rounded, color: theme.colorScheme.error),
-                            onPressed: () => onDelete(id),
-                          ),
+                      return EntityListTile(
+                        title: labelBuilder(item),
+                        leadingIcon: Icons.circle,
+                        trailing: IconButton(
+                          icon: Icon(Icons.delete_outline_rounded, color: theme.colorScheme.error),
+                          tooltip: 'Delete ${labelBuilder(item)}',
+                          onPressed: () => onDelete(id),
                         ),
-                      );
+                      ).animate().fadeIn(duration: 200.ms, delay: (idx * 30).ms);
                     },
                   ),
           ),

@@ -1,10 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:intl/intl.dart';
 import '../auth/auth_provider.dart';
 import '../../data/models/models.dart';
 import '../../data/services/providers.dart';
 import '../../core/widgets/responsive_scaffold.dart';
+import '../../core/widgets/skeleton_loaders.dart';
+import '../../core/widgets/entity_list_tile.dart';
+import '../../core/widgets/student_attendance_tile.dart';
+import '../../core/widgets/empty_state.dart';
+import '../../core/widgets/stat_card.dart';
+import '../../core/widgets/app_snackbar.dart';
+import '../../core/widgets/responsive_two_pane.dart';
+import '../../core/theme/app_color_scheme.dart';
+import '../../core/theme/app_tokens.dart';
 
 class EditAttendanceScreen extends ConsumerStatefulWidget {
   const EditAttendanceScreen({super.key});
@@ -15,6 +25,7 @@ class EditAttendanceScreen extends ConsumerStatefulWidget {
 
 class _EditAttendanceScreenState extends ConsumerState<EditAttendanceScreen> {
   bool _isLoading = true;
+  bool _isLoadingRoster = false;
 
   // Session selector state
   List<AttendanceSession> _sessions = [];
@@ -64,7 +75,10 @@ class _EditAttendanceScreenState extends ConsumerState<EditAttendanceScreen> {
   }
 
   Future<void> _loadRoster(AttendanceSession session) async {
-    setState(() => _isLoading = true);
+    setState(() {
+      _selectedSession = session;
+      _isLoadingRoster = true;
+    });
     final repo = ref.read(academicRepositoryProvider);
     final attendanceRepo = ref.read(attendanceRepositoryProvider);
 
@@ -72,23 +86,23 @@ class _EditAttendanceScreenState extends ConsumerState<EditAttendanceScreen> {
     final records = await attendanceRepo.getAttendanceRecords(session.id);
 
     setState(() {
-      _selectedSession = session;
       _roster = students;
       _records = records;
 
       _attendanceMap.clear();
       // Initialize map
       for (var student in _roster) {
-        final rec = _records.firstWhere((r) => r.studentId == student.id, orElse: () => AttendanceRecord(id: '', sessionId: '', studentId: '', status: 'present'));
+        final rec = _records.firstWhere((r) => r.studentId == student.id,
+            orElse: () => AttendanceRecord(id: '', sessionId: '', studentId: '', status: 'present'));
         _attendanceMap[student.id] = rec.status;
       }
-      _isLoading = false;
+      _isLoadingRoster = false;
     });
   }
 
   Future<void> _updateAttendance() async {
     if (_selectedSession == null) return;
-    setState(() => _isLoading = true);
+    setState(() => _isLoadingRoster = true);
 
     final List<AttendanceRecord> updatedRecords = [];
     _attendanceMap.forEach((studentId, status) {
@@ -115,26 +129,35 @@ class _EditAttendanceScreenState extends ConsumerState<EditAttendanceScreen> {
       _roster.clear();
       _records.clear();
       _attendanceMap.clear();
+      _isLoadingRoster = false;
     });
 
     await _loadSessions();
 
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Attendance records updated successfully!'), backgroundColor: Color(0xFF10B981)),
-      );
+      AppSnackBar.success(context, 'Attendance records updated successfully!');
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final isDesktop = MediaQuery.of(context).size.width > 960;
+    final isDesktop = MediaQuery.of(context).size.width > AppBreakpoints.desktop;
 
     if (_isLoading) {
-      return ResponsiveScaffold(
+      return const ResponsiveScaffold(
         title: 'Edit Attendance',
         currentPath: '/faculty/edit-attendance',
-        body: const Center(child: CircularProgressIndicator()),
+        body: Padding(
+          padding: EdgeInsets.all(AppSpacing.lg),
+          child: Column(
+            children: [
+              SkeletonListItem(hasTrailing: true),
+              SkeletonListItem(hasTrailing: true),
+              SkeletonListItem(hasTrailing: true),
+              SkeletonListItem(hasTrailing: true),
+            ],
+          ),
+        ),
       );
     }
 
@@ -144,6 +167,7 @@ class _EditAttendanceScreenState extends ConsumerState<EditAttendanceScreen> {
       leading: (!isDesktop && _selectedSession != null)
           ? IconButton(
               icon: const Icon(Icons.arrow_back_rounded),
+              tooltip: 'Back',
               onPressed: () => setState(() => _selectedSession = null),
             )
           : null,
@@ -154,21 +178,16 @@ class _EditAttendanceScreenState extends ConsumerState<EditAttendanceScreen> {
   }
 
   Widget _buildSessionsList() {
-    final theme = Theme.of(context);
     if (_sessions.isEmpty) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Text(
-            'No prior attendance sessions found.',
-            style: TextStyle(color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
-          ),
-        ),
+      return const EmptyState(
+        icon: Icons.history_toggle_off_rounded,
+        title: 'No prior sessions',
+        message: 'Attendance sessions you conduct will show up here for editing.',
       );
     }
 
     return ListView.builder(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(AppSpacing.lg),
       itemCount: _sessions.length,
       itemBuilder: (context, idx) {
         final session = _sessions[idx];
@@ -179,23 +198,16 @@ class _EditAttendanceScreenState extends ConsumerState<EditAttendanceScreen> {
 
         final formattedDate = DateFormat('MMM dd, yyyy').format(session.date);
 
-        return Card(
-          margin: const EdgeInsets.only(bottom: 12),
-          child: ListTile(
-            leading: CircleAvatar(
-              backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.1),
-              child: Icon(Icons.history_rounded, color: theme.colorScheme.primary),
-            ),
-            title: Text(
-              '${b.name} - Sem ${sem.semesterNumber} (${sec.name})',
-              style: const TextStyle(fontWeight: FontWeight.bold),
-            ),
-            subtitle: Text('${sub.name}\n$formattedDate | ${session.startTime} - ${session.endTime}'),
-            isThreeLine: true,
+        return Padding(
+          padding: const EdgeInsets.only(bottom: AppSpacing.md),
+          child: EntityListTile(
+            leadingIcon: Icons.history_rounded,
+            title: '${b.name} - Sem ${sem.semesterNumber} (${sec.name})',
+            subtitle: '${sub.name} · $formattedDate · ${session.startTime}-${session.endTime}',
             trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 16),
             onTap: () => _loadRoster(session),
           ),
-        );
+        ).animate().fadeIn(delay: (idx * 20).ms, duration: AppMotion.entrance);
       },
     );
   }
@@ -209,7 +221,7 @@ class _EditAttendanceScreenState extends ConsumerState<EditAttendanceScreen> {
       children: [
         Container(
           color: theme.colorScheme.primary.withValues(alpha: 0.08),
-          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl, vertical: AppSpacing.lg),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -219,59 +231,39 @@ class _EditAttendanceScreenState extends ConsumerState<EditAttendanceScreen> {
               ),
               Text(
                 'Absentees: $absenteesCount',
-                style: TextStyle(color: theme.colorScheme.error, fontWeight: FontWeight.bold),
+                style: TextStyle(color: theme.appColors.danger, fontWeight: FontWeight.bold),
               ),
             ],
           ),
         ),
         Expanded(
-          child: ListView.builder(
-            padding: const EdgeInsets.all(16),
-            itemCount: _roster.length,
-            itemBuilder: (context, idx) {
-              final student = _roster[idx];
-              final status = _attendanceMap[student.id] ?? 'present';
-              final isPresent = status == 'present';
-
-              return Card(
-                color: isPresent ? null : theme.colorScheme.errorContainer.withValues(alpha: 0.15),
-                margin: const EdgeInsets.only(bottom: 10),
-                child: ListTile(
-                  leading: CircleAvatar(
-                    backgroundColor: isPresent ? theme.colorScheme.primary.withValues(alpha: 0.1) : theme.colorScheme.error.withValues(alpha: 0.1),
-                    child: Text(
-                      student.rollNumber,
-                      style: TextStyle(
-                        color: isPresent ? theme.colorScheme.primary : theme.colorScheme.error,
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+          child: _isLoadingRoster
+              ? ListView.builder(
+                  padding: const EdgeInsets.all(AppSpacing.lg),
+                  itemCount: 6,
+                  itemBuilder: (_, _) => const Padding(
+                    padding: EdgeInsets.only(bottom: AppSpacing.sm),
+                    child: SkeletonListItem(hasTrailing: true),
                   ),
-                  title: Text(
-                    student.name,
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      decoration: isPresent ? null : TextDecoration.lineThrough,
-                    ),
-                  ),
-                  trailing: Checkbox(
-                    activeColor: theme.colorScheme.primary,
-                    checkColor: Colors.white,
-                    value: isPresent,
-                    onChanged: (val) {
-                      setState(() {
-                        _attendanceMap[student.id] = (val ?? true) ? 'present' : 'absent';
-                      });
-                    },
-                  ),
+                )
+              : ListView.builder(
+                  padding: const EdgeInsets.all(AppSpacing.lg),
+                  itemCount: _roster.length,
+                  itemBuilder: (context, idx) {
+                    final student = _roster[idx];
+                    final status = _attendanceMap[student.id] ?? 'present';
+                    return StudentAttendanceTile(
+                      name: student.name,
+                      rollNumber: student.rollNumber,
+                      isPresent: status == 'present',
+                      onChanged: (value) => setState(
+                          () => _attendanceMap[student.id] = value ? 'present' : 'absent'),
+                    ).animate().fadeIn(delay: (idx * 15).ms, duration: AppMotion.entrance);
+                  },
                 ),
-              );
-            },
-          ),
         ),
         Padding(
-          padding: const EdgeInsets.all(24.0),
+          padding: const EdgeInsets.all(AppSpacing.xl),
           child: ElevatedButton(
             onPressed: _updateAttendance,
             child: const Text('Save Changes'),
@@ -286,7 +278,7 @@ class _EditAttendanceScreenState extends ConsumerState<EditAttendanceScreen> {
     final absenteesCount = _attendanceMap.values.where((v) => v == 'absent').length;
 
     return Padding(
-      padding: const EdgeInsets.all(24.0),
+      padding: const EdgeInsets.all(AppSpacing.xl),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -301,11 +293,11 @@ class _EditAttendanceScreenState extends ConsumerState<EditAttendanceScreen> {
                       'Edit Attendance Console',
                       style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: AppSpacing.xs),
                     Text(
                       'Select a past session on the left to modify its student records.',
                       style: theme.textTheme.bodyMedium?.copyWith(
-                        color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                        color: theme.colorScheme.onSurfaceVariant,
                       ),
                     ),
                   ],
@@ -318,284 +310,180 @@ class _EditAttendanceScreenState extends ConsumerState<EditAttendanceScreen> {
               ),
             ],
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: AppSpacing.xl),
           Expanded(
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                final sessionsListCard = Card(
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    side: BorderSide(color: theme.dividerColor.withValues(alpha: 0.15)),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Text(
-                          'Past Attendance Sessions (${_sessions.length})',
-                          style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-                        ),
-                        const SizedBox(height: 12),
-                        Expanded(
-                          child: _sessions.isEmpty
-                              ? Center(
-                                  child: Text(
-                                    'No prior sessions found.',
-                                    style: TextStyle(color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
-                                  ),
-                                )
-                              : ListView.builder(
-                                  itemCount: _sessions.length,
-                                  itemBuilder: (context, idx) {
-                                    final session = _sessions[idx];
-                                    final sub = _subjects.firstWhere((s) => s.id == session.subjectId, orElse: () => Subject(id: '', code: 'UNK', name: 'Unknown Subject'));
-                                    final sec = _sections.firstWhere((s) => s.id == session.sectionId, orElse: () => Section(id: '', semesterId: '', name: 'Unknown Section'));
-                                    final sem = _semesters.firstWhere((s) => s.id == sec.semesterId, orElse: () => Semester(id: '', branchId: '', semesterNumber: 0));
-                                    final b = _branches.firstWhere((br) => br.id == sem.branchId, orElse: () => Branch(id: '', courseId: '', name: 'Unknown'));
-
-                                    final formattedDate = DateFormat('MMM dd, yyyy').format(session.date);
-                                    final isSelected = _selectedSession?.id == session.id;
-
-                                    return Container(
-                                      margin: const EdgeInsets.only(bottom: 8),
-                                      child: Material(
-                                        color: isSelected
-                                            ? theme.colorScheme.primaryContainer.withValues(alpha: 0.2)
-                                            : theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(8),
-                                          side: isSelected
-                                              ? BorderSide(color: theme.colorScheme.primary.withValues(alpha: 0.3))
-                                              : BorderSide.none,
-                                        ),
-                                        clipBehavior: Clip.antiAlias,
-                                        child: ListTile(
-                                          title: Text(
-                                            '${b.name} - Sem ${sem.semesterNumber} (${sec.name})',
-                                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-                                          ),
-                                          subtitle: Text(
-                                            '${sub.name}\n$formattedDate | ${session.startTime}',
-                                            style: const TextStyle(fontSize: 11),
-                                          ),
-                                          onTap: () => _loadRoster(session),
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                ),
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-
-                final detailPanelCard = Card(
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    side: BorderSide(color: theme.dividerColor.withValues(alpha: 0.15)),
-                  ),
-                  child: _selectedSession == null
-                      ? Center(
-                          child: Text(
-                            'Select a past session from the list to edit records.',
-                            style: TextStyle(color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
-                          ),
-                        )
-                      : Padding(
-                          padding: const EdgeInsets.all(20.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          'Session Details',
-                                          style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-                                        ),
-                                        const SizedBox(height: 2),
-                                        Text(
-                                          'Session ID: ${_selectedSession!.id}',
-                                          style: TextStyle(fontSize: 11, color: theme.colorScheme.onSurface.withValues(alpha: 0.4)),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  ElevatedButton.icon(
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: const Color(0xFF10B981),
-                                      foregroundColor: Colors.white,
-                                      minimumSize: const Size(120, 44),
-                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                    ),
-                                    onPressed: _updateAttendance,
-                                    icon: const Icon(Icons.check_rounded, size: 18),
-                                    label: const Text('Save Changes'),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 16),
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: Container(
-                                      padding: const EdgeInsets.all(12),
-                                      decoration: BoxDecoration(
-                                        color: const Color(0xFFEF4444).withValues(alpha: 0.08),
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                      child: Row(
-                                        children: [
-                                          const Icon(Icons.people_outline_rounded, color: Color(0xFFEF4444)),
-                                          const SizedBox(width: 8),
-                                          Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                            children: [
-                                              const Text('Absentees', style: TextStyle(fontSize: 10, color: Color(0xFFEF4444))),
-                                              Text('$absenteesCount students', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Color(0xFFEF4444))),
-                                            ],
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: Container(
-                                      padding: const EdgeInsets.all(12),
-                                      decoration: BoxDecoration(
-                                        color: const Color(0xFF3B82F6).withValues(alpha: 0.08),
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                      child: Row(
-                                        children: [
-                                          const Icon(Icons.edit_note_rounded, color: Color(0xFF3B82F6)),
-                                          const SizedBox(width: 8),
-                                          Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                            children: [
-                                              const Text('Status', style: TextStyle(fontSize: 10, color: Color(0xFF3B82F6))),
-                                              const Text('Editable Log', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Color(0xFF3B82F6))),
-                                            ],
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 16),
-                              const Divider(),
-                              const SizedBox(height: 12),
-                              Text(
-                                'Student Records Checklist',
-                                style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
-                              ),
-                              const SizedBox(height: 12),
-                              Expanded(
-                                child: ListView.builder(
-                                  itemCount: _roster.length,
-                                  itemBuilder: (context, idx) {
-                                    final student = _roster[idx];
-                                    final status = _attendanceMap[student.id] ?? 'present';
-                                    final isPresent = status == 'present';
-
-                                    return InkWell(
-                                      onTap: () {
-                                        setState(() {
-                                          _attendanceMap[student.id] = isPresent ? 'absent' : 'present';
-                                        });
-                                      },
-                                      child: Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                                        decoration: BoxDecoration(
-                                          border: Border(bottom: BorderSide(color: theme.dividerColor.withValues(alpha: 0.04))),
-                                        ),
-                                        child: Row(
-                                          children: [
-                                            Expanded(
-                                              child: Column(
-                                                crossAxisAlignment: CrossAxisAlignment.start,
-                                                children: [
-                                                  Text(
-                                                    student.name,
-                                                    maxLines: 1,
-                                                    overflow: TextOverflow.ellipsis,
-                                                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-                                                  ),
-                                                  Text(
-                                                    'Roll: ${student.rollNumber}',
-                                                    style: TextStyle(
-                                                      fontSize: 10,
-                                                      color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                            Icon(
-                                              isPresent ? Icons.check_circle_rounded : Icons.cancel_rounded,
-                                              color: isPresent ? theme.colorScheme.primary : theme.colorScheme.error,
-                                              size: 20,
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                );
-
-                if (constraints.maxWidth < 1100) {
-                  return SingleChildScrollView(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        SizedBox(
-                          height: 400,
-                          child: sessionsListCard,
-                        ),
-                        const SizedBox(height: 24),
-                        SizedBox(
-                          height: 600,
-                          child: detailPanelCard,
-                        ),
-                      ],
-                    ),
-                  );
-                } else {
-                  return Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      SizedBox(
-                        width: 380,
-                        child: sessionsListCard,
-                      ),
-                      const SizedBox(width: 24),
-                      Expanded(
-                        child: detailPanelCard,
-                      ),
-                    ],
-                  );
-                }
-              },
+            child: ResponsiveTwoPane(
+              left: _buildSessionsListCard(theme),
+              right: _buildDetailPanelCard(theme, absenteesCount),
             ),
           ),
         ],
       ),
     );
   }
-}
 
+  Widget _buildSessionsListCard(ThemeData theme) {
+    return Card(
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppRadius.card),
+        side: BorderSide(color: theme.dividerColor.withValues(alpha: 0.15)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.lg),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              'Past Attendance Sessions (${_sessions.length})',
+              style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: AppSpacing.md),
+            Expanded(
+              child: _sessions.isEmpty
+                  ? const EmptyState(
+                      icon: Icons.history_toggle_off_rounded,
+                      title: 'No prior sessions',
+                      message: 'Sessions you conduct will show up here.',
+                    )
+                  : ListView.builder(
+                      itemCount: _sessions.length,
+                      itemBuilder: (context, idx) {
+                        final session = _sessions[idx];
+                        final sub = _subjects.firstWhere((s) => s.id == session.subjectId, orElse: () => Subject(id: '', code: 'UNK', name: 'Unknown Subject'));
+                        final sec = _sections.firstWhere((s) => s.id == session.sectionId, orElse: () => Section(id: '', semesterId: '', name: 'Unknown Section'));
+                        final sem = _semesters.firstWhere((s) => s.id == sec.semesterId, orElse: () => Semester(id: '', branchId: '', semesterNumber: 0));
+                        final b = _branches.firstWhere((br) => br.id == sem.branchId, orElse: () => Branch(id: '', courseId: '', name: 'Unknown'));
+
+                        final formattedDate = DateFormat('MMM dd, yyyy').format(session.date);
+                        final isSelected = _selectedSession?.id == session.id;
+
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+                          child: EntityListTile(
+                            selected: isSelected,
+                            title: '${b.name} - Sem ${sem.semesterNumber} (${sec.name})',
+                            subtitle: '${sub.name} · $formattedDate',
+                            leadingIcon: Icons.history_rounded,
+                            onTap: () => _loadRoster(session),
+                          ),
+                        ).animate().fadeIn(delay: (idx * 20).ms, duration: AppMotion.entrance);
+                      },
+                    ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDetailPanelCard(ThemeData theme, int absenteesCount) {
+    return Card(
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppRadius.card),
+        side: BorderSide(color: theme.dividerColor.withValues(alpha: 0.15)),
+      ),
+      child: _selectedSession == null
+          ? const EmptyState(
+              icon: Icons.fact_check_outlined,
+              title: 'No session selected',
+              message: 'Select a past session from the list to edit its records.',
+            )
+          : Padding(
+              padding: const EdgeInsets.all(AppSpacing.xl - AppSpacing.xs),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Session Details',
+                              style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              'Session ID: ${_selectedSession!.id}',
+                              style: TextStyle(fontSize: 11, color: theme.colorScheme.onSurfaceVariant),
+                            ),
+                          ],
+                        ),
+                      ),
+                      ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: theme.appColors.success,
+                          foregroundColor: Colors.white,
+                          minimumSize: const Size(120, 44),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.control)),
+                        ),
+                        onPressed: _updateAttendance,
+                        icon: const Icon(Icons.check_rounded, size: 18),
+                        label: const Text('Save Changes'),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: AppSpacing.lg),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: StatCard(
+                          icon: Icons.people_outline_rounded,
+                          label: 'Absentees',
+                          value: '$absenteesCount',
+                          color: theme.appColors.danger,
+                        ),
+                      ),
+                      const SizedBox(width: AppSpacing.md),
+                      Expanded(
+                        child: StatCard(
+                          icon: Icons.edit_note_rounded,
+                          label: 'Status',
+                          value: 'Editable',
+                          color: theme.colorScheme.primary,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: AppSpacing.lg),
+                  const Divider(),
+                  const SizedBox(height: AppSpacing.md),
+                  Text(
+                    'Student Records Checklist',
+                    style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: AppSpacing.md),
+                  Expanded(
+                    child: _isLoadingRoster
+                        ? ListView.builder(
+                            itemCount: 6,
+                            itemBuilder: (_, _) => const Padding(
+                              padding: EdgeInsets.only(bottom: AppSpacing.sm),
+                              child: SkeletonListItem(hasTrailing: true),
+                            ),
+                          )
+                        : ListView.builder(
+                            itemCount: _roster.length,
+                            itemBuilder: (context, idx) {
+                              final student = _roster[idx];
+                              final status = _attendanceMap[student.id] ?? 'present';
+                              return StudentAttendanceTile(
+                                name: student.name,
+                                rollNumber: student.rollNumber,
+                                isPresent: status == 'present',
+                                onChanged: (value) => setState(() =>
+                                    _attendanceMap[student.id] = value ? 'present' : 'absent'),
+                              ).animate().fadeIn(delay: (idx * 15).ms, duration: AppMotion.entrance);
+                            },
+                          ),
+                  ),
+                ],
+              ),
+            ),
+    );
+  }
+}

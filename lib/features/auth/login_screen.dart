@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'auth_provider.dart';
 import '../../data/services/providers.dart';
+import '../../core/utils/validators.dart';
+import '../../core/widgets/app_snackbar.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -33,12 +35,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             );
       } catch (e) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(e.toString().replaceAll('Exception: ', '')),
-              backgroundColor: Theme.of(context).colorScheme.error,
-            ),
-          );
+          AppSnackBar.error(context, e.toString().replaceAll('Exception: ', ''));
         }
       }
     }
@@ -139,7 +136,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               ),
                               const SizedBox(width: 16),
                               const Text(
-                                'CampusVault',
+                                'ClassVault',
                                 style: TextStyle(
                                   fontSize: 36,
                                   fontWeight: FontWeight.bold,
@@ -161,7 +158,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           ).animate().fadeIn(delay: 150.ms, duration: 400.ms).slideY(begin: 0.1, end: 0),
                           const SizedBox(height: 24),
                           Text(
-                            'CampusVault lets administrators, faculty, and students monitor, mark, and analyze class attendances in real-time. Powering educational workflows with absolute precision.',
+                            'ClassVault lets administrators, faculty, and students monitor, mark, and analyze class attendances in real-time. Powering educational workflows with absolute precision.',
                             style: TextStyle(
                               fontSize: 16,
                               color: Colors.white.withValues(alpha: 0.85),
@@ -236,7 +233,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               ).animate().fadeIn(duration: 400.ms).scale(begin: const Offset(0.8, 0.8), end: const Offset(1, 1)),
               const SizedBox(height: 16),
               Text(
-                'CampusVault',
+                'ClassVault',
                 textAlign: TextAlign.center,
                 style: theme.textTheme.headlineMedium?.copyWith(
                   fontWeight: FontWeight.bold,
@@ -261,15 +258,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   labelText: 'Email Address',
                   prefixIcon: Icon(Icons.email_outlined),
                 ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter your email';
-                  }
-                  if (!value.contains('@')) {
-                    return 'Please enter a valid email';
-                  }
-                  return null;
-                },
+                validator: Validators.email,
               ).animate().fadeIn(delay: 200.ms, duration: 400.ms).slideY(begin: 0.1, end: 0),
               const SizedBox(height: 16),
 
@@ -284,6 +273,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     icon: Icon(
                       _obscureText ? Icons.visibility_outlined : Icons.visibility_off_outlined,
                     ),
+                    tooltip: _obscureText ? 'Show password' : 'Hide password',
                     onPressed: () {
                       setState(() {
                         _obscureText = !_obscureText;

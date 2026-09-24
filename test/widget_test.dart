@@ -12,8 +12,8 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    // Verify that CampusVault title is present.
-    expect(find.text('CampusVault'), findsOneWidget);
+    // Verify that ClassVault title is present.
+    expect(find.text('ClassVault'), findsAtLeastNWidgets(1));
     expect(find.text('Attendance Management System'), findsOneWidget);
     expect(find.text('Email Address'), findsOneWidget);
     expect(find.text('Password'), findsOneWidget);

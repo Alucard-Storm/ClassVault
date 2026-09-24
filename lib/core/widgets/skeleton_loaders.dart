@@ -21,9 +21,13 @@ class SkeletonLoader extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    
-    final base = baseColor ?? (isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0));
-    final highlight = highlightColor ?? (isDark ? const Color(0xFF475569) : const Color(0xFFF1F5F9));
+
+    // Built from onSurface at low alpha (rather than hardcoded hex) so the
+    // shimmer always reads correctly against whatever surface it sits on,
+    // in both themes, without per-theme upkeep.
+    final base = baseColor ?? theme.colorScheme.onSurface.withValues(alpha: isDark ? 0.08 : 0.06);
+    final highlight =
+        highlightColor ?? theme.colorScheme.onSurface.withValues(alpha: isDark ? 0.18 : 0.12);
 
     return Container(
       width: width,
@@ -236,7 +240,10 @@ class SkeletonChart extends StatelessWidget {
                       width: 38,
                       height: 100 * (index % 5 + 1) / 5,
                       decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+                        color: Theme.of(context)
+                            .colorScheme
+                            .onSurface
+                            .withValues(alpha: Theme.of(context).brightness == Brightness.dark ? 0.08 : 0.06),
                         borderRadius: const BorderRadius.only(
                           topLeft: Radius.circular(8),
                           topRight: Radius.circular(8),

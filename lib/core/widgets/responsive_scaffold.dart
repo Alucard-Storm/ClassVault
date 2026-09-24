@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/constants/app_constants.dart';
+import '../theme/app_tokens.dart';
+import '../theme/app_color_scheme.dart';
 import '../../data/models/models.dart';
 import '../../data/services/providers.dart';
 import '../../features/auth/auth_provider.dart';
@@ -33,7 +35,7 @@ class ResponsiveScaffold extends ConsumerWidget {
     final themeMode = ref.watch(themeModeProvider);
 
     final mediaQuery = MediaQuery.of(context);
-    final isDesktop = mediaQuery.size.width > 960;
+    final isDesktop = mediaQuery.size.width > AppBreakpoints.desktop;
 
     if (user == null) return body;
 
@@ -55,6 +57,25 @@ class ResponsiveScaffold extends ConsumerWidget {
 
     final Widget mainLayout;
 
+    // Brand chrome gradient — the one intentional gradient in the app,
+    // derived from theme tokens so it stays correct if the seed color
+    // ever changes rather than drifting from a hardcoded palette.
+    final sidebarGradient = isDark
+        ? LinearGradient(
+            colors: [theme.colorScheme.surface, theme.scaffoldBackgroundColor],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          )
+        : LinearGradient(
+            colors: [
+              theme.colorScheme.primary,
+              Color.alphaBlend(
+                  Colors.black.withValues(alpha: 0.18), theme.colorScheme.primary),
+            ],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          );
+
     if (isDesktop) {
       mainLayout = Scaffold(
         body: Row(
@@ -62,17 +83,7 @@ class ResponsiveScaffold extends ConsumerWidget {
             Container(
               width: 280,
               decoration: BoxDecoration(
-                gradient: isDark
-                    ? const LinearGradient(
-                        colors: [Color(0xFF1E293B), Color(0xFF0F172A)],
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                      )
-                    : const LinearGradient(
-                        colors: [Color(0xFF4C5DF4), Color(0xFF3544C4)],
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                      ),
+                gradient: sidebarGradient,
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -91,7 +102,7 @@ class ResponsiveScaffold extends ConsumerWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'CampusVault',
+                              'ClassVault',
                               style: theme.textTheme.titleMedium?.copyWith(
                                 fontWeight: FontWeight.bold,
                                 letterSpacing: -0.5,
@@ -99,7 +110,7 @@ class ResponsiveScaffold extends ConsumerWidget {
                               ),
                             ),
                             Text(
-                              'SIRT ERP',
+                              'ATTENDANCE SUITE',
                               style: TextStyle(
                                 fontSize: 10,
                                 fontWeight: FontWeight.w500,
@@ -121,7 +132,7 @@ class ResponsiveScaffold extends ConsumerWidget {
                       color: isDark
                           ? theme.colorScheme.primary.withValues(alpha: 0.08)
                           : Colors.white.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(AppRadius.card),
                     ),
                     child: Row(
                       children: [
@@ -177,11 +188,7 @@ class ResponsiveScaffold extends ConsumerWidget {
                       itemCount: menuItems.length,
                       itemBuilder: (context, idx) {
                         final item = menuItems[idx];
-                        final isSelected = currentPath == item.route ||
-                            (item.route != '/admin' &&
-                                item.route != '/faculty' &&
-                                item.route != '/student' &&
-                                currentPath.startsWith(item.route));
+                        final isSelected = _isRouteSelected(currentPath, item.route);
                         return Container(
                           margin: const EdgeInsets.only(bottom: 4),
                           child: ListTile(
@@ -190,7 +197,7 @@ class ResponsiveScaffold extends ConsumerWidget {
                                 ? theme.colorScheme.primary.withValues(alpha: 0.1)
                                 : Colors.white.withValues(alpha: 0.15),
                             shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8)),
+                                borderRadius: BorderRadius.circular(AppRadius.control)),
                             leading: Icon(
                               item.icon,
                               color: isSelected
@@ -222,7 +229,7 @@ class ResponsiveScaffold extends ConsumerWidget {
                     child: OutlinedButton.icon(
                       style: OutlinedButton.styleFrom(
                         minimumSize: const Size.fromHeight(50),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.control)),
                         foregroundColor: isDark ? theme.colorScheme.primary : Colors.white,
                         side: BorderSide(
                             color: isDark
@@ -244,22 +251,18 @@ class ResponsiveScaffold extends ConsumerWidget {
                   leading: leading,
                   title: Text(
                     title,
-                    style: TextStyle(
-                      color: isDark ? Colors.white : const Color(0xFF0F172A),
+                    style: theme.appBarTheme.titleTextStyle?.copyWith(
                       fontWeight: FontWeight.bold,
                       fontSize: 20,
                     ),
                   ),
-                  backgroundColor: isDark ? const Color(0xFF0F172A) : Colors.white,
                   surfaceTintColor: Colors.transparent,
                   elevation: 0,
                   scrolledUnderElevation: 0,
                   bottom: PreferredSize(
                     preferredSize: const Size.fromHeight(1),
                     child: Container(
-                      color: isDark
-                          ? const Color(0xFF334155).withValues(alpha: 0.3)
-                          : const Color(0xFFE2E8F0).withValues(alpha: 0.5),
+                      color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
                       height: 1,
                     ),
                   ),
@@ -275,47 +278,35 @@ class ResponsiveScaffold extends ConsumerWidget {
                         decoration: InputDecoration(
                           hintText: 'Search anything...',
                           hintStyle: TextStyle(
-                              fontSize: 12,
-                              color: isDark ? Colors.white60 : const Color(0xFF64748B)),
+                              fontSize: 12, color: theme.colorScheme.onSurfaceVariant),
                           prefixIcon: const Icon(Icons.search_rounded, size: 16),
                           suffixIcon: Container(
                             margin: const EdgeInsets.all(5),
                             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
                             decoration: BoxDecoration(
-                              color: isDark
-                                  ? const Color(0xFF334155)
-                                  : const Color(0xFFF1F5F9),
-                              borderRadius: BorderRadius.circular(4),
-                              border: Border.all(
-                                  color: isDark
-                                      ? const Color(0xFF475569)
-                                      : const Color(0xFFE2E8F0)),
+                              color: theme.colorScheme.surfaceContainerHighest,
+                              borderRadius: BorderRadius.circular(AppRadius.control / 2),
+                              border: Border.all(color: theme.colorScheme.outlineVariant),
                             ),
                             child: Text(
                               'Ctrl + K',
                               style: TextStyle(
                                   fontSize: 8,
                                   fontWeight: FontWeight.bold,
-                                  color: isDark ? Colors.white70 : const Color(0xFF475569)),
+                                  color: theme.colorScheme.onSurfaceVariant),
                             ),
                           ),
                           filled: true,
-                          fillColor:
-                              isDark ? const Color(0xFF1E293B) : const Color(0xFFF8FAFC),
+                          fillColor: theme.colorScheme.surfaceContainerHighest
+                              .withValues(alpha: 0.5),
                           contentPadding: EdgeInsets.zero,
                           enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                            borderSide: BorderSide(
-                                color: isDark
-                                    ? const Color(0xFF334155)
-                                    : const Color(0xFFE2E8F0)),
+                            borderRadius: BorderRadius.circular(AppRadius.control),
+                            borderSide: BorderSide(color: theme.colorScheme.outlineVariant),
                           ),
                           focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                            borderSide: BorderSide(
-                                color: isDark
-                                    ? const Color(0xFF475569)
-                                    : const Color(0xFFCBD5E1)),
+                            borderRadius: BorderRadius.circular(AppRadius.control),
+                            borderSide: BorderSide(color: theme.colorScheme.outline),
                           ),
                         ),
                       ),
@@ -328,7 +319,7 @@ class ResponsiveScaffold extends ConsumerWidget {
                         children: [
                           Icon(
                             Icons.notifications_none_rounded,
-                            color: isDark ? Colors.white70 : const Color(0xFF475569),
+                            color: theme.colorScheme.onSurfaceVariant,
                           ),
                           if (notifCount > 0)
                             Positioned(
@@ -336,8 +327,8 @@ class ResponsiveScaffold extends ConsumerWidget {
                               right: 0,
                               child: Container(
                                 padding: const EdgeInsets.all(3),
-                                decoration: const BoxDecoration(
-                                    color: Colors.red, shape: BoxShape.circle),
+                                decoration: BoxDecoration(
+                                    color: theme.appColors.danger, shape: BoxShape.circle),
                                 constraints:
                                     const BoxConstraints(minWidth: 14, minHeight: 14),
                                 child: Text(
@@ -353,7 +344,8 @@ class ResponsiveScaffold extends ConsumerWidget {
                         ],
                       ),
                       offset: const Offset(0, 48),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(AppRadius.card)),
                       itemBuilder: (context) {
                         if (notifCount == 0) {
                           return [
@@ -385,8 +377,8 @@ class ResponsiveScaffold extends ConsumerWidget {
                             value: 1,
                             child: Row(
                               children: [
-                                const Icon(Icons.warning_amber_rounded,
-                                    color: Colors.red, size: 18),
+                                Icon(Icons.warning_amber_rounded,
+                                    color: theme.appColors.danger, size: 18),
                                 const SizedBox(width: 12),
                                 Expanded(
                                   child: Column(
@@ -416,7 +408,8 @@ class ResponsiveScaffold extends ConsumerWidget {
                     PopupMenuButton<int>(
                       tooltip: 'User Menu',
                       offset: const Offset(0, 48),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(AppRadius.card)),
                       child: Row(
                         children: [
                           CircleAvatar(
@@ -424,8 +417,8 @@ class ResponsiveScaffold extends ConsumerWidget {
                             backgroundColor: theme.colorScheme.primary,
                             child: Text(
                               user.name.isNotEmpty ? user.name[0].toUpperCase() : 'U',
-                              style: const TextStyle(
-                                  color: Colors.white,
+                              style: TextStyle(
+                                  color: theme.colorScheme.onPrimary,
                                   fontWeight: FontWeight.bold,
                                   fontSize: 12),
                             ),
@@ -436,7 +429,7 @@ class ResponsiveScaffold extends ConsumerWidget {
                             style: TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.w600,
-                              color: isDark ? Colors.white70 : const Color(0xFF1E293B),
+                              color: theme.colorScheme.onSurface,
                             ),
                           ),
                           const Icon(Icons.arrow_drop_down, size: 18),
@@ -487,13 +480,13 @@ class ResponsiveScaffold extends ConsumerWidget {
                             value: 2,
                             child: Row(
                               children: [
-                                const Icon(Icons.logout_rounded,
-                                    size: 18, color: Colors.red),
+                                Icon(Icons.logout_rounded,
+                                    size: 18, color: theme.appColors.danger),
                                 const SizedBox(width: 12),
-                                const Text('Logout',
+                                Text('Logout',
                                     style: TextStyle(
                                         fontSize: 13,
-                                        color: Colors.red,
+                                        color: theme.appColors.danger,
                                         fontWeight: FontWeight.bold)),
                               ],
                             ),
@@ -520,9 +513,8 @@ class ResponsiveScaffold extends ConsumerWidget {
       final bottomNavItems = usesBottomNav ? _getFacultyBottomNavItems() : null;
       int? currentBottomIndex;
       if (usesBottomNav && bottomNavItems != null) {
-        currentBottomIndex = bottomNavItems.indexWhere((item) =>
-            currentPath == item.route ||
-            (item.route != '/faculty' && currentPath.startsWith(item.route)));
+        currentBottomIndex = bottomNavItems
+            .indexWhere((item) => _isRouteSelected(currentPath, item.route));
         if (currentBottomIndex < 0) currentBottomIndex = 0;
       }
 
@@ -531,24 +523,30 @@ class ResponsiveScaffold extends ConsumerWidget {
           leading: leading,
           title: Text(title),
           bottom: bottom,
-          actions: actions ??
-              [
-                IconButton(
-                  icon: Icon(
-                    themeMode == ThemeMode.system
-                        ? Icons.brightness_auto_rounded
-                        : (isDark ? Icons.light_mode_rounded : Icons.dark_mode_rounded),
-                  ),
-                  onPressed: cycleThemeMode,
-                  tooltip: themeMode == ThemeMode.system
-                      ? 'Theme: Auto (System)'
-                      : (isDark ? 'Theme: Dark Mode' : 'Theme: Light Mode'),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.logout_rounded),
-                  onPressed: () => ref.read(authStateProvider.notifier).logout(),
-                ),
-              ],
+          actions: [
+            ...?actions,
+            IconButton(
+              icon: const Icon(Icons.search_rounded),
+              tooltip: 'Search',
+              onPressed: () => _showSearchDialog(context, ref),
+            ),
+            IconButton(
+              icon: Icon(
+                themeMode == ThemeMode.system
+                    ? Icons.brightness_auto_rounded
+                    : (isDark ? Icons.light_mode_rounded : Icons.dark_mode_rounded),
+              ),
+              onPressed: cycleThemeMode,
+              tooltip: themeMode == ThemeMode.system
+                  ? 'Theme: Auto (System)'
+                  : (isDark ? 'Theme: Dark Mode' : 'Theme: Light Mode'),
+            ),
+            IconButton(
+              icon: const Icon(Icons.logout_rounded),
+              tooltip: 'Logout',
+              onPressed: () => ref.read(authStateProvider.notifier).logout(),
+            ),
+          ],
         ),
         drawer: usesBottomNav
             ? null
@@ -578,13 +576,13 @@ class ResponsiveScaffold extends ConsumerWidget {
                         itemCount: menuItems.length,
                         itemBuilder: (context, idx) {
                           final item = menuItems[idx];
-                          final isSelected = currentPath == item.route;
+                          final isSelected = _isRouteSelected(currentPath, item.route);
                           return ListTile(
                             selected: isSelected,
                             selectedTileColor:
                                 theme.colorScheme.primary.withValues(alpha: 0.08),
                             shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8)),
+                                borderRadius: BorderRadius.circular(AppRadius.control)),
                             leading: Icon(item.icon),
                             title: Text(item.title,
                                 style: TextStyle(
@@ -620,10 +618,10 @@ class ResponsiveScaffold extends ConsumerWidget {
                       },
                     ),
                     ListTile(
-                      leading: const Icon(Icons.logout_rounded, color: Colors.red),
-                      title: const Text('Logout',
+                      leading: Icon(Icons.logout_rounded, color: theme.appColors.danger),
+                      title: Text('Logout',
                           style: TextStyle(
-                              color: Colors.red, fontWeight: FontWeight.bold)),
+                              color: theme.appColors.danger, fontWeight: FontWeight.bold)),
                       onTap: () {
                         Navigator.pop(context);
                         ref.read(authStateProvider.notifier).logout();
@@ -663,6 +661,19 @@ class ResponsiveScaffold extends ConsumerWidget {
         child: mainLayout,
       ),
     );
+  }
+
+  static const _rootRoutes = {'/admin', '/faculty', '/student'};
+
+  /// Single source of truth for nav-item selection, used by the desktop
+  /// sidebar, mobile drawer, and faculty bottom nav alike. Root routes only
+  /// match exactly (otherwise every nested route would also highlight
+  /// "Dashboard"); everything else matches by prefix so nested routes like
+  /// `/admin/students/import` still highlight `/admin/students`.
+  bool _isRouteSelected(String currentPath, String itemRoute) {
+    if (currentPath == itemRoute) return true;
+    if (_rootRoutes.contains(itemRoute)) return false;
+    return currentPath.startsWith(itemRoute);
   }
 
   void _showSearchDialog(BuildContext context, WidgetRef ref) {
@@ -969,7 +980,7 @@ class _SearchDialogState extends ConsumerState<_SearchDialog> {
     }
 
     return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.card)),
       child: Container(
         width: 500,
         height: 450,
@@ -985,13 +996,14 @@ class _SearchDialogState extends ConsumerState<_SearchDialog> {
                 suffixIcon: _query.isNotEmpty
                     ? IconButton(
                         icon: const Icon(Icons.clear_rounded),
+                        tooltip: 'Clear search',
                         onPressed: () {
                           _controller.clear();
                           setState(() => _query = '');
                         },
                       )
                     : null,
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(AppRadius.card)),
               ),
               onChanged: (val) => setState(() => _query = val),
             ),

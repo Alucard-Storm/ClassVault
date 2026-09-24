@@ -1,11 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../auth/auth_provider.dart';
 import '../../data/models/models.dart';
 import '../../data/services/providers.dart';
 import '../../core/widgets/responsive_scaffold.dart';
+import '../../core/widgets/skeleton_loaders.dart';
+import '../../core/widgets/app_dialogs.dart';
+import '../../core/widgets/app_snackbar.dart';
+import '../../core/widgets/student_attendance_tile.dart';
+import '../../core/widgets/empty_state.dart';
+import '../../core/theme/app_color_scheme.dart';
+import '../../core/theme/app_tokens.dart';
 
 class MarkAttendanceScreen extends ConsumerStatefulWidget {
   const MarkAttendanceScreen({super.key});
@@ -135,47 +143,17 @@ class _MarkAttendanceScreenState extends ConsumerState<MarkAttendanceScreen> {
     final presentCount = _attendanceState.values.where((v) => v).length;
     final absenteesCount = _attendanceState.values.where((v) => !v).length;
 
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Confirm Submission'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('You are about to submit attendance for this session.'),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                const Icon(Icons.check_circle_rounded, color: Color(0xFF10B981), size: 18),
-                const SizedBox(width: 8),
-                Text('Present: $presentCount students'),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                const Icon(Icons.cancel_rounded, color: Color(0xFFEF4444), size: 18),
-                const SizedBox(width: 8),
-                Text('Absent: $absenteesCount students'),
-              ],
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Submit'),
-          ),
-        ],
-      ),
+    final confirmed = await AppConfirmDialog.show(
+      context,
+      title: 'Confirm Submission',
+      message: 'You are about to submit attendance for this session.\n\n'
+          'Present: $presentCount students\n'
+          'Absent: $absenteesCount students',
+      confirmLabel: 'Submit',
+      icon: Icons.task_alt_rounded,
     );
 
-    if (confirmed != true) return;
+    if (!confirmed || !mounted) return;
 
     setState(() => _isLoading = true);
 
@@ -211,12 +189,7 @@ class _MarkAttendanceScreenState extends ConsumerState<MarkAttendanceScreen> {
     await attendanceRepo.addSession(session, records);
 
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Attendance recorded successfully!'),
-          backgroundColor: Color(0xFF10B981),
-        ),
-      );
+      AppSnackBar.success(context, 'Attendance recorded successfully!');
       context.go('/faculty');
     }
   }
@@ -226,10 +199,19 @@ class _MarkAttendanceScreenState extends ConsumerState<MarkAttendanceScreen> {
     final isDesktop = MediaQuery.of(context).size.width > 960;
 
     if (_isLoading) {
-      return ResponsiveScaffold(
+      return const ResponsiveScaffold(
         title: 'Mark Attendance',
         currentPath: '/faculty/mark-attendance',
-        body: const Center(child: CircularProgressIndicator()),
+        body: Padding(
+          padding: EdgeInsets.all(AppSpacing.xl),
+          child: Column(
+            children: [
+              SkeletonCard(height: 160),
+              SizedBox(height: AppSpacing.lg),
+              SkeletonCard(height: 180),
+            ],
+          ),
+        ),
       );
     }
 
@@ -239,6 +221,7 @@ class _MarkAttendanceScreenState extends ConsumerState<MarkAttendanceScreen> {
       leading: (!isDesktop && _currentStep == 1)
           ? IconButton(
               icon: const Icon(Icons.arrow_back_rounded),
+              tooltip: 'Back',
               onPressed: () => setState(() => _currentStep = 0),
             )
           : null,
@@ -267,9 +250,10 @@ class _MarkAttendanceScreenState extends ConsumerState<MarkAttendanceScreen> {
                         style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
                     const SizedBox(height: 16),
                     _assignments.isEmpty
-                        ? Text(
-                            'No classes assigned. Please ask your administrator.',
-                            style: TextStyle(color: theme.colorScheme.error),
+                        ? const EmptyState(
+                            icon: Icons.class_outlined,
+                            title: 'No classes assigned',
+                            message: 'Please ask your administrator to assign you a class.',
                           )
                         : DropdownButtonFormField<String>(
                             isExpanded: true,
@@ -302,10 +286,13 @@ class _MarkAttendanceScreenState extends ConsumerState<MarkAttendanceScreen> {
                   ],
                 ),
               ),
-            ),
-            const SizedBox(height: 16),
-            _buildDateTimeCard(),
-            const SizedBox(height: 24),
+            ).animate().fadeIn(duration: AppMotion.entrance).slideY(begin: 0.06, curve: Curves.easeOut),
+            const SizedBox(height: AppSpacing.lg),
+            _buildDateTimeCard()
+                .animate()
+                .fadeIn(delay: AppMotion.stagger, duration: AppMotion.entrance)
+                .slideY(begin: 0.06, curve: Curves.easeOut),
+            const SizedBox(height: AppSpacing.xl),
             ElevatedButton(
               onPressed: _assignments.isEmpty ? null : _proceedToRoster,
               child: const Text('Proceed to Attendance Sheet'),
@@ -339,79 +326,33 @@ class _MarkAttendanceScreenState extends ConsumerState<MarkAttendanceScreen> {
                 ],
               ),
               const SizedBox(height: 10),
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: const Color(0xFF10B981),
-                        side: const BorderSide(color: Color(0xFF10B981)),
-                        padding: const EdgeInsets.symmetric(vertical: 8),
-                      ),
-                      onPressed: () => _markAll(true),
-                      icon: const Icon(Icons.check_circle_outline_rounded, size: 16),
-                      label: const Text('All Present', style: TextStyle(fontSize: 12)),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: theme.colorScheme.error,
-                        side: BorderSide(color: theme.colorScheme.error),
-                        padding: const EdgeInsets.symmetric(vertical: 8),
-                      ),
-                      onPressed: () => _markAll(false),
-                      icon: const Icon(Icons.cancel_outlined, size: 16),
-                      label: const Text('All Absent', style: TextStyle(fontSize: 12)),
-                    ),
-                  ),
-                ],
-              ),
+              _buildBulkActionButtons(theme),
               const SizedBox(height: 8),
-              TextField(
-                controller: _searchController,
-                decoration: InputDecoration(
-                  hintText: 'Search by name or roll number...',
-                  prefixIcon: const Icon(Icons.search_rounded, size: 18),
-                  suffixIcon: _searchQuery.isNotEmpty
-                      ? IconButton(
-                          icon: const Icon(Icons.clear_rounded, size: 16),
-                          onPressed: () {
-                            _searchController.clear();
-                            setState(() => _searchQuery = '');
-                          },
-                        )
-                      : null,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                  filled: true,
-                  fillColor: theme.colorScheme.surface,
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(color: theme.dividerColor),
-                  ),
-                ),
-              ),
+              _buildSearchField(theme),
             ],
           ),
         ),
         Expanded(
           child: _isLoadingRoster
-              ? const Center(child: CircularProgressIndicator())
+              ? ListView.builder(
+                  padding: const EdgeInsets.all(12),
+                  itemCount: 6,
+                  itemBuilder: (_, _) => const Padding(
+                    padding: EdgeInsets.only(bottom: AppSpacing.sm),
+                    child: SkeletonListItem(hasTrailing: true),
+                  ),
+                )
               : _roster.isEmpty
-                  ? Center(
-                      child: Text(
-                        'No students enrolled in this section.',
-                        style: TextStyle(color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
-                      ),
+                  ? const EmptyState(
+                      icon: Icons.groups_outlined,
+                      title: 'No students enrolled',
+                      message: 'This section has no enrolled students yet.',
                     )
                   : filtered.isEmpty
-                      ? Center(
-                          child: Text(
-                            'No students match "$_searchQuery".',
-                            style: TextStyle(color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
-                          ),
+                      ? EmptyState(
+                          icon: Icons.search_off_rounded,
+                          title: 'No matches',
+                          message: 'No students match "$_searchQuery".',
                         )
                       : ListView.builder(
                           padding: const EdgeInsets.all(12),
@@ -419,54 +360,14 @@ class _MarkAttendanceScreenState extends ConsumerState<MarkAttendanceScreen> {
                           itemBuilder: (context, idx) {
                             final student = filtered[idx];
                             final isPresent = _attendanceState[student.id] ?? true;
-
-                            return Card(
-                              color: isPresent
-                                  ? null
-                                  : theme.colorScheme.errorContainer.withValues(alpha: 0.12),
-                              margin: const EdgeInsets.only(bottom: 8),
-                              child: ListTile(
-                                leading: CircleAvatar(
-                                  backgroundColor: isPresent
-                                      ? theme.colorScheme.primary.withValues(alpha: 0.1)
-                                      : theme.colorScheme.error.withValues(alpha: 0.1),
-                                  child: Text(
-                                    student.rollNumber,
-                                    style: TextStyle(
-                                      color: isPresent
-                                          ? theme.colorScheme.primary
-                                          : theme.colorScheme.error,
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                                title: Text(
-                                  student.name,
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: isPresent
-                                        ? null
-                                        : theme.colorScheme.onSurface.withValues(alpha: 0.5),
-                                  ),
-                                ),
-                                trailing: Checkbox(
-                                  activeColor: theme.colorScheme.primary,
-                                  checkColor: Colors.white,
-                                  value: isPresent,
-                                  onChanged: (val) {
-                                    setState(() {
-                                      _attendanceState[student.id] = val ?? true;
-                                    });
-                                  },
-                                ),
-                                onTap: () {
-                                  setState(() {
-                                    _attendanceState[student.id] = !isPresent;
-                                  });
-                                },
-                              ),
-                            );
+                            return StudentAttendanceTile(
+                              name: student.name,
+                              rollNumber: student.rollNumber,
+                              isPresent: isPresent,
+                              onChanged: (value) =>
+                                  setState(() => _attendanceState[student.id] = value),
+                            ).animate().fadeIn(
+                                delay: (idx * 15).ms, duration: AppMotion.entrance);
                           },
                         ),
         ),
@@ -478,6 +379,60 @@ class _MarkAttendanceScreenState extends ConsumerState<MarkAttendanceScreen> {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildBulkActionButtons(ThemeData theme) {
+    return Row(
+      children: [
+        Expanded(
+          child: OutlinedButton.icon(
+            style: OutlinedButton.styleFrom(
+              foregroundColor: theme.appColors.success,
+              side: BorderSide(color: theme.appColors.success),
+              padding: const EdgeInsets.symmetric(vertical: 8),
+            ),
+            onPressed: () => _markAll(true),
+            icon: const Icon(Icons.check_circle_outline_rounded, size: 16),
+            label: const Text('All Present', style: TextStyle(fontSize: 12)),
+          ),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: OutlinedButton.icon(
+            style: OutlinedButton.styleFrom(
+              foregroundColor: theme.appColors.danger,
+              side: BorderSide(color: theme.appColors.danger),
+              padding: const EdgeInsets.symmetric(vertical: 8),
+            ),
+            onPressed: () => _markAll(false),
+            icon: const Icon(Icons.cancel_outlined, size: 16),
+            label: const Text('All Absent', style: TextStyle(fontSize: 12)),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSearchField(ThemeData theme, {bool dense = false}) {
+    return TextField(
+      controller: _searchController,
+      decoration: InputDecoration(
+        hintText: 'Search by name or roll number...',
+        prefixIcon: const Icon(Icons.search_rounded, size: 18),
+        suffixIcon: _searchQuery.isNotEmpty
+            ? IconButton(
+                icon: const Icon(Icons.clear_rounded, size: 16),
+                tooltip: 'Clear search',
+                onPressed: () {
+                  _searchController.clear();
+                  setState(() => _searchQuery = '');
+                },
+              )
+            : null,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        isDense: dense,
+      ),
     );
   }
 
@@ -499,7 +454,7 @@ class _MarkAttendanceScreenState extends ConsumerState<MarkAttendanceScreen> {
           Text(
             'Select lecture details and mark absentees below.',
             style: theme.textTheme.bodyMedium?.copyWith(
-              color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+              color: theme.colorScheme.onSurfaceVariant,
             ),
           ),
           const SizedBox(height: 24),
@@ -529,9 +484,10 @@ class _MarkAttendanceScreenState extends ConsumerState<MarkAttendanceScreen> {
                                     style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
                                 const SizedBox(height: 12),
                                 _assignments.isEmpty
-                                    ? Text(
-                                        'No classes assigned. Please ask your administrator.',
-                                        style: TextStyle(color: theme.colorScheme.error),
+                                    ? const EmptyState(
+                                        icon: Icons.class_outlined,
+                                        title: 'No classes assigned',
+                                        message: 'Please ask your administrator to assign you a class.',
                                       )
                                     : DropdownButtonFormField<String>(
                                         isExpanded: true,
@@ -575,7 +531,7 @@ class _MarkAttendanceScreenState extends ConsumerState<MarkAttendanceScreen> {
                         ElevatedButton.icon(
                           style: ElevatedButton.styleFrom(
                             backgroundColor: theme.colorScheme.primary,
-                            foregroundColor: Colors.white,
+                            foregroundColor: theme.colorScheme.onPrimary,
                             minimumSize: const Size.fromHeight(56),
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                           ),
@@ -610,166 +566,51 @@ class _MarkAttendanceScreenState extends ConsumerState<MarkAttendanceScreen> {
                               Text(
                                 'Absent: $absenteesCount',
                                 style: TextStyle(
-                                    color: theme.colorScheme.error, fontWeight: FontWeight.bold),
+                                    color: theme.appColors.danger, fontWeight: FontWeight.bold),
                               ),
                             ],
                           ),
                           const SizedBox(height: 12),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: OutlinedButton.icon(
-                                  style: OutlinedButton.styleFrom(
-                                    foregroundColor: const Color(0xFF10B981),
-                                    side: const BorderSide(color: Color(0xFF10B981)),
-                                    padding: const EdgeInsets.symmetric(vertical: 8),
-                                  ),
-                                  onPressed: () => _markAll(true),
-                                  icon: const Icon(Icons.check_circle_outline_rounded, size: 16),
-                                  label: const Text('All Present', style: TextStyle(fontSize: 12)),
-                                ),
-                              ),
-                              const SizedBox(width: 10),
-                              Expanded(
-                                child: OutlinedButton.icon(
-                                  style: OutlinedButton.styleFrom(
-                                    foregroundColor: theme.colorScheme.error,
-                                    side: BorderSide(color: theme.colorScheme.error),
-                                    padding: const EdgeInsets.symmetric(vertical: 8),
-                                  ),
-                                  onPressed: () => _markAll(false),
-                                  icon: const Icon(Icons.cancel_outlined, size: 16),
-                                  label: const Text('All Absent', style: TextStyle(fontSize: 12)),
-                                ),
-                              ),
-                            ],
-                          ),
+                          _buildBulkActionButtons(theme),
                           const SizedBox(height: 10),
-                          TextField(
-                            controller: _searchController,
-                            decoration: InputDecoration(
-                              hintText: 'Search by name or roll number...',
-                              prefixIcon: const Icon(Icons.search_rounded, size: 18),
-                              suffixIcon: _searchQuery.isNotEmpty
-                                  ? IconButton(
-                                      icon: const Icon(Icons.clear_rounded, size: 16),
-                                      onPressed: () {
-                                        _searchController.clear();
-                                        setState(() => _searchQuery = '');
-                                      },
-                                    )
-                                  : null,
-                              contentPadding:
-                                  const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                              isDense: true,
-                            ),
-                          ),
+                          _buildSearchField(theme, dense: true),
                           const SizedBox(height: 12),
                           Expanded(
                             child: _isLoadingRoster
-                                ? const Center(child: CircularProgressIndicator())
+                                ? ListView.builder(
+                                    itemCount: 6,
+                                    itemBuilder: (_, _) => const Padding(
+                                      padding: EdgeInsets.only(bottom: AppSpacing.sm),
+                                      child: SkeletonListItem(hasTrailing: true),
+                                    ),
+                                  )
                                 : _roster.isEmpty
-                                    ? Center(
-                                        child: Text(
-                                          'No students found in the target class section.',
-                                          style: TextStyle(
-                                              color:
-                                                  theme.colorScheme.onSurface.withValues(alpha: 0.5)),
-                                        ),
+                                    ? const EmptyState(
+                                        icon: Icons.groups_outlined,
+                                        title: 'No students enrolled',
+                                        message: 'This section has no enrolled students yet.',
                                       )
                                     : filtered.isEmpty
-                                        ? Center(
-                                            child: Text(
-                                              'No students match "$_searchQuery".',
-                                              style: TextStyle(
-                                                  color: theme.colorScheme.onSurface
-                                                      .withValues(alpha: 0.5)),
-                                            ),
+                                        ? EmptyState(
+                                            icon: Icons.search_off_rounded,
+                                            title: 'No matches',
+                                            message: 'No students match "$_searchQuery".',
                                           )
-                                        : GridView.builder(
-                                            gridDelegate:
-                                                const SliverGridDelegateWithMaxCrossAxisExtent(
-                                              maxCrossAxisExtent: 180,
-                                              mainAxisSpacing: 10,
-                                              crossAxisSpacing: 10,
-                                              childAspectRatio: 2.2,
-                                            ),
+                                        : ListView.builder(
                                             itemCount: filtered.length,
                                             itemBuilder: (context, idx) {
                                               final student = filtered[idx];
                                               final isPresent =
                                                   _attendanceState[student.id] ?? true;
-                                              return InkWell(
-                                                onTap: () {
-                                                  setState(() {
-                                                    _attendanceState[student.id] = !isPresent;
-                                                  });
-                                                },
-                                                borderRadius: BorderRadius.circular(8),
-                                                child: Container(
-                                                  padding: const EdgeInsets.symmetric(
-                                                      horizontal: 12, vertical: 8),
-                                                  decoration: BoxDecoration(
-                                                    color: isPresent
-                                                        ? theme.colorScheme.primaryContainer
-                                                            .withValues(alpha: 0.15)
-                                                        : theme.colorScheme.errorContainer
-                                                            .withValues(alpha: 0.15),
-                                                    border: Border.all(
-                                                      color: isPresent
-                                                          ? theme.colorScheme.primary
-                                                              .withValues(alpha: 0.2)
-                                                          : theme.colorScheme.error
-                                                              .withValues(alpha: 0.2),
-                                                    ),
-                                                    borderRadius: BorderRadius.circular(8),
-                                                  ),
-                                                  child: Row(
-                                                    children: [
-                                                      Expanded(
-                                                        child: Column(
-                                                          crossAxisAlignment:
-                                                              CrossAxisAlignment.start,
-                                                          mainAxisAlignment:
-                                                              MainAxisAlignment.center,
-                                                          children: [
-                                                            Text(
-                                                              student.name,
-                                                              maxLines: 1,
-                                                              overflow: TextOverflow.ellipsis,
-                                                              style: TextStyle(
-                                                                fontWeight: FontWeight.bold,
-                                                                fontSize: 13,
-                                                                color: isPresent
-                                                                    ? null
-                                                                    : theme.colorScheme.onSurface
-                                                                        .withValues(alpha: 0.5),
-                                                              ),
-                                                            ),
-                                                            Text(
-                                                              'Roll: ${student.rollNumber}',
-                                                              style: TextStyle(
-                                                                fontSize: 10,
-                                                                color: theme.colorScheme.onSurface
-                                                                    .withValues(alpha: 0.6),
-                                                              ),
-                                                            ),
-                                                          ],
-                                                        ),
-                                                      ),
-                                                      Icon(
-                                                        isPresent
-                                                            ? Icons.check_circle_rounded
-                                                            : Icons.cancel_rounded,
-                                                        color: isPresent
-                                                            ? theme.colorScheme.primary
-                                                            : theme.colorScheme.error,
-                                                        size: 20,
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                              );
+                                              return StudentAttendanceTile(
+                                                name: student.name,
+                                                rollNumber: student.rollNumber,
+                                                isPresent: isPresent,
+                                                onChanged: (value) => setState(
+                                                    () => _attendanceState[student.id] = value),
+                                              ).animate().fadeIn(
+                                                  delay: (idx * 15).ms,
+                                                  duration: AppMotion.entrance);
                                             },
                                           ),
                           ),

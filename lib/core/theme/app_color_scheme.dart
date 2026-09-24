@@ -45,25 +45,35 @@ class AppColorScheme extends ThemeExtension<AppColorScheme> {
   final Color shadow;
   final Color scrim;
 
+  // "Warm Amber & Ink": success/danger/info keep their conventional hues
+  // (green/red/blue read correctly regardless of brand accent), but the
+  // neutral family is warm stone (not cool slate) to match the amber
+  // primary, and `warning` is shifted to gold so it doesn't twin with the
+  // amber-700 primary/accent.
   static const AppColorScheme light = AppColorScheme(
-    success: Color(0xFF10B981),
+    // success/warning/info are darkened one step from the "obvious" 500
+    // shade specifically so they pass 4.5:1 text/icon contrast on white —
+    // the 500 shades (emerald-500, blue-500, yellow-600) look right in a
+    // palette swatch but measure 2.5-3.7:1 here and fail WCAG AA when used
+    // as status text/icons rather than large fills.
+    success: Color(0xFF047857), // emerald-700, 5.48:1 on white
     successContainer: Color(0xFFD1FAE5),
     onSuccessContainer: Color(0xFF065F46),
-    warning: Color(0xFFF59E0B),
-    warningContainer: Color(0xFFFFF3CD),
-    onWarningContainer: Color(0xFF92400E),
-    danger: Color(0xFFEF4444),
+    warning: Color(0xFFA16207), // yellow-700, 4.92:1 on white — also distinct from the amber-700 accent
+    warningContainer: Color(0xFFFEF9C3),
+    onWarningContainer: Color(0xFF713F12),
+    danger: Color(0xFFDC2626),
     dangerContainer: Color(0xFFFEF2F2),
     onDangerContainer: Color(0xFF991B1B),
-    info: Color(0xFF3B82F6),
+    info: Color(0xFF2563EB), // blue-600, 5.17:1 on white
     infoContainer: Color(0xFFDBEAFE),
     onInfoContainer: Color(0xFF1E40AF),
-    outline: Color(0xFFE2E8F0),
-    outlineVariant: Color(0xFFCBD5E1),
-    surfaceVariant: Color(0xFFF8FAFC),
-    onSurfaceVariant: Color(0xFF64748B),
-    inverseSurface: Color(0xFF0F172A),
-    inversePrimary: Color(0xFF90CDF4),
+    outline: Color(0xFFE7E5E4), // stone-200
+    outlineVariant: Color(0xFFD6D3D1), // stone-300
+    surfaceVariant: Color(0xFFFAFAF9), // stone-50
+    onSurfaceVariant: Color(0xFF78716C), // stone-500
+    inverseSurface: Color(0xFF1C1917), // stone-900
+    inversePrimary: Color(0xFFFCD34D), // amber-300
     shadow: Color(0xFF000000),
     scrim: Color(0xFF000000),
   );
@@ -72,21 +82,21 @@ class AppColorScheme extends ThemeExtension<AppColorScheme> {
     success: Color(0xFF34D399),
     successContainer: Color(0xFF064E3B),
     onSuccessContainer: Color(0xFFD1FAE5),
-    warning: Color(0xFFFBBF24),
-    warningContainer: Color(0xFF78350F),
-    onWarningContainer: Color(0xFFFFF3CD),
+    warning: Color(0xFFFACC15), // yellow-400
+    warningContainer: Color(0xFF422006),
+    onWarningContainer: Color(0xFFFEF9C3),
     danger: Color(0xFFF87171),
     dangerContainer: Color(0xFF7F1D1D),
     onDangerContainer: Color(0xFFFEF2F2),
     info: Color(0xFF60A5FA),
     infoContainer: Color(0xFF1E3A5F),
     onInfoContainer: Color(0xFFDBEAFE),
-    outline: Color(0xFF4A5568),
-    outlineVariant: Color(0xFF334155),
-    surfaceVariant: Color(0xFF1E293B),
-    onSurfaceVariant: Color(0xFF94A3B8),
-    inverseSurface: Color(0xFFF8FAFC),
-    inversePrimary: Color(0xFF4C5DF4),
+    outline: Color(0xFF57534E), // stone-600
+    outlineVariant: Color(0xFF44403C), // stone-700
+    surfaceVariant: Color(0xFF292524), // stone-800
+    onSurfaceVariant: Color(0xFFA8A29E), // stone-400
+    inverseSurface: Color(0xFFFAFAF9), // stone-50
+    inversePrimary: Color(0xFFB45309), // amber-700
     shadow: Color(0xFF000000),
     scrim: Color(0xFF000000),
   );
