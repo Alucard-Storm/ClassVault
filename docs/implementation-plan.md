@@ -7,7 +7,7 @@ This document outlines the step-by-step plan to implement the Attendance Managem
 ## 🛠 Phase 1: Environment Setup & Configuration
 
 ### 1.1 Add Dependencies [Completed]
-Configure [pubspec.yaml](file:///home/alucard/Projects/classvault/pubspec.yaml) to include Riverpod and other utility packages.
+Configure [pubspec.yaml](../pubspec.yaml) to include Riverpod and other utility packages.
 
 ```yaml
 dependencies:
