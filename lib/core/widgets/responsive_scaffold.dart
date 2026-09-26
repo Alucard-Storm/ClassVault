@@ -748,6 +748,10 @@ class ResponsiveScaffold extends ConsumerWidget {
               icon: Icons.drive_folder_upload_rounded,
               route: '/admin/academic-import'),
           _NavigationMenuItem(
+              title: 'Academic Insights',
+              icon: Icons.insights_rounded,
+              route: '/analytics'),
+          _NavigationMenuItem(
               title: 'Analytics & Reports',
               icon: Icons.analytics_rounded,
               route: '/reports'),
@@ -764,6 +768,10 @@ class ResponsiveScaffold extends ConsumerWidget {
               title: 'Edit Attendance',
               icon: Icons.edit_note_rounded,
               route: '/faculty/edit-attendance'),
+          _NavigationMenuItem(
+              title: 'Academic Insights',
+              icon: Icons.insights_rounded,
+              route: '/analytics'),
           _NavigationMenuItem(
               title: 'Analytics & Reports',
               icon: Icons.analytics_rounded,
@@ -785,6 +793,8 @@ class ResponsiveScaffold extends ConsumerWidget {
           title: 'Mark', icon: Icons.add_task_rounded, route: '/faculty/mark-attendance'),
       _NavigationMenuItem(
           title: 'Edit', icon: Icons.edit_note_rounded, route: '/faculty/edit-attendance'),
+      _NavigationMenuItem(
+          title: 'Insights', icon: Icons.insights_rounded, route: '/analytics'),
       _NavigationMenuItem(
           title: 'Reports', icon: Icons.analytics_rounded, route: '/reports'),
     ];

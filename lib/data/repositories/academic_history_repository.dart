@@ -10,6 +10,10 @@ abstract class AcademicHistoryRepository {
   // Aggregate
   Future<StudentAcademicHistory?> getStudentHistory(String studentId);
 
+  /// Histories for many students in a constant number of queries (for
+  /// class-level analytics). Unknown ids are omitted.
+  Future<List<StudentAcademicHistory>> getHistoriesForStudents(List<String> studentIds);
+
   // Enrollment history (written by AcademicRepository add/promote)
   Future<List<StudentEnrollment>> getEnrollmentsForStudent(String studentId);
 

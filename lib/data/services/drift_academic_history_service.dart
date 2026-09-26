@@ -37,6 +37,65 @@ class DriftAcademicHistoryService implements AcademicHistoryRepository {
     );
   }
 
+  @override
+  Future<List<StudentAcademicHistory>> getHistoriesForStudents(List<String> studentIds) async {
+    if (studentIds.isEmpty) return const [];
+    final ids = studentIds.toSet().toList();
+
+    Map<String, List<T>> byStudent<T>(List<T> rows, String Function(T) studentOf) {
+      final map = <String, List<T>>{};
+      for (final r in rows) {
+        map.putIfAbsent(studentOf(r), () => []).add(r);
+      }
+      return map;
+    }
+
+    final students = await (_db.select(_db.students)..where((t) => t.id.isIn(ids))).get();
+    final enrollments = byStudent(
+      await (_db.select(_db.studentEnrollments)
+            ..where((t) => t.studentId.isIn(ids))
+            ..orderBy([(t) => OrderingTerm.asc(t.startedAt)]))
+          .get(),
+      (r) => r.studentId,
+    );
+    final school = byStudent(
+      await (_db.select(_db.schoolResults)..where((t) => t.studentId.isIn(ids))).get(),
+      (r) => r.studentId,
+    );
+    final semester = byStudent(
+      await (_db.select(_db.semesterResults)
+            ..where((t) => t.studentId.isIn(ids))
+            ..orderBy([(t) => OrderingTerm.asc(t.semesterNumber)]))
+          .get(),
+      (r) => r.studentId,
+    );
+    final subject = byStudent(
+      await (_db.select(_db.subjectResults)..where((t) => t.studentId.isIn(ids))).get(),
+      (r) => r.studentId,
+    );
+    final attendance = byStudent(
+      await (_db.select(_db.attendanceSummaries)..where((t) => t.studentId.isIn(ids))).get(),
+      (r) => r.studentId,
+    );
+    final assessments = byStudent(
+      await (_db.select(_db.assessments)..where((t) => t.studentId.isIn(ids))).get(),
+      (r) => r.studentId,
+    );
+
+    return [
+      for (final s in students)
+        StudentAcademicHistory(
+          student: s,
+          enrollments: enrollments[s.id] ?? const [],
+          schoolResults: school[s.id] ?? const [],
+          semesterResults: semester[s.id] ?? const [],
+          subjectResults: subject[s.id] ?? const [],
+          attendanceSummaries: attendance[s.id] ?? const [],
+          assessments: assessments[s.id] ?? const [],
+        ),
+    ];
+  }
+
   // Enrollments
 
   @override

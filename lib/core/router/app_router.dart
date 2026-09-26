@@ -17,47 +17,58 @@ import '../../features/faculty/mark_attendance_screen.dart';
 import '../../features/faculty/edit_attendance_screen.dart';
 import '../../features/student/student_dashboard.dart';
 import '../../features/reports/reports_dashboard.dart';
+import '../../features/analytics/class_analytics_screen.dart';
+import '../../features/analytics/student_insights_screen.dart';
+
+/// Route guard: where a request for [path] should go instead, or null to
+/// allow it. Pure so the access rules can be tested without rendering.
+String? appRedirect({required AppUser? user, required bool isLoading, required String path}) {
+  if (isLoading) return null;
+
+  final loggingIn = path == '/login';
+  if (user == null) {
+    return loggingIn ? null : '/login';
+  }
+
+  if (loggingIn) {
+    switch (user.role) {
+      case UserRole.admin:
+        return '/admin';
+      case UserRole.faculty:
+        return '/faculty';
+      case UserRole.student:
+        return '/student';
+    }
+  }
+
+  // Role check
+  if (path.startsWith('/admin') && user.role != UserRole.admin) {
+    return '/login';
+  }
+  if (path.startsWith('/faculty') && user.role != UserRole.faculty) {
+    return '/login';
+  }
+  if (path.startsWith('/student') && user.role != UserRole.student) {
+    return '/login';
+  }
+  // Analytics signals are for staff; they are not shown to students.
+  if (path.startsWith('/analytics') && user.role == UserRole.student) {
+    return '/student';
+  }
+
+  return null;
+}
 
 final routerProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authStateProvider);
 
   return GoRouter(
     initialLocation: '/login',
-    redirect: (context, state) {
-      final userValue = authState.valueOrNull;
-      final loggingIn = state.uri.path == '/login';
-
-      if (authState.isLoading) return null;
-
-      if (userValue == null) {
-        return loggingIn ? null : '/login';
-      }
-
-      if (loggingIn) {
-        switch (userValue.role) {
-          case UserRole.admin:
-            return '/admin';
-          case UserRole.faculty:
-            return '/faculty';
-          case UserRole.student:
-            return '/student';
-        }
-      }
-
-      // Role check
-      final path = state.uri.path;
-      if (path.startsWith('/admin') && userValue.role != UserRole.admin) {
-        return '/login';
-      }
-      if (path.startsWith('/faculty') && userValue.role != UserRole.faculty) {
-        return '/login';
-      }
-      if (path.startsWith('/student') && userValue.role != UserRole.student) {
-        return '/login';
-      }
-
-      return null;
-    },
+    redirect: (context, state) => appRedirect(
+      user: authState.valueOrNull,
+      isLoading: authState.isLoading,
+      path: state.uri.path,
+    ),
     routes: [
       GoRoute(
         path: '/login',
@@ -128,6 +139,17 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/reports',
         builder: (context, state) => const ReportsDashboard(),
+      ),
+      // Academic analytics (admin + faculty)
+      GoRoute(
+        path: '/analytics',
+        builder: (context, state) => const ClassAnalyticsScreen(),
+        routes: [
+          GoRoute(
+            path: 'student/:id',
+            builder: (context, state) => StudentInsightsScreen(studentId: state.pathParameters['id']!),
+          ),
+        ],
       ),
     ],
   );
