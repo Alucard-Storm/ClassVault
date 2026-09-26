@@ -313,6 +313,56 @@ class Assessments extends Table {
 }
 
 // ---------------------------------------------------------------------------
+// Prediction (Phase 5) — added in schema v2
+// ---------------------------------------------------------------------------
+
+/// Model files imported from the `ml/` pipeline. At most one active model
+/// per task is enforced by the service layer.
+@UseRowClass(MlModelRecord, generateInsertable: true)
+class MlModels extends Table {
+  TextColumn get id => text()(); // modelId from the file
+  TextColumn get task => text()(); // 'risk' | 'forecast'
+  TextColumn get family => text()();
+  TextColumn get featureVersion => text()();
+  TextColumn get bundleJson => text()();
+  BoolColumn get synthetic => boolean()();
+  BoolColumn get recommended => boolean()();
+  BoolColumn get active => boolean().withDefault(const Constant(false))();
+  DateTimeColumn get importedAt => dateTime()();
+  TextColumn get importedBy => text().nullable()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+/// Every generated prediction, with what it was based on, so each one can
+/// be audited later even after models change.
+@UseRowClass(PredictionRecord, generateInsertable: true)
+class Predictions extends Table {
+  TextColumn get id => text()();
+  TextColumn get studentId =>
+      text().references(Students, #id, onDelete: KeyAction.cascade)();
+  TextColumn get task => text()();
+  // No foreign key: history must survive a model being removed.
+  TextColumn get modelId => text()();
+  TextColumn get featureVersion => text()();
+  IntColumn get targetSemester => integer()();
+  RealColumn get probability => real().nullable()();
+  TextColumn get band => text().nullable()();
+  RealColumn get value => real().nullable()();
+  RealColumn get lower => real().nullable()();
+  RealColumn get upper => real().nullable()();
+  TextColumn get featuresJson => text()();
+  TextColumn get contributionsJson => text()();
+  BoolColumn get synthetic => boolean()();
+  DateTimeColumn get generatedAt => dateTime()();
+  TextColumn get generatedBy => text().nullable()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+// ---------------------------------------------------------------------------
 // Database
 // ---------------------------------------------------------------------------
 
@@ -336,19 +386,27 @@ class Assessments extends Table {
   SubjectResults,
   AttendanceSummaries,
   Assessments,
+  MlModels,
+  Predictions,
 ])
 class AppDatabase extends _$AppDatabase {
   /// Pass an [executor] (e.g. `NativeDatabase.memory()`) in tests.
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
 
   // Bump [schemaVersion] and add steps in onUpgrade for every schema change;
   // never edit an already-shipped table definition without a migration.
   @override
   MigrationStrategy get migration => MigrationStrategy(
         onCreate: (m) => m.createAll(),
+        onUpgrade: (m, from, to) async {
+          if (from < 2) {
+            await m.createTable(mlModels);
+            await m.createTable(predictions);
+          }
+        },
         beforeOpen: (details) async {
           await customStatement('PRAGMA foreign_keys = ON');
         },

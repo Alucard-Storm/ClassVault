@@ -186,3 +186,43 @@ class MetricTile extends StatelessWidget {
     );
   }
 }
+
+/// Risk band pill using the plan's neutral wording.
+class RiskChip extends StatelessWidget {
+  final String? band; // 'low' | 'moderate' | 'elevated'
+  final bool synthetic;
+  const RiskChip(this.band, {super.key, this.synthetic = false});
+
+  static String label(String? band) => switch (band) {
+        'elevated' => 'Elevated',
+        'moderate' => 'Moderate',
+        'low' => 'Low',
+        _ => '—',
+      };
+
+  static Color color(ThemeData theme, String? band) => switch (band) {
+        'elevated' => theme.appColors.danger,
+        'moderate' => theme.appColors.warning,
+        'low' => theme.appColors.success,
+        _ => theme.colorScheme.onSurfaceVariant,
+      };
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final c = color(theme, band);
+    return Tooltip(
+      message: synthetic ? 'From a test model trained on synthetic data' : 'Academic risk signal',
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: 2),
+        decoration: BoxDecoration(
+          color: c.withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(AppRadius.pill),
+          border: synthetic ? Border.all(color: c.withValues(alpha: 0.6), style: BorderStyle.solid) : null,
+        ),
+        child: Text('${label(band)}${synthetic ? ' (test)' : ''}',
+            style: TextStyle(color: c, fontSize: 12, fontWeight: FontWeight.w600)),
+      ),
+    );
+  }
+}

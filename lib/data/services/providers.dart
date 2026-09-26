@@ -9,6 +9,8 @@ import 'drift_auth_service.dart';
 import 'drift_academic_service.dart';
 import 'drift_attendance_service.dart';
 import 'drift_academic_history_service.dart';
+import 'drift_prediction_service.dart';
+import '../repositories/prediction_repository.dart';
 
 /// Single database instance for the app. Override in tests with
 /// `AppDatabase(NativeDatabase.memory())`.
@@ -32,6 +34,10 @@ final attendanceRepositoryProvider = Provider<AttendanceRepository>((ref) {
 
 final academicHistoryRepositoryProvider = Provider<AcademicHistoryRepository>((ref) {
   return DriftAcademicHistoryService(ref.watch(appDatabaseProvider));
+});
+
+final predictionRepositoryProvider = Provider<PredictionRepository>((ref) {
+  return DriftPredictionService(ref.watch(appDatabaseProvider));
 });
 
 final themeModeProvider = StateProvider<ThemeMode>((ref) => ThemeMode.light);

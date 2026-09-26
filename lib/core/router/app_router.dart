@@ -12,6 +12,7 @@ import '../../features/admin/students_screen.dart';
 import '../../features/admin/student_import_screen.dart';
 import '../../features/admin/semester_promotion_screen.dart';
 import '../../features/academic_import/academic_import_screen.dart';
+import '../../features/prediction/prediction_models_screen.dart';
 import '../../features/faculty/faculty_dashboard.dart';
 import '../../features/faculty/mark_attendance_screen.dart';
 import '../../features/faculty/edit_attendance_screen.dart';
@@ -112,6 +113,10 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: 'academic-import',
             builder: (context, state) => const AcademicImportScreen(),
+          ),
+          GoRoute(
+            path: 'models',
+            builder: (context, state) => const PredictionModelsScreen(),
           ),
         ],
       ),

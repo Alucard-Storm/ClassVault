@@ -1,7 +1,6 @@
-import 'dart:math' as math;
-
 import '../../../core/constants/app_constants.dart';
 import '../../../data/models/models.dart';
+import 'stats.dart';
 
 /// Every cut-off the analytics use, in one place so they can be reviewed and
 /// tuned against real outcomes. All analytics here are deterministic; there
@@ -67,7 +66,7 @@ class TrendResult {
         'Needs at least 2 ${step}s of data.',
       );
     }
-    final slope = _slope(recent.map((p) => p.semester.toDouble()).toList(), recent.map((p) => p.value).toList());
+    final slope = Stats.slope(recent.map((p) => p.semester.toDouble()).toList(), recent.map((p) => p.value).toList());
     final direction = slope >= threshold
         ? TrendDirection.improving
         : slope <= -threshold
@@ -83,17 +82,6 @@ class TrendResult {
     );
   }
 
-  static double _slope(List<double> xs, List<double> ys) {
-    final n = xs.length;
-    final mx = xs.reduce((a, b) => a + b) / n;
-    final my = ys.reduce((a, b) => a + b) / n;
-    var num = 0.0, den = 0.0;
-    for (var i = 0; i < n; i++) {
-      num += (xs[i] - mx) * (ys[i] - my);
-      den += (xs[i] - mx) * (xs[i] - mx);
-    }
-    return den == 0 ? 0 : num / den;
-  }
 }
 
 enum Consistency { consistent, moderate, variable, insufficientData }
@@ -299,7 +287,8 @@ class StudentAnalyticsEngine {
     double? volatility;
     var consistency = Consistency.insufficientData;
     if (series.length >= AnalyticsThresholds.minPointsForConsistency) {
-      volatility = _residualStdDev(series);
+      volatility = Stats.residualStdDev(
+          series.map((p) => p.semester.toDouble()).toList(), series.map((p) => p.value).toList());
       final (tight, loose) = useSgpa
           ? (AnalyticsThresholds.sgpaConsistent, AnalyticsThresholds.sgpaModerate)
           : (AnalyticsThresholds.percentageConsistent, AnalyticsThresholds.percentageModerate);
@@ -312,7 +301,7 @@ class StudentAnalyticsEngine {
 
     // Attendance -----------------------------------------------------------
     final attendance = _mergeAttendance(history.attendanceSummaries, sessionAttendance);
-    final attendanceSeries = _attendanceBySemester(attendance);
+    final attendanceSeries = attendanceBySemester(attendance);
     final attendanceTrend = TrendResult.compute(
       attendanceSeries,
       threshold: AnalyticsThresholds.attendanceTrendPerSemester,
@@ -423,7 +412,7 @@ class StudentAnalyticsEngine {
 
   /// Per-semester attendance: class-count weighted when every subject has
   /// counts, otherwise the mean of subject percentages.
-  static List<SemesterPoint> _attendanceBySemester(List<SubjectAttendance> attendance) {
+  static List<SemesterPoint> attendanceBySemester(List<SubjectAttendance> attendance) {
     final bySem = <int, List<SubjectAttendance>>{};
     for (final a in attendance) {
       bySem.putIfAbsent(a.semester, () => []).add(a);
@@ -559,20 +548,7 @@ class StudentAnalyticsEngine {
     return sum / weights;
   }
 
-  /// Standard deviation of the residuals around the least-squares line.
-  static double _residualStdDev(List<SemesterPoint> series) {
-    final xs = series.map((p) => p.semester.toDouble()).toList();
-    final ys = series.map((p) => p.value).toList();
-    final slope = TrendResult._slope(xs, ys);
-    final mx = xs.reduce((a, b) => a + b) / xs.length;
-    final my = ys.reduce((a, b) => a + b) / ys.length;
-    var sumSq = 0.0;
-    for (var i = 0; i < xs.length; i++) {
-      final residual = ys[i] - (my + slope * (xs[i] - mx));
-      sumSq += residual * residual;
-    }
-    return math.sqrt(sumSq / xs.length);
-  }
+
 
   static List<AnalyticsSignal> _signals(StudentAnalytics a, double attendanceThreshold) {
     String fmt(double v) => v.toStringAsFixed(1);

@@ -1,0 +1,34 @@
+{
+  "featureVersion": "fv1",
+  "labelVersion": "labels-v1",
+  "predictionPoint": "Start of the target semester T. Features use only semesters before T; labels come from semester T.",
+  "metaColumns": [
+    {"name": "student_key", "description": "Pseudonymous, one-way hash of the student id. No names or roll numbers leave the app."},
+    {"name": "data_source", "description": "'classvault' for real exports, 'synthetic' for generated test data."}
+  ],
+  "features": [
+    {"name": "target_semester", "missingIndicator": false, "description": "Semester being predicted."},
+    {"name": "n_prior_semesters", "missingIndicator": false, "description": "Semesters before T with a semester result."},
+    {"name": "prev_sgpa", "missingIndicator": true, "description": "SGPA in semester T-1."},
+    {"name": "prev2_sgpa", "missingIndicator": true, "description": "SGPA in semester T-2."},
+    {"name": "sgpa_mean_prior", "missingIndicator": true, "description": "Mean SGPA over semesters before T."},
+    {"name": "sgpa_slope_prior", "missingIndicator": true, "description": "SGPA change per semester over the last 4 semesters before T (needs 2+)."},
+    {"name": "sgpa_volatility_prior", "missingIndicator": true, "description": "SGPA spread around its trend before T (needs 3+)."},
+    {"name": "cgpa_prior", "missingIndicator": true, "description": "CGPA reported for T-1, else mean SGPA before T."},
+    {"name": "prev_percentage", "missingIndicator": true, "description": "Percentage in semester T-1."},
+    {"name": "prev_attendance", "missingIndicator": true, "description": "Attendance % in semester T-1."},
+    {"name": "attendance_mean_prior", "missingIndicator": true, "description": "Mean semester attendance % before T."},
+    {"name": "attendance_slope_prior", "missingIndicator": true, "description": "Attendance change per semester before T (needs 2+)."},
+    {"name": "backlogs_reported_prev", "missingIndicator": true, "description": "Backlog count reported with the T-1 semester result."},
+    {"name": "failed_first_attempts_prior", "missingIndicator": false, "description": "Subjects failed on first attempt in semesters before T. Later re-attempts are ignored because their timing is unknown."},
+    {"name": "failed_first_attempts_prev", "missingIndicator": false, "description": "Subjects failed on first attempt in semester T-1."},
+    {"name": "prev_subject_score_mean", "missingIndicator": true, "description": "Mean subject score % (total/max) in T-1."},
+    {"name": "prev_subject_score_min", "missingIndicator": true, "description": "Lowest subject score % in T-1."},
+    {"name": "school_10th", "missingIndicator": true, "description": "10th percentage."},
+    {"name": "school_12th", "missingIndicator": true, "description": "12th percentage."}
+  ],
+  "labels": [
+    {"name": "label_risk", "description": "1 if semester T shows academic difficulty: any subject failed on first attempt in T, or SGPA(T) < 6.0, or SGPA(T) - SGPA(T-1) <= -1.0. Empty when semester T has neither SGPA nor subject pass/fail data."},
+    {"name": "label_sgpa", "description": "SGPA in semester T. Empty when not reported."}
+  ]
+}

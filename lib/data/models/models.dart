@@ -18,3 +18,5 @@ export 'subject_result_model.dart';
 export 'attendance_summary_model.dart';
 export 'assessment_model.dart';
 export 'student_academic_history_model.dart';
+export 'ml_model_record.dart';
+export 'prediction_record.dart';

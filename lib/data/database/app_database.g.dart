@@ -5905,6 +5905,1154 @@ extension AssessmentToInsertable on Assessment {
   }
 }
 
+class $MlModelsTable extends MlModels
+    with TableInfo<$MlModelsTable, MlModelRecord> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $MlModelsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _taskMeta = const VerificationMeta('task');
+  @override
+  late final GeneratedColumn<String> task = GeneratedColumn<String>(
+    'task',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _familyMeta = const VerificationMeta('family');
+  @override
+  late final GeneratedColumn<String> family = GeneratedColumn<String>(
+    'family',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _featureVersionMeta = const VerificationMeta(
+    'featureVersion',
+  );
+  @override
+  late final GeneratedColumn<String> featureVersion = GeneratedColumn<String>(
+    'feature_version',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _bundleJsonMeta = const VerificationMeta(
+    'bundleJson',
+  );
+  @override
+  late final GeneratedColumn<String> bundleJson = GeneratedColumn<String>(
+    'bundle_json',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _syntheticMeta = const VerificationMeta(
+    'synthetic',
+  );
+  @override
+  late final GeneratedColumn<bool> synthetic = GeneratedColumn<bool>(
+    'synthetic',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("synthetic" IN (0, 1))',
+    ),
+  );
+  static const VerificationMeta _recommendedMeta = const VerificationMeta(
+    'recommended',
+  );
+  @override
+  late final GeneratedColumn<bool> recommended = GeneratedColumn<bool>(
+    'recommended',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("recommended" IN (0, 1))',
+    ),
+  );
+  static const VerificationMeta _activeMeta = const VerificationMeta('active');
+  @override
+  late final GeneratedColumn<bool> active = GeneratedColumn<bool>(
+    'active',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("active" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _importedAtMeta = const VerificationMeta(
+    'importedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> importedAt = GeneratedColumn<DateTime>(
+    'imported_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _importedByMeta = const VerificationMeta(
+    'importedBy',
+  );
+  @override
+  late final GeneratedColumn<String> importedBy = GeneratedColumn<String>(
+    'imported_by',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    task,
+    family,
+    featureVersion,
+    bundleJson,
+    synthetic,
+    recommended,
+    active,
+    importedAt,
+    importedBy,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'ml_models';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<MlModelRecord> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('task')) {
+      context.handle(
+        _taskMeta,
+        task.isAcceptableOrUnknown(data['task']!, _taskMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_taskMeta);
+    }
+    if (data.containsKey('family')) {
+      context.handle(
+        _familyMeta,
+        family.isAcceptableOrUnknown(data['family']!, _familyMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_familyMeta);
+    }
+    if (data.containsKey('feature_version')) {
+      context.handle(
+        _featureVersionMeta,
+        featureVersion.isAcceptableOrUnknown(
+          data['feature_version']!,
+          _featureVersionMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_featureVersionMeta);
+    }
+    if (data.containsKey('bundle_json')) {
+      context.handle(
+        _bundleJsonMeta,
+        bundleJson.isAcceptableOrUnknown(data['bundle_json']!, _bundleJsonMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_bundleJsonMeta);
+    }
+    if (data.containsKey('synthetic')) {
+      context.handle(
+        _syntheticMeta,
+        synthetic.isAcceptableOrUnknown(data['synthetic']!, _syntheticMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_syntheticMeta);
+    }
+    if (data.containsKey('recommended')) {
+      context.handle(
+        _recommendedMeta,
+        recommended.isAcceptableOrUnknown(
+          data['recommended']!,
+          _recommendedMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_recommendedMeta);
+    }
+    if (data.containsKey('active')) {
+      context.handle(
+        _activeMeta,
+        active.isAcceptableOrUnknown(data['active']!, _activeMeta),
+      );
+    }
+    if (data.containsKey('imported_at')) {
+      context.handle(
+        _importedAtMeta,
+        importedAt.isAcceptableOrUnknown(data['imported_at']!, _importedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_importedAtMeta);
+    }
+    if (data.containsKey('imported_by')) {
+      context.handle(
+        _importedByMeta,
+        importedBy.isAcceptableOrUnknown(data['imported_by']!, _importedByMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  MlModelRecord map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return MlModelRecord(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      task: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}task'],
+      )!,
+      family: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}family'],
+      )!,
+      featureVersion: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}feature_version'],
+      )!,
+      bundleJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}bundle_json'],
+      )!,
+      synthetic: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}synthetic'],
+      )!,
+      recommended: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}recommended'],
+      )!,
+      active: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}active'],
+      )!,
+      importedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}imported_at'],
+      )!,
+      importedBy: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}imported_by'],
+      ),
+    );
+  }
+
+  @override
+  $MlModelsTable createAlias(String alias) {
+    return $MlModelsTable(attachedDatabase, alias);
+  }
+}
+
+class MlModelsCompanion extends UpdateCompanion<MlModelRecord> {
+  final Value<String> id;
+  final Value<String> task;
+  final Value<String> family;
+  final Value<String> featureVersion;
+  final Value<String> bundleJson;
+  final Value<bool> synthetic;
+  final Value<bool> recommended;
+  final Value<bool> active;
+  final Value<DateTime> importedAt;
+  final Value<String?> importedBy;
+  final Value<int> rowid;
+  const MlModelsCompanion({
+    this.id = const Value.absent(),
+    this.task = const Value.absent(),
+    this.family = const Value.absent(),
+    this.featureVersion = const Value.absent(),
+    this.bundleJson = const Value.absent(),
+    this.synthetic = const Value.absent(),
+    this.recommended = const Value.absent(),
+    this.active = const Value.absent(),
+    this.importedAt = const Value.absent(),
+    this.importedBy = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  MlModelsCompanion.insert({
+    required String id,
+    required String task,
+    required String family,
+    required String featureVersion,
+    required String bundleJson,
+    required bool synthetic,
+    required bool recommended,
+    this.active = const Value.absent(),
+    required DateTime importedAt,
+    this.importedBy = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       task = Value(task),
+       family = Value(family),
+       featureVersion = Value(featureVersion),
+       bundleJson = Value(bundleJson),
+       synthetic = Value(synthetic),
+       recommended = Value(recommended),
+       importedAt = Value(importedAt);
+  static Insertable<MlModelRecord> custom({
+    Expression<String>? id,
+    Expression<String>? task,
+    Expression<String>? family,
+    Expression<String>? featureVersion,
+    Expression<String>? bundleJson,
+    Expression<bool>? synthetic,
+    Expression<bool>? recommended,
+    Expression<bool>? active,
+    Expression<DateTime>? importedAt,
+    Expression<String>? importedBy,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (task != null) 'task': task,
+      if (family != null) 'family': family,
+      if (featureVersion != null) 'feature_version': featureVersion,
+      if (bundleJson != null) 'bundle_json': bundleJson,
+      if (synthetic != null) 'synthetic': synthetic,
+      if (recommended != null) 'recommended': recommended,
+      if (active != null) 'active': active,
+      if (importedAt != null) 'imported_at': importedAt,
+      if (importedBy != null) 'imported_by': importedBy,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  MlModelsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? task,
+    Value<String>? family,
+    Value<String>? featureVersion,
+    Value<String>? bundleJson,
+    Value<bool>? synthetic,
+    Value<bool>? recommended,
+    Value<bool>? active,
+    Value<DateTime>? importedAt,
+    Value<String?>? importedBy,
+    Value<int>? rowid,
+  }) {
+    return MlModelsCompanion(
+      id: id ?? this.id,
+      task: task ?? this.task,
+      family: family ?? this.family,
+      featureVersion: featureVersion ?? this.featureVersion,
+      bundleJson: bundleJson ?? this.bundleJson,
+      synthetic: synthetic ?? this.synthetic,
+      recommended: recommended ?? this.recommended,
+      active: active ?? this.active,
+      importedAt: importedAt ?? this.importedAt,
+      importedBy: importedBy ?? this.importedBy,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (task.present) {
+      map['task'] = Variable<String>(task.value);
+    }
+    if (family.present) {
+      map['family'] = Variable<String>(family.value);
+    }
+    if (featureVersion.present) {
+      map['feature_version'] = Variable<String>(featureVersion.value);
+    }
+    if (bundleJson.present) {
+      map['bundle_json'] = Variable<String>(bundleJson.value);
+    }
+    if (synthetic.present) {
+      map['synthetic'] = Variable<bool>(synthetic.value);
+    }
+    if (recommended.present) {
+      map['recommended'] = Variable<bool>(recommended.value);
+    }
+    if (active.present) {
+      map['active'] = Variable<bool>(active.value);
+    }
+    if (importedAt.present) {
+      map['imported_at'] = Variable<DateTime>(importedAt.value);
+    }
+    if (importedBy.present) {
+      map['imported_by'] = Variable<String>(importedBy.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('MlModelsCompanion(')
+          ..write('id: $id, ')
+          ..write('task: $task, ')
+          ..write('family: $family, ')
+          ..write('featureVersion: $featureVersion, ')
+          ..write('bundleJson: $bundleJson, ')
+          ..write('synthetic: $synthetic, ')
+          ..write('recommended: $recommended, ')
+          ..write('active: $active, ')
+          ..write('importedAt: $importedAt, ')
+          ..write('importedBy: $importedBy, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class _$MlModelRecordInsertable implements Insertable<MlModelRecord> {
+  MlModelRecord _object;
+  _$MlModelRecordInsertable(this._object);
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    return MlModelsCompanion(
+      id: Value(_object.id),
+      task: Value(_object.task),
+      family: Value(_object.family),
+      featureVersion: Value(_object.featureVersion),
+      bundleJson: Value(_object.bundleJson),
+      synthetic: Value(_object.synthetic),
+      recommended: Value(_object.recommended),
+      active: Value(_object.active),
+      importedAt: Value(_object.importedAt),
+      importedBy: Value(_object.importedBy),
+    ).toColumns(false);
+  }
+}
+
+extension MlModelRecordToInsertable on MlModelRecord {
+  _$MlModelRecordInsertable toInsertable() {
+    return _$MlModelRecordInsertable(this);
+  }
+}
+
+class $PredictionsTable extends Predictions
+    with TableInfo<$PredictionsTable, PredictionRecord> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $PredictionsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _studentIdMeta = const VerificationMeta(
+    'studentId',
+  );
+  @override
+  late final GeneratedColumn<String> studentId = GeneratedColumn<String>(
+    'student_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES students (id) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _taskMeta = const VerificationMeta('task');
+  @override
+  late final GeneratedColumn<String> task = GeneratedColumn<String>(
+    'task',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _modelIdMeta = const VerificationMeta(
+    'modelId',
+  );
+  @override
+  late final GeneratedColumn<String> modelId = GeneratedColumn<String>(
+    'model_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _featureVersionMeta = const VerificationMeta(
+    'featureVersion',
+  );
+  @override
+  late final GeneratedColumn<String> featureVersion = GeneratedColumn<String>(
+    'feature_version',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _targetSemesterMeta = const VerificationMeta(
+    'targetSemester',
+  );
+  @override
+  late final GeneratedColumn<int> targetSemester = GeneratedColumn<int>(
+    'target_semester',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _probabilityMeta = const VerificationMeta(
+    'probability',
+  );
+  @override
+  late final GeneratedColumn<double> probability = GeneratedColumn<double>(
+    'probability',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _bandMeta = const VerificationMeta('band');
+  @override
+  late final GeneratedColumn<String> band = GeneratedColumn<String>(
+    'band',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _valueMeta = const VerificationMeta('value');
+  @override
+  late final GeneratedColumn<double> value = GeneratedColumn<double>(
+    'value',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _lowerMeta = const VerificationMeta('lower');
+  @override
+  late final GeneratedColumn<double> lower = GeneratedColumn<double>(
+    'lower',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _upperMeta = const VerificationMeta('upper');
+  @override
+  late final GeneratedColumn<double> upper = GeneratedColumn<double>(
+    'upper',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _featuresJsonMeta = const VerificationMeta(
+    'featuresJson',
+  );
+  @override
+  late final GeneratedColumn<String> featuresJson = GeneratedColumn<String>(
+    'features_json',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _contributionsJsonMeta = const VerificationMeta(
+    'contributionsJson',
+  );
+  @override
+  late final GeneratedColumn<String> contributionsJson =
+      GeneratedColumn<String>(
+        'contributions_json',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: true,
+      );
+  static const VerificationMeta _syntheticMeta = const VerificationMeta(
+    'synthetic',
+  );
+  @override
+  late final GeneratedColumn<bool> synthetic = GeneratedColumn<bool>(
+    'synthetic',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("synthetic" IN (0, 1))',
+    ),
+  );
+  static const VerificationMeta _generatedAtMeta = const VerificationMeta(
+    'generatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> generatedAt = GeneratedColumn<DateTime>(
+    'generated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _generatedByMeta = const VerificationMeta(
+    'generatedBy',
+  );
+  @override
+  late final GeneratedColumn<String> generatedBy = GeneratedColumn<String>(
+    'generated_by',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    studentId,
+    task,
+    modelId,
+    featureVersion,
+    targetSemester,
+    probability,
+    band,
+    value,
+    lower,
+    upper,
+    featuresJson,
+    contributionsJson,
+    synthetic,
+    generatedAt,
+    generatedBy,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'predictions';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<PredictionRecord> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('student_id')) {
+      context.handle(
+        _studentIdMeta,
+        studentId.isAcceptableOrUnknown(data['student_id']!, _studentIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_studentIdMeta);
+    }
+    if (data.containsKey('task')) {
+      context.handle(
+        _taskMeta,
+        task.isAcceptableOrUnknown(data['task']!, _taskMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_taskMeta);
+    }
+    if (data.containsKey('model_id')) {
+      context.handle(
+        _modelIdMeta,
+        modelId.isAcceptableOrUnknown(data['model_id']!, _modelIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_modelIdMeta);
+    }
+    if (data.containsKey('feature_version')) {
+      context.handle(
+        _featureVersionMeta,
+        featureVersion.isAcceptableOrUnknown(
+          data['feature_version']!,
+          _featureVersionMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_featureVersionMeta);
+    }
+    if (data.containsKey('target_semester')) {
+      context.handle(
+        _targetSemesterMeta,
+        targetSemester.isAcceptableOrUnknown(
+          data['target_semester']!,
+          _targetSemesterMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_targetSemesterMeta);
+    }
+    if (data.containsKey('probability')) {
+      context.handle(
+        _probabilityMeta,
+        probability.isAcceptableOrUnknown(
+          data['probability']!,
+          _probabilityMeta,
+        ),
+      );
+    }
+    if (data.containsKey('band')) {
+      context.handle(
+        _bandMeta,
+        band.isAcceptableOrUnknown(data['band']!, _bandMeta),
+      );
+    }
+    if (data.containsKey('value')) {
+      context.handle(
+        _valueMeta,
+        value.isAcceptableOrUnknown(data['value']!, _valueMeta),
+      );
+    }
+    if (data.containsKey('lower')) {
+      context.handle(
+        _lowerMeta,
+        lower.isAcceptableOrUnknown(data['lower']!, _lowerMeta),
+      );
+    }
+    if (data.containsKey('upper')) {
+      context.handle(
+        _upperMeta,
+        upper.isAcceptableOrUnknown(data['upper']!, _upperMeta),
+      );
+    }
+    if (data.containsKey('features_json')) {
+      context.handle(
+        _featuresJsonMeta,
+        featuresJson.isAcceptableOrUnknown(
+          data['features_json']!,
+          _featuresJsonMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_featuresJsonMeta);
+    }
+    if (data.containsKey('contributions_json')) {
+      context.handle(
+        _contributionsJsonMeta,
+        contributionsJson.isAcceptableOrUnknown(
+          data['contributions_json']!,
+          _contributionsJsonMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_contributionsJsonMeta);
+    }
+    if (data.containsKey('synthetic')) {
+      context.handle(
+        _syntheticMeta,
+        synthetic.isAcceptableOrUnknown(data['synthetic']!, _syntheticMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_syntheticMeta);
+    }
+    if (data.containsKey('generated_at')) {
+      context.handle(
+        _generatedAtMeta,
+        generatedAt.isAcceptableOrUnknown(
+          data['generated_at']!,
+          _generatedAtMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_generatedAtMeta);
+    }
+    if (data.containsKey('generated_by')) {
+      context.handle(
+        _generatedByMeta,
+        generatedBy.isAcceptableOrUnknown(
+          data['generated_by']!,
+          _generatedByMeta,
+        ),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  PredictionRecord map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return PredictionRecord(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      studentId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}student_id'],
+      )!,
+      task: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}task'],
+      )!,
+      modelId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}model_id'],
+      )!,
+      featureVersion: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}feature_version'],
+      )!,
+      targetSemester: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}target_semester'],
+      )!,
+      probability: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}probability'],
+      ),
+      band: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}band'],
+      ),
+      value: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}value'],
+      ),
+      lower: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}lower'],
+      ),
+      upper: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}upper'],
+      ),
+      featuresJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}features_json'],
+      )!,
+      contributionsJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}contributions_json'],
+      )!,
+      synthetic: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}synthetic'],
+      )!,
+      generatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}generated_at'],
+      )!,
+      generatedBy: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}generated_by'],
+      ),
+    );
+  }
+
+  @override
+  $PredictionsTable createAlias(String alias) {
+    return $PredictionsTable(attachedDatabase, alias);
+  }
+}
+
+class PredictionsCompanion extends UpdateCompanion<PredictionRecord> {
+  final Value<String> id;
+  final Value<String> studentId;
+  final Value<String> task;
+  final Value<String> modelId;
+  final Value<String> featureVersion;
+  final Value<int> targetSemester;
+  final Value<double?> probability;
+  final Value<String?> band;
+  final Value<double?> value;
+  final Value<double?> lower;
+  final Value<double?> upper;
+  final Value<String> featuresJson;
+  final Value<String> contributionsJson;
+  final Value<bool> synthetic;
+  final Value<DateTime> generatedAt;
+  final Value<String?> generatedBy;
+  final Value<int> rowid;
+  const PredictionsCompanion({
+    this.id = const Value.absent(),
+    this.studentId = const Value.absent(),
+    this.task = const Value.absent(),
+    this.modelId = const Value.absent(),
+    this.featureVersion = const Value.absent(),
+    this.targetSemester = const Value.absent(),
+    this.probability = const Value.absent(),
+    this.band = const Value.absent(),
+    this.value = const Value.absent(),
+    this.lower = const Value.absent(),
+    this.upper = const Value.absent(),
+    this.featuresJson = const Value.absent(),
+    this.contributionsJson = const Value.absent(),
+    this.synthetic = const Value.absent(),
+    this.generatedAt = const Value.absent(),
+    this.generatedBy = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  PredictionsCompanion.insert({
+    required String id,
+    required String studentId,
+    required String task,
+    required String modelId,
+    required String featureVersion,
+    required int targetSemester,
+    this.probability = const Value.absent(),
+    this.band = const Value.absent(),
+    this.value = const Value.absent(),
+    this.lower = const Value.absent(),
+    this.upper = const Value.absent(),
+    required String featuresJson,
+    required String contributionsJson,
+    required bool synthetic,
+    required DateTime generatedAt,
+    this.generatedBy = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       studentId = Value(studentId),
+       task = Value(task),
+       modelId = Value(modelId),
+       featureVersion = Value(featureVersion),
+       targetSemester = Value(targetSemester),
+       featuresJson = Value(featuresJson),
+       contributionsJson = Value(contributionsJson),
+       synthetic = Value(synthetic),
+       generatedAt = Value(generatedAt);
+  static Insertable<PredictionRecord> custom({
+    Expression<String>? id,
+    Expression<String>? studentId,
+    Expression<String>? task,
+    Expression<String>? modelId,
+    Expression<String>? featureVersion,
+    Expression<int>? targetSemester,
+    Expression<double>? probability,
+    Expression<String>? band,
+    Expression<double>? value,
+    Expression<double>? lower,
+    Expression<double>? upper,
+    Expression<String>? featuresJson,
+    Expression<String>? contributionsJson,
+    Expression<bool>? synthetic,
+    Expression<DateTime>? generatedAt,
+    Expression<String>? generatedBy,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (studentId != null) 'student_id': studentId,
+      if (task != null) 'task': task,
+      if (modelId != null) 'model_id': modelId,
+      if (featureVersion != null) 'feature_version': featureVersion,
+      if (targetSemester != null) 'target_semester': targetSemester,
+      if (probability != null) 'probability': probability,
+      if (band != null) 'band': band,
+      if (value != null) 'value': value,
+      if (lower != null) 'lower': lower,
+      if (upper != null) 'upper': upper,
+      if (featuresJson != null) 'features_json': featuresJson,
+      if (contributionsJson != null) 'contributions_json': contributionsJson,
+      if (synthetic != null) 'synthetic': synthetic,
+      if (generatedAt != null) 'generated_at': generatedAt,
+      if (generatedBy != null) 'generated_by': generatedBy,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  PredictionsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? studentId,
+    Value<String>? task,
+    Value<String>? modelId,
+    Value<String>? featureVersion,
+    Value<int>? targetSemester,
+    Value<double?>? probability,
+    Value<String?>? band,
+    Value<double?>? value,
+    Value<double?>? lower,
+    Value<double?>? upper,
+    Value<String>? featuresJson,
+    Value<String>? contributionsJson,
+    Value<bool>? synthetic,
+    Value<DateTime>? generatedAt,
+    Value<String?>? generatedBy,
+    Value<int>? rowid,
+  }) {
+    return PredictionsCompanion(
+      id: id ?? this.id,
+      studentId: studentId ?? this.studentId,
+      task: task ?? this.task,
+      modelId: modelId ?? this.modelId,
+      featureVersion: featureVersion ?? this.featureVersion,
+      targetSemester: targetSemester ?? this.targetSemester,
+      probability: probability ?? this.probability,
+      band: band ?? this.band,
+      value: value ?? this.value,
+      lower: lower ?? this.lower,
+      upper: upper ?? this.upper,
+      featuresJson: featuresJson ?? this.featuresJson,
+      contributionsJson: contributionsJson ?? this.contributionsJson,
+      synthetic: synthetic ?? this.synthetic,
+      generatedAt: generatedAt ?? this.generatedAt,
+      generatedBy: generatedBy ?? this.generatedBy,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (studentId.present) {
+      map['student_id'] = Variable<String>(studentId.value);
+    }
+    if (task.present) {
+      map['task'] = Variable<String>(task.value);
+    }
+    if (modelId.present) {
+      map['model_id'] = Variable<String>(modelId.value);
+    }
+    if (featureVersion.present) {
+      map['feature_version'] = Variable<String>(featureVersion.value);
+    }
+    if (targetSemester.present) {
+      map['target_semester'] = Variable<int>(targetSemester.value);
+    }
+    if (probability.present) {
+      map['probability'] = Variable<double>(probability.value);
+    }
+    if (band.present) {
+      map['band'] = Variable<String>(band.value);
+    }
+    if (value.present) {
+      map['value'] = Variable<double>(value.value);
+    }
+    if (lower.present) {
+      map['lower'] = Variable<double>(lower.value);
+    }
+    if (upper.present) {
+      map['upper'] = Variable<double>(upper.value);
+    }
+    if (featuresJson.present) {
+      map['features_json'] = Variable<String>(featuresJson.value);
+    }
+    if (contributionsJson.present) {
+      map['contributions_json'] = Variable<String>(contributionsJson.value);
+    }
+    if (synthetic.present) {
+      map['synthetic'] = Variable<bool>(synthetic.value);
+    }
+    if (generatedAt.present) {
+      map['generated_at'] = Variable<DateTime>(generatedAt.value);
+    }
+    if (generatedBy.present) {
+      map['generated_by'] = Variable<String>(generatedBy.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PredictionsCompanion(')
+          ..write('id: $id, ')
+          ..write('studentId: $studentId, ')
+          ..write('task: $task, ')
+          ..write('modelId: $modelId, ')
+          ..write('featureVersion: $featureVersion, ')
+          ..write('targetSemester: $targetSemester, ')
+          ..write('probability: $probability, ')
+          ..write('band: $band, ')
+          ..write('value: $value, ')
+          ..write('lower: $lower, ')
+          ..write('upper: $upper, ')
+          ..write('featuresJson: $featuresJson, ')
+          ..write('contributionsJson: $contributionsJson, ')
+          ..write('synthetic: $synthetic, ')
+          ..write('generatedAt: $generatedAt, ')
+          ..write('generatedBy: $generatedBy, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class _$PredictionRecordInsertable implements Insertable<PredictionRecord> {
+  PredictionRecord _object;
+  _$PredictionRecordInsertable(this._object);
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    return PredictionsCompanion(
+      id: Value(_object.id),
+      studentId: Value(_object.studentId),
+      task: Value(_object.task),
+      modelId: Value(_object.modelId),
+      featureVersion: Value(_object.featureVersion),
+      targetSemester: Value(_object.targetSemester),
+      probability: Value(_object.probability),
+      band: Value(_object.band),
+      value: Value(_object.value),
+      lower: Value(_object.lower),
+      upper: Value(_object.upper),
+      featuresJson: Value(_object.featuresJson),
+      contributionsJson: Value(_object.contributionsJson),
+      synthetic: Value(_object.synthetic),
+      generatedAt: Value(_object.generatedAt),
+      generatedBy: Value(_object.generatedBy),
+    ).toColumns(false);
+  }
+}
+
+extension PredictionRecordToInsertable on PredictionRecord {
+  _$PredictionRecordInsertable toInsertable() {
+    return _$PredictionRecordInsertable(this);
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -5936,6 +7084,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $AttendanceSummariesTable attendanceSummaries =
       $AttendanceSummariesTable(this);
   late final $AssessmentsTable assessments = $AssessmentsTable(this);
+  late final $MlModelsTable mlModels = $MlModelsTable(this);
+  late final $PredictionsTable predictions = $PredictionsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -5960,6 +7110,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     subjectResults,
     attendanceSummaries,
     assessments,
+    mlModels,
+    predictions,
   ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
@@ -6053,6 +7205,13 @@ abstract class _$AppDatabase extends GeneratedDatabase {
         limitUpdateKind: UpdateKind.delete,
       ),
       result: [TableUpdate('assessments', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'students',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('predictions', kind: UpdateKind.delete)],
     ),
   ]);
 }
@@ -7116,6 +8275,24 @@ final class $$StudentsTableReferences
       manager.$state.copyWith(prefetchedData: cache),
     );
   }
+
+  static MultiTypedResultKey<$PredictionsTable, List<PredictionRecord>>
+  _predictionsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.predictions,
+    aliasName: 'students__id__predictions__student_id',
+  );
+
+  $$PredictionsTableProcessedTableManager get predictionsRefs {
+    final manager = $$PredictionsTableTableManager(
+      $_db,
+      $_db.predictions,
+    ).filter((f) => f.studentId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_predictionsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
 }
 
 class $$StudentsTableFilterComposer
@@ -7313,6 +8490,31 @@ class $$StudentsTableFilterComposer
           }) => $$AssessmentsTableFilterComposer(
             $db: $db,
             $table: $db.assessments,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> predictionsRefs(
+    Expression<bool> Function($$PredictionsTableFilterComposer f) f,
+  ) {
+    final $$PredictionsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.predictions,
+      getReferencedColumn: (t) => t.studentId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PredictionsTableFilterComposer(
+            $db: $db,
+            $table: $db.predictions,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -7553,6 +8755,31 @@ class $$StudentsTableAnnotationComposer
     );
     return f(composer);
   }
+
+  Expression<T> predictionsRefs<T extends Object>(
+    Expression<T> Function($$PredictionsTableAnnotationComposer a) f,
+  ) {
+    final $$PredictionsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.predictions,
+      getReferencedColumn: (t) => t.studentId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PredictionsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.predictions,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$StudentsTableTableManager
@@ -7576,6 +8803,7 @@ class $$StudentsTableTableManager
             bool subjectResultsRefs,
             bool attendanceSummariesRefs,
             bool assessmentsRefs,
+            bool predictionsRefs,
           })
         > {
   $$StudentsTableTableManager(_$AppDatabase db, $StudentsTable table)
@@ -7634,6 +8862,7 @@ class $$StudentsTableTableManager
                 subjectResultsRefs = false,
                 attendanceSummariesRefs = false,
                 assessmentsRefs = false,
+                predictionsRefs = false,
               }) {
                 return PrefetchHooks(
                   db: db,
@@ -7645,6 +8874,7 @@ class $$StudentsTableTableManager
                     if (subjectResultsRefs) db.subjectResults,
                     if (attendanceSummariesRefs) db.attendanceSummaries,
                     if (assessmentsRefs) db.assessments,
+                    if (predictionsRefs) db.predictions,
                   ],
                   addJoins: null,
                   getPrefetchedDataCallback: (items) async {
@@ -7796,6 +9026,27 @@ class $$StudentsTableTableManager
                               ),
                           typedResults: items,
                         ),
+                      if (predictionsRefs)
+                        await $_getPrefetchedData<
+                          Student,
+                          $StudentsTable,
+                          PredictionRecord
+                        >(
+                          currentTable: table,
+                          referencedTable: $$StudentsTableReferences
+                              ._predictionsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$StudentsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).predictionsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.studentId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
                     ];
                   },
                 );
@@ -7824,6 +9075,7 @@ typedef $$StudentsTableProcessedTableManager =
         bool subjectResultsRefs,
         bool attendanceSummariesRefs,
         bool assessmentsRefs,
+        bool predictionsRefs,
       })
     >;
 typedef $$FacultyMembersTableCreateCompanionBuilder =
@@ -12989,6 +14241,860 @@ typedef $$AssessmentsTableProcessedTableManager =
       Assessment,
       PrefetchHooks Function({bool studentId, bool importBatchId})
     >;
+typedef $$MlModelsTableCreateCompanionBuilder =
+    MlModelsCompanion Function({
+      required String id,
+      required String task,
+      required String family,
+      required String featureVersion,
+      required String bundleJson,
+      required bool synthetic,
+      required bool recommended,
+      Value<bool> active,
+      required DateTime importedAt,
+      Value<String?> importedBy,
+      Value<int> rowid,
+    });
+typedef $$MlModelsTableUpdateCompanionBuilder =
+    MlModelsCompanion Function({
+      Value<String> id,
+      Value<String> task,
+      Value<String> family,
+      Value<String> featureVersion,
+      Value<String> bundleJson,
+      Value<bool> synthetic,
+      Value<bool> recommended,
+      Value<bool> active,
+      Value<DateTime> importedAt,
+      Value<String?> importedBy,
+      Value<int> rowid,
+    });
+
+class $$MlModelsTableFilterComposer
+    extends Composer<_$AppDatabase, $MlModelsTable> {
+  $$MlModelsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get task => $composableBuilder(
+    column: $table.task,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get family => $composableBuilder(
+    column: $table.family,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get featureVersion => $composableBuilder(
+    column: $table.featureVersion,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get bundleJson => $composableBuilder(
+    column: $table.bundleJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get synthetic => $composableBuilder(
+    column: $table.synthetic,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get recommended => $composableBuilder(
+    column: $table.recommended,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get active => $composableBuilder(
+    column: $table.active,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get importedAt => $composableBuilder(
+    column: $table.importedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get importedBy => $composableBuilder(
+    column: $table.importedBy,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$MlModelsTableOrderingComposer
+    extends Composer<_$AppDatabase, $MlModelsTable> {
+  $$MlModelsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get task => $composableBuilder(
+    column: $table.task,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get family => $composableBuilder(
+    column: $table.family,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get featureVersion => $composableBuilder(
+    column: $table.featureVersion,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get bundleJson => $composableBuilder(
+    column: $table.bundleJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get synthetic => $composableBuilder(
+    column: $table.synthetic,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get recommended => $composableBuilder(
+    column: $table.recommended,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get active => $composableBuilder(
+    column: $table.active,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get importedAt => $composableBuilder(
+    column: $table.importedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get importedBy => $composableBuilder(
+    column: $table.importedBy,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$MlModelsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $MlModelsTable> {
+  $$MlModelsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get task =>
+      $composableBuilder(column: $table.task, builder: (column) => column);
+
+  GeneratedColumn<String> get family =>
+      $composableBuilder(column: $table.family, builder: (column) => column);
+
+  GeneratedColumn<String> get featureVersion => $composableBuilder(
+    column: $table.featureVersion,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get bundleJson => $composableBuilder(
+    column: $table.bundleJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get synthetic =>
+      $composableBuilder(column: $table.synthetic, builder: (column) => column);
+
+  GeneratedColumn<bool> get recommended => $composableBuilder(
+    column: $table.recommended,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get active =>
+      $composableBuilder(column: $table.active, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get importedAt => $composableBuilder(
+    column: $table.importedAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get importedBy => $composableBuilder(
+    column: $table.importedBy,
+    builder: (column) => column,
+  );
+}
+
+class $$MlModelsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $MlModelsTable,
+          MlModelRecord,
+          $$MlModelsTableFilterComposer,
+          $$MlModelsTableOrderingComposer,
+          $$MlModelsTableAnnotationComposer,
+          $$MlModelsTableCreateCompanionBuilder,
+          $$MlModelsTableUpdateCompanionBuilder,
+          (
+            MlModelRecord,
+            BaseReferences<_$AppDatabase, $MlModelsTable, MlModelRecord>,
+          ),
+          MlModelRecord,
+          PrefetchHooks Function()
+        > {
+  $$MlModelsTableTableManager(_$AppDatabase db, $MlModelsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$MlModelsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$MlModelsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$MlModelsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> task = const Value.absent(),
+                Value<String> family = const Value.absent(),
+                Value<String> featureVersion = const Value.absent(),
+                Value<String> bundleJson = const Value.absent(),
+                Value<bool> synthetic = const Value.absent(),
+                Value<bool> recommended = const Value.absent(),
+                Value<bool> active = const Value.absent(),
+                Value<DateTime> importedAt = const Value.absent(),
+                Value<String?> importedBy = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => MlModelsCompanion(
+                id: id,
+                task: task,
+                family: family,
+                featureVersion: featureVersion,
+                bundleJson: bundleJson,
+                synthetic: synthetic,
+                recommended: recommended,
+                active: active,
+                importedAt: importedAt,
+                importedBy: importedBy,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String task,
+                required String family,
+                required String featureVersion,
+                required String bundleJson,
+                required bool synthetic,
+                required bool recommended,
+                Value<bool> active = const Value.absent(),
+                required DateTime importedAt,
+                Value<String?> importedBy = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => MlModelsCompanion.insert(
+                id: id,
+                task: task,
+                family: family,
+                featureVersion: featureVersion,
+                bundleJson: bundleJson,
+                synthetic: synthetic,
+                recommended: recommended,
+                active: active,
+                importedAt: importedAt,
+                importedBy: importedBy,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$MlModelsTable, MlModelRecord>(table),
+                  BaseReferences<_$AppDatabase, $MlModelsTable, MlModelRecord>(
+                    db,
+                    table,
+                    e,
+                  ),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$MlModelsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $MlModelsTable,
+      MlModelRecord,
+      $$MlModelsTableFilterComposer,
+      $$MlModelsTableOrderingComposer,
+      $$MlModelsTableAnnotationComposer,
+      $$MlModelsTableCreateCompanionBuilder,
+      $$MlModelsTableUpdateCompanionBuilder,
+      (
+        MlModelRecord,
+        BaseReferences<_$AppDatabase, $MlModelsTable, MlModelRecord>,
+      ),
+      MlModelRecord,
+      PrefetchHooks Function()
+    >;
+typedef $$PredictionsTableCreateCompanionBuilder =
+    PredictionsCompanion Function({
+      required String id,
+      required String studentId,
+      required String task,
+      required String modelId,
+      required String featureVersion,
+      required int targetSemester,
+      Value<double?> probability,
+      Value<String?> band,
+      Value<double?> value,
+      Value<double?> lower,
+      Value<double?> upper,
+      required String featuresJson,
+      required String contributionsJson,
+      required bool synthetic,
+      required DateTime generatedAt,
+      Value<String?> generatedBy,
+      Value<int> rowid,
+    });
+typedef $$PredictionsTableUpdateCompanionBuilder =
+    PredictionsCompanion Function({
+      Value<String> id,
+      Value<String> studentId,
+      Value<String> task,
+      Value<String> modelId,
+      Value<String> featureVersion,
+      Value<int> targetSemester,
+      Value<double?> probability,
+      Value<String?> band,
+      Value<double?> value,
+      Value<double?> lower,
+      Value<double?> upper,
+      Value<String> featuresJson,
+      Value<String> contributionsJson,
+      Value<bool> synthetic,
+      Value<DateTime> generatedAt,
+      Value<String?> generatedBy,
+      Value<int> rowid,
+    });
+
+final class $$PredictionsTableReferences
+    extends BaseReferences<_$AppDatabase, $PredictionsTable, PredictionRecord> {
+  $$PredictionsTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $StudentsTable _studentIdTable(_$AppDatabase db) =>
+      db.students.createAlias('predictions__student_id__students__id');
+
+  $$StudentsTableProcessedTableManager get studentId {
+    final $_column = $_itemColumn<String>('student_id')!;
+
+    final manager = $$StudentsTableTableManager(
+      $_db,
+      $_db.students,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_studentIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$PredictionsTableFilterComposer
+    extends Composer<_$AppDatabase, $PredictionsTable> {
+  $$PredictionsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get task => $composableBuilder(
+    column: $table.task,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get modelId => $composableBuilder(
+    column: $table.modelId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get featureVersion => $composableBuilder(
+    column: $table.featureVersion,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get targetSemester => $composableBuilder(
+    column: $table.targetSemester,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get probability => $composableBuilder(
+    column: $table.probability,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get band => $composableBuilder(
+    column: $table.band,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get value => $composableBuilder(
+    column: $table.value,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get lower => $composableBuilder(
+    column: $table.lower,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get upper => $composableBuilder(
+    column: $table.upper,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get featuresJson => $composableBuilder(
+    column: $table.featuresJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get contributionsJson => $composableBuilder(
+    column: $table.contributionsJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get synthetic => $composableBuilder(
+    column: $table.synthetic,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get generatedAt => $composableBuilder(
+    column: $table.generatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get generatedBy => $composableBuilder(
+    column: $table.generatedBy,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$StudentsTableFilterComposer get studentId {
+    final $$StudentsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.studentId,
+      referencedTable: $db.students,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$StudentsTableFilterComposer(
+            $db: $db,
+            $table: $db.students,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$PredictionsTableOrderingComposer
+    extends Composer<_$AppDatabase, $PredictionsTable> {
+  $$PredictionsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get task => $composableBuilder(
+    column: $table.task,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get modelId => $composableBuilder(
+    column: $table.modelId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get featureVersion => $composableBuilder(
+    column: $table.featureVersion,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get targetSemester => $composableBuilder(
+    column: $table.targetSemester,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get probability => $composableBuilder(
+    column: $table.probability,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get band => $composableBuilder(
+    column: $table.band,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get value => $composableBuilder(
+    column: $table.value,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get lower => $composableBuilder(
+    column: $table.lower,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get upper => $composableBuilder(
+    column: $table.upper,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get featuresJson => $composableBuilder(
+    column: $table.featuresJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get contributionsJson => $composableBuilder(
+    column: $table.contributionsJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get synthetic => $composableBuilder(
+    column: $table.synthetic,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get generatedAt => $composableBuilder(
+    column: $table.generatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get generatedBy => $composableBuilder(
+    column: $table.generatedBy,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$StudentsTableOrderingComposer get studentId {
+    final $$StudentsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.studentId,
+      referencedTable: $db.students,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$StudentsTableOrderingComposer(
+            $db: $db,
+            $table: $db.students,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$PredictionsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $PredictionsTable> {
+  $$PredictionsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get task =>
+      $composableBuilder(column: $table.task, builder: (column) => column);
+
+  GeneratedColumn<String> get modelId =>
+      $composableBuilder(column: $table.modelId, builder: (column) => column);
+
+  GeneratedColumn<String> get featureVersion => $composableBuilder(
+    column: $table.featureVersion,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get targetSemester => $composableBuilder(
+    column: $table.targetSemester,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get probability => $composableBuilder(
+    column: $table.probability,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get band =>
+      $composableBuilder(column: $table.band, builder: (column) => column);
+
+  GeneratedColumn<double> get value =>
+      $composableBuilder(column: $table.value, builder: (column) => column);
+
+  GeneratedColumn<double> get lower =>
+      $composableBuilder(column: $table.lower, builder: (column) => column);
+
+  GeneratedColumn<double> get upper =>
+      $composableBuilder(column: $table.upper, builder: (column) => column);
+
+  GeneratedColumn<String> get featuresJson => $composableBuilder(
+    column: $table.featuresJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get contributionsJson => $composableBuilder(
+    column: $table.contributionsJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get synthetic =>
+      $composableBuilder(column: $table.synthetic, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get generatedAt => $composableBuilder(
+    column: $table.generatedAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get generatedBy => $composableBuilder(
+    column: $table.generatedBy,
+    builder: (column) => column,
+  );
+
+  $$StudentsTableAnnotationComposer get studentId {
+    final $$StudentsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.studentId,
+      referencedTable: $db.students,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$StudentsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.students,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$PredictionsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $PredictionsTable,
+          PredictionRecord,
+          $$PredictionsTableFilterComposer,
+          $$PredictionsTableOrderingComposer,
+          $$PredictionsTableAnnotationComposer,
+          $$PredictionsTableCreateCompanionBuilder,
+          $$PredictionsTableUpdateCompanionBuilder,
+          (PredictionRecord, $$PredictionsTableReferences),
+          PredictionRecord,
+          PrefetchHooks Function({bool studentId})
+        > {
+  $$PredictionsTableTableManager(_$AppDatabase db, $PredictionsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$PredictionsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$PredictionsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$PredictionsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> studentId = const Value.absent(),
+                Value<String> task = const Value.absent(),
+                Value<String> modelId = const Value.absent(),
+                Value<String> featureVersion = const Value.absent(),
+                Value<int> targetSemester = const Value.absent(),
+                Value<double?> probability = const Value.absent(),
+                Value<String?> band = const Value.absent(),
+                Value<double?> value = const Value.absent(),
+                Value<double?> lower = const Value.absent(),
+                Value<double?> upper = const Value.absent(),
+                Value<String> featuresJson = const Value.absent(),
+                Value<String> contributionsJson = const Value.absent(),
+                Value<bool> synthetic = const Value.absent(),
+                Value<DateTime> generatedAt = const Value.absent(),
+                Value<String?> generatedBy = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => PredictionsCompanion(
+                id: id,
+                studentId: studentId,
+                task: task,
+                modelId: modelId,
+                featureVersion: featureVersion,
+                targetSemester: targetSemester,
+                probability: probability,
+                band: band,
+                value: value,
+                lower: lower,
+                upper: upper,
+                featuresJson: featuresJson,
+                contributionsJson: contributionsJson,
+                synthetic: synthetic,
+                generatedAt: generatedAt,
+                generatedBy: generatedBy,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String studentId,
+                required String task,
+                required String modelId,
+                required String featureVersion,
+                required int targetSemester,
+                Value<double?> probability = const Value.absent(),
+                Value<String?> band = const Value.absent(),
+                Value<double?> value = const Value.absent(),
+                Value<double?> lower = const Value.absent(),
+                Value<double?> upper = const Value.absent(),
+                required String featuresJson,
+                required String contributionsJson,
+                required bool synthetic,
+                required DateTime generatedAt,
+                Value<String?> generatedBy = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => PredictionsCompanion.insert(
+                id: id,
+                studentId: studentId,
+                task: task,
+                modelId: modelId,
+                featureVersion: featureVersion,
+                targetSemester: targetSemester,
+                probability: probability,
+                band: band,
+                value: value,
+                lower: lower,
+                upper: upper,
+                featuresJson: featuresJson,
+                contributionsJson: contributionsJson,
+                synthetic: synthetic,
+                generatedAt: generatedAt,
+                generatedBy: generatedBy,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$PredictionsTable, PredictionRecord>(table),
+                  $$PredictionsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({studentId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (studentId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.studentId,
+                                referencedTable: $$PredictionsTableReferences
+                                    ._studentIdTable(db),
+                                referencedColumn: $$PredictionsTableReferences
+                                    ._studentIdTable(db)
+                                    .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$PredictionsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $PredictionsTable,
+      PredictionRecord,
+      $$PredictionsTableFilterComposer,
+      $$PredictionsTableOrderingComposer,
+      $$PredictionsTableAnnotationComposer,
+      $$PredictionsTableCreateCompanionBuilder,
+      $$PredictionsTableUpdateCompanionBuilder,
+      (PredictionRecord, $$PredictionsTableReferences),
+      PredictionRecord,
+      PrefetchHooks Function({bool studentId})
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -13031,4 +15137,8 @@ class $AppDatabaseManager {
       $$AttendanceSummariesTableTableManager(_db, _db.attendanceSummaries);
   $$AssessmentsTableTableManager get assessments =>
       $$AssessmentsTableTableManager(_db, _db.assessments);
+  $$MlModelsTableTableManager get mlModels =>
+      $$MlModelsTableTableManager(_db, _db.mlModels);
+  $$PredictionsTableTableManager get predictions =>
+      $$PredictionsTableTableManager(_db, _db.predictions);
 }

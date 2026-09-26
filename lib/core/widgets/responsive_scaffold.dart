@@ -752,6 +752,10 @@ class ResponsiveScaffold extends ConsumerWidget {
               icon: Icons.insights_rounded,
               route: '/analytics'),
           _NavigationMenuItem(
+              title: 'Prediction Models',
+              icon: Icons.model_training_rounded,
+              route: '/admin/models'),
+          _NavigationMenuItem(
               title: 'Analytics & Reports',
               icon: Icons.analytics_rounded,
               route: '/reports'),

@@ -58,8 +58,10 @@ class AppFormDialog extends StatelessWidget {
               const SizedBox(height: AppSpacing.lg),
               child,
               const SizedBox(height: AppSpacing.xl),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
+              // Wrap so long labels drop to a new line on narrow screens.
+              Wrap(
+                alignment: WrapAlignment.end,
+                runSpacing: AppSpacing.sm,
                 children: [
                   TextButton(
                     onPressed: () => Navigator.of(context).pop(),
@@ -67,9 +69,12 @@ class AppFormDialog extends StatelessWidget {
                   ),
                   const SizedBox(width: AppSpacing.sm),
                   FilledButton(
-                    style: isDestructive
-                        ? FilledButton.styleFrom(backgroundColor: theme.appColors.danger)
-                        : null,
+                    // The theme makes filled buttons full-width (Size.fromHeight),
+                    // which is infinite inside this Row; size to content here.
+                    style: FilledButton.styleFrom(
+                      minimumSize: const Size(88, 44),
+                      backgroundColor: isDestructive ? theme.appColors.danger : null,
+                    ),
                     onPressed: onConfirm,
                     child: Text(confirmLabel),
                   ),
@@ -156,8 +161,10 @@ class AppConfirmDialog extends StatelessWidget {
                   style: theme.textTheme.bodyMedium
                       ?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
               const SizedBox(height: AppSpacing.xl),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
+              // Wrap so long labels drop to a new line on narrow screens.
+              Wrap(
+                alignment: WrapAlignment.end,
+                runSpacing: AppSpacing.sm,
                 children: [
                   TextButton(
                     onPressed: () => Navigator.of(context).pop(false),
@@ -165,9 +172,12 @@ class AppConfirmDialog extends StatelessWidget {
                   ),
                   const SizedBox(width: AppSpacing.sm),
                   FilledButton(
-                    style: isDestructive
-                        ? FilledButton.styleFrom(backgroundColor: theme.appColors.danger)
-                        : null,
+                    // The theme makes filled buttons full-width (Size.fromHeight),
+                    // which is infinite inside this Row; size to content here.
+                    style: FilledButton.styleFrom(
+                      minimumSize: const Size(88, 44),
+                      backgroundColor: isDestructive ? theme.appColors.danger : null,
+                    ),
                     onPressed: () => Navigator.of(context).pop(true),
                     child: Text(confirmLabel),
                   ),
