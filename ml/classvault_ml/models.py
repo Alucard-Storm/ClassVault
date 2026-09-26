@@ -187,4 +187,6 @@ def _export_tree(tree) -> dict:
         "feature": tree.feature.tolist(),
         "threshold": [float(t) for t in tree.threshold],
         "value": [float(v) for v in tree.value[:, 0, 0]],
+        # Training samples reaching each node; needed for exact TreeSHAP.
+        "cover": [float(c) for c in tree.weighted_n_node_samples],
     }

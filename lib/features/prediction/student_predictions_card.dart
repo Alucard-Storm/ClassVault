@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../core/theme/app_color_scheme.dart';
 import '../../core/theme/app_tokens.dart';
 import '../analytics/analytics_widgets.dart';
 import '../auth/auth_provider.dart';
-import 'engine/feature_extractor.dart';
 import 'engine/model_bundle.dart';
 import 'prediction_service.dart';
 
@@ -58,8 +58,8 @@ class StudentPredictionsCard extends ConsumerWidget {
               spacing: AppSpacing.xl,
               runSpacing: AppSpacing.lg,
               children: [
-                if (risk != null) SizedBox(width: 460, child: _riskSection(theme, risk)),
-                if (forecast != null) SizedBox(width: 460, child: _forecastSection(theme, forecast)),
+                if (risk != null) SizedBox(width: 460, child: _riskSection(context, theme, risk)),
+                if (forecast != null) SizedBox(width: 460, child: _forecastSection(context, theme, forecast)),
               ],
             ),
             if (history.length > (risk == null ? 0 : 1) + (forecast == null ? 0 : 1)) ...[
@@ -67,7 +67,7 @@ class StudentPredictionsCard extends ConsumerWidget {
               ExpansionTile(
                 tilePadding: EdgeInsets.zero,
                 title: Text('Prediction history (${history.length})', style: theme.textTheme.titleSmall),
-                children: [for (final p in history) _historyRow(theme, p)],
+                children: [for (final p in history) _historyRow(context, theme, p)],
               ),
             ],
           ],
@@ -76,7 +76,19 @@ class StudentPredictionsCard extends ConsumerWidget {
     );
   }
 
-  Widget _riskSection(ThemeData theme, PredictionView p) {
+  void _open(BuildContext context, PredictionView p) =>
+      context.go('/analytics/student/$studentId/prediction/${p.record.id}');
+
+  Widget _why(BuildContext context, PredictionView p) => Align(
+        alignment: Alignment.centerLeft,
+        child: TextButton.icon(
+          onPressed: () => _open(context, p),
+          icon: const Icon(Icons.help_outline_rounded, size: 18),
+          label: const Text('Why this signal?'),
+        ),
+      );
+
+  Widget _riskSection(BuildContext context, ThemeData theme, PredictionView p) {
     final r = p.record;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -98,11 +110,12 @@ class StudentPredictionsCard extends ConsumerWidget {
         const SizedBox(height: AppSpacing.md),
         _factors(theme, p, raisesLabel: 'raises risk', lowersLabel: 'lowers risk', higherIsWorse: true),
         _meta(theme, r.modelId, r.generatedAt),
+        _why(context, p),
       ],
     );
   }
 
-  Widget _forecastSection(ThemeData theme, PredictionView p) {
+  Widget _forecastSection(BuildContext context, ThemeData theme, PredictionView p) {
     final r = p.record;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -117,6 +130,7 @@ class StudentPredictionsCard extends ConsumerWidget {
         const SizedBox(height: AppSpacing.md),
         _factors(theme, p, raisesLabel: 'raises estimate', lowersLabel: 'lowers estimate', higherIsWorse: false),
         _meta(theme, r.modelId, r.generatedAt),
+        _why(context, p),
       ],
     );
   }
@@ -148,7 +162,7 @@ class StudentPredictionsCard extends ConsumerWidget {
                 const SizedBox(width: AppSpacing.xs),
                 Expanded(
                   child: Text(
-                    '${FeatureSpec.labels[c.feature] ?? c.feature}: ${_formatValue(c.feature, c.value)} '
+                    '${ExplanationText.label(c.feature)}: ${ExplanationText.value(c.feature, c.value)} '
                     '(${c.contribution > 0 ? raisesLabel : lowersLabel})',
                     style: theme.textTheme.bodySmall,
                   ),
@@ -171,7 +185,7 @@ class StudentPredictionsCard extends ConsumerWidget {
         ),
       );
 
-  Widget _historyRow(ThemeData theme, PredictionView p) {
+  Widget _historyRow(BuildContext context, ThemeData theme, PredictionView p) {
     final r = p.record;
     final what = r.task == ModelTask.risk.name
         ? 'Risk ${RiskChip.label(r.band)} (${((r.probability ?? 0) * 100).round()}%)'
@@ -179,20 +193,10 @@ class StudentPredictionsCard extends ConsumerWidget {
     return ListTile(
       dense: true,
       contentPadding: EdgeInsets.zero,
+      onTap: () => _open(context, p),
+      trailing: const Icon(Icons.chevron_right_rounded),
       title: Text('Sem ${r.targetSemester} · $what${r.synthetic ? ' · test model' : ''}'),
       subtitle: Text('${DateFormat('d MMM yyyy, h:mm a').format(r.generatedAt)} · ${r.modelId}'),
     );
-  }
-
-  static String _formatValue(String feature, double? v) {
-    if (v == null) return 'missing';
-    if (feature.contains('attendance') && !feature.contains('slope') ||
-        feature.contains('score') ||
-        feature.startsWith('school') ||
-        feature == 'prev_percentage') {
-      return '${v.toStringAsFixed(1)}%';
-    }
-    if (v == v.roundToDouble()) return v.toInt().toString();
-    return v.toStringAsFixed(2);
   }
 }

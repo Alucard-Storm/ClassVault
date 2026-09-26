@@ -16,6 +16,28 @@ void main() {
   ];
   final rows = (fixture['rows'] as List).cast<Map<String, dynamic>>();
 
+  test('fixture includes shap reference values for tree models', () {
+    final trees = bundles.where((b) => b.isTree).toList();
+    expect(trees, hasLength(2));
+    for (final b in trees) {
+      expect((rows.first['expected'] as Map)[b.modelId]['shap'], isNotNull,
+          reason: 'Regenerate the fixture with shap installed (ml/requirements-dev.txt).');
+    }
+  });
+
+  test('older tree files without node counts fall back to path attribution', () {
+    final j = jsonDecode(bundles.firstWhere((b) => b.isTree).rawJson) as Map<String, dynamic>;
+    for (final t in (j['model'] as Map)['trees'] as List) {
+      (t as Map).remove('cover');
+    }
+    final legacy = ModelBundle.parse(jsonEncode(j));
+    expect(legacy.explanationMethod, ExplanationMethod.pathAttribution);
+    final features = (rows.first['features'] as Map<String, dynamic>).map((k, v) => MapEntry(k, (v as num?)?.toDouble()));
+    final out = Predictor.run(legacy, features);
+    final total = out.bias + out.contributions.fold<double>(0, (a, c) => a + c.contribution);
+    expect(total, closeTo(out.raw, 1e-6));
+  });
+
   test('fixture covers every model family and missing values', () {
     expect(bundles.map((b) => b.family).toSet(), {'logistic', 'gbt_classifier', 'ridge', 'gbt_regressor'});
     expect(rows.any((r) => (r['features'] as Map).containsValue(null)), isTrue);
@@ -38,6 +60,16 @@ void main() {
         }
         final total = out.bias + out.contributions.fold<double>(0, (a, c) => a + c.contribution);
         expect(total, closeTo(out.raw, 1e-6));
+
+        // Tree explanations must equal the `shap` library's TreeSHAP values.
+        if (expected['shap'] != null) {
+          expect(out.method, ExplanationMethod.treeShap);
+          expect(out.bias, closeTo((expected['shapBase'] as num).toDouble(), 1e-6));
+          final reference = [for (final v in expected['shap'] as List) (v as num).toDouble()];
+          for (var i = 0; i < reference.length; i++) {
+            expect(out.inputContributions[i], closeTo(reference[i], 1e-6), reason: bundle.inputs[i].name);
+          }
+        }
       }
     });
   }

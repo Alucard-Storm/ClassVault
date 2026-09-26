@@ -1,0 +1,2 @@
+-r requirements.txt
+shap>=0.45  # reference SHAP values for tests only

@@ -219,12 +219,14 @@ def _write_parity_fixture(path: Path, test: pd.DataFrame, pre: Preprocessor, ris
         p = models.sigmoid(a * raw + b)
         for i in range(len(rows)):
             expected[i][bundle["modelId"]] = {"raw": float(raw[i]), "probability": float(p[i])}
+        _add_shap(expected, bundle, c["model"], X)
     for c in forecast["candidates"]:
         bundle = forecast["bundle_for"](c)
         fixture_models.append(bundle)
         pred = c["model"].predict(X)
         for i in range(len(rows)):
             expected[i][bundle["modelId"]] = {"raw": float(pred[i])}
+        _add_shap(expected, bundle, c["model"], X)
 
     features = rows[pre.spec.features]
     payload = {
@@ -239,6 +241,23 @@ def _write_parity_fixture(path: Path, test: pd.DataFrame, pre: Preprocessor, ris
     }
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload), encoding="utf-8")
+
+
+def _add_shap(expected: dict, bundle: dict, model, X: np.ndarray) -> None:
+    """Reference SHAP values from the `shap` library for tree models, if it
+    is installed (test-only dependency; see requirements-dev.txt)."""
+    if not bundle["family"].startswith("gbt"):
+        return
+    try:
+        import shap  # noqa: PLC0415
+    except ImportError:
+        return
+    explainer = shap.TreeExplainer(model, feature_perturbation="tree_path_dependent")
+    values = np.asarray(explainer.shap_values(X))
+    base = float(np.ravel(explainer.expected_value)[0])
+    for i in range(len(X)):
+        expected[i][bundle["modelId"]]["shap"] = [float(v) for v in values[i]]
+        expected[i][bundle["modelId"]]["shapBase"] = base
 
 
 # ---------------------------------------------------------------------------

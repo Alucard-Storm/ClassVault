@@ -10,7 +10,9 @@ import 'package:intl/intl.dart';
 import '../../core/theme/app_color_scheme.dart';
 import '../../core/theme/app_tokens.dart';
 import '../../core/utils/file_saver.dart';
+import '../../core/widgets/app_data_table.dart';
 import '../../core/widgets/app_dialogs.dart';
+import '../../data/repositories/prediction_repository.dart';
 import '../../core/widgets/app_snackbar.dart';
 import '../../core/widgets/console_header.dart';
 import '../../core/widgets/empty_state.dart';
@@ -36,6 +38,8 @@ class _PredictionModelsScreenState extends ConsumerState<PredictionModelsScreen>
       'cd ml\npython -m classvault_ml train path/to/classvault_training.csv --out models';
 
   List<StoredModel>? _models;
+  Map<String, int> _counts = const {};
+  List<PredictionRun> _activity = const [];
   bool _busy = false;
 
   @override
@@ -45,8 +49,17 @@ class _PredictionModelsScreenState extends ConsumerState<PredictionModelsScreen>
   }
 
   Future<void> _load() async {
-    final models = await ref.read(predictionServiceProvider).models();
-    if (mounted) setState(() => _models = models);
+    final service = ref.read(predictionServiceProvider);
+    final models = await service.models();
+    final counts = await service.predictionCounts();
+    final activity = await service.activity();
+    if (mounted) {
+      setState(() {
+        _models = models;
+        _counts = counts;
+        _activity = activity;
+      });
+    }
   }
 
   Future<void> _run(Future<void> Function() action) async {
@@ -176,6 +189,8 @@ class _PredictionModelsScreenState extends ConsumerState<PredictionModelsScreen>
                   )
                 else
                   for (final task in ModelTask.values) ..._taskSection(theme, task),
+                const SizedBox(height: AppSpacing.xl),
+                _activityLog(theme),
               ],
             ),
           ),
@@ -334,11 +349,21 @@ class _PredictionModelsScreenState extends ConsumerState<PredictionModelsScreen>
             alignment: WrapAlignment.end,
             spacing: AppSpacing.sm,
             children: [
-              TextButton.icon(
-                onPressed: _busy ? null : () => _delete(m),
-                icon: const Icon(Icons.delete_outline_rounded),
-                label: const Text('Remove'),
-              ),
+              if ((_counts[m.record.id] ?? 0) == 0)
+                TextButton.icon(
+                  onPressed: _busy ? null : () => _delete(m),
+                  icon: const Icon(Icons.delete_outline_rounded),
+                  label: const Text('Remove'),
+                )
+              else
+                Tooltip(
+                  message: 'Kept so its predictions stay auditable.',
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    child: Text('${_counts[m.record.id]} predictions · kept for audit',
+                        style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
+                  ),
+                ),
               if (m.record.active)
                 OutlinedButton(
                   onPressed: _busy
@@ -353,6 +378,36 @@ class _PredictionModelsScreenState extends ConsumerState<PredictionModelsScreen>
                 FilledButton(onPressed: _busy ? null : () => _activate(m), child: const Text('Activate')),
             ],
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _activityLog(ThemeData theme) {
+    final isDesktop = MediaQuery.of(context).size.width > AppBreakpoints.desktop;
+    final format = DateFormat('d MMM yyyy, h:mm a');
+    return AnalyticsCard(
+      title: 'Prediction activity',
+      subtitle: 'Every time predictions were generated: when, by whom and with which model.',
+      child: AppDataTable(
+        isDesktop: isDesktop,
+        columns: const ['When', 'By', 'Model', 'Predictions'],
+        columnFlex: const [2, 2, 4, 1],
+        emptyIcon: Icons.history_rounded,
+        emptyTitle: 'No predictions generated yet',
+        rows: [
+          for (final r in _activity)
+            AppDataRow(
+              mobileTitle: '${r.count} ${r.task} predictions${r.synthetic ? ' (test model)' : ''}',
+              mobileSubtitle: '${format.format(r.generatedAt)} · ${r.generatedByName ?? 'unknown'}\n${r.modelId}',
+              mobileLeadingIcon: Icons.auto_graph_rounded,
+              cells: [
+                Text(format.format(r.generatedAt)),
+                Text(r.generatedByName ?? 'unknown'),
+                Text('${r.modelId}${r.synthetic ? ' (test)' : ''}'),
+                Text('${r.count}'),
+              ],
+            ),
         ],
       ),
     );

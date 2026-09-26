@@ -93,17 +93,67 @@ void main() {
     expect(latest.risk.containsKey('s2'), isFalse);
   });
 
-  test('history is scoped to visible sections and survives model deletion', () async {
+  test('history is scoped to visible sections', () async {
     final lr = await service.importModel(modelOf('logistic'));
     await service.activate(lr, acknowledgeWarnings: true);
     await service.generateForSection(section, admin);
 
     await expectLater(service.generateForSection(section, otherFaculty), throwsStateError);
     expect(await service.historyFor('s1', otherFaculty), isEmpty);
+    expect((await service.historyFor('s1', admin)).single.record.modelId, lr.record.id);
+  });
 
-    await service.delete(lr);
-    final history = await service.historyFor('s1', admin);
-    expect(history.single.record.modelId, lr.record.id);
+  test('models that made predictions cannot be removed; unused ones can', () async {
+    final used = await service.importModel(modelOf('logistic'));
+    final unused = await service.importModel(modelOf('gbt_classifier'));
+    await service.activate(used, acknowledgeWarnings: true);
+    await service.generateForSection(section, admin);
+
+    await expectLater(service.delete(used), throwsA(isA<ModelInUseException>()));
+    await service.delete(unused);
+    expect((await service.models()).map((m) => m.record.id), [used.record.id]);
+    expect(await service.predictionCounts(), {used.record.id: 1});
+  });
+
+  test('explain: summary, exact method, model card, audit trail and access', () async {
+    await db.into(db.users).insert(UsersCompanion.insert(
+          uid: 'admin', name: 'Admin Person', loginId: 'a@x.y', role: 'admin',
+          passwordHash: 'h', passwordSalt: 's', createdAt: DateTime(2026),
+        ));
+    final gbt = await service.importModel(modelOf('gbt_classifier'));
+    await service.activate(gbt, acknowledgeWarnings: true);
+    await service.generateForSection(section, admin);
+    final id = (await service.historyFor('s1', admin)).single.record.id;
+
+    final e = (await service.explain(id, admin))!;
+    expect(e.prediction.method, ExplanationMethod.treeShap);
+    expect(e.summary, startsWith('Estimated '));
+    expect(e.model!.modelId, gbt.record.id);
+    expect(e.generatedByName, 'Admin Person');
+    expect(e.trainingAverage('prev_sgpa'), isNotNull);
+    expect(e.isStale, isFalse);
+
+    expect(await service.explain(id, otherFaculty), isNull);
+    expect(await service.explain('missing', admin), isNull);
+
+    final runs = await service.activity();
+    expect(runs.single.count, 1);
+    expect(runs.single.generatedByName, 'Admin Person');
+  });
+
+  test('explain flags predictions whose inputs have changed', () async {
+    await service.activate(await service.importModel(modelOf('logistic')), acknowledgeWarnings: true);
+    await service.generateForSection(section, admin);
+    final id = (await service.historyFor('s1', admin)).single.record.id;
+
+    // A corrected semester-2 result arrives after the prediction was made.
+    await DriftAcademicHistoryService(db).upsertSemesterResults([
+      SemesterResult(id: 'fix', studentId: 's1', semesterNumber: 2, sgpa: 6.9, backlogs: 2),
+    ]);
+    final e = (await service.explain(id, admin))!;
+    expect(e.isStale, isTrue);
+    final change = e.changes.firstWhere((c) => c.feature == 'prev_sgpa');
+    expect((change.then, change.now), (6.1, 6.9));
   });
 
   test('no active models means nothing is generated', () async {

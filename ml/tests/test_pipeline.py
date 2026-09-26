@@ -31,7 +31,9 @@ def evaluate_bundle(bundle: dict, features: dict) -> float:
     m = bundle["model"]
     if bundle["family"] in ("logistic", "ridge"):
         return m["intercept"] + sum(c * xi for c, xi in zip(m["coefficients"], x))
-    xf = np.array(x, dtype=np.float32)
+    # Round inputs to float32 like sklearn, but compare in float64 against the
+    # float64 thresholds (a numpy float32 scalar would round the threshold).
+    xf = [float(v) for v in np.array(x, dtype=np.float32)]
     total = m["init"]
     for t in m["trees"]:
         node = 0
@@ -39,6 +41,43 @@ def evaluate_bundle(bundle: dict, features: dict) -> float:
             node = t["left"][node] if xf[t["feature"][node]] <= t["threshold"][node] else t["right"][node]
         total += m["learningRate"] * t["value"][node]
     return total
+
+
+def tree_shap_bruteforce(bundle: dict, features: dict) -> tuple[list[float], float]:
+    """Exact path-dependent Shapley values by enumerating feature subsets per
+    tree (depth-3 trees use at most 7 features). Mirrors the app."""
+    from itertools import combinations
+    from math import factorial
+
+    x = []
+    for spec in bundle["inputs"]:
+        v = features[spec["source"]]
+        raw = (spec["impute"] if v is None else v) if spec["kind"] == "value" else (1.0 if v is None else 0.0)
+        x.append((raw - spec["mean"]) / spec["std"])
+    xf = [float(v) for v in np.array(x, dtype=np.float32)]  # see evaluate_bundle
+    m = bundle["model"]
+    phi = [0.0] * len(x)
+    base = m["init"]
+    for t in m["trees"]:
+        def value(node, S):
+            if t["left"][node] == -1:
+                return t["value"][node]
+            f = t["feature"][node]
+            l, r = t["left"][node], t["right"][node]
+            if f in S:
+                return value(l if xf[f] <= t["threshold"][node] else r, S)
+            return (t["cover"][l] * value(l, S) + t["cover"][r] * value(r, S)) / t["cover"][node]
+
+        used = sorted({f for n, f in enumerate(t["feature"]) if t["left"][n] != -1})
+        n = len(used)
+        base += m["learningRate"] * value(0, set())
+        for i in used:
+            others = [f for f in used if f != i]
+            for k in range(n):
+                for S in combinations(others, k):
+                    w = factorial(k) * factorial(n - k - 1) / factorial(n)
+                    phi[i] += m["learningRate"] * w * (value(0, set(S) | {i}) - value(0, set(S)))
+    return phi, base
 
 
 class DatasetTests(unittest.TestCase):
@@ -128,6 +167,20 @@ class TrainingTests(unittest.TestCase):
         fixture = json.loads(self.fixture.read_text())
         for bundle in fixture["models"]:
             self.assertEqual(bundle["trainingData"]["source"], "synthetic", bundle["modelId"])
+
+    def test_bruteforce_tree_shap_matches_shap_library(self):
+        fixture = json.loads(self.fixture.read_text())
+        trees = [m for m in fixture["models"] if m["family"].startswith("gbt")]
+        if "shap" not in fixture["rows"][0]["expected"][trees[0]["modelId"]]:
+            self.skipTest("shap not installed; reference values not in fixture")
+        for bundle in trees:
+            for row in fixture["rows"][:8]:
+                expected = row["expected"][bundle["modelId"]]
+                phi, base = tree_shap_bruteforce(bundle, row["features"])
+                self.assertAlmostEqual(base, expected["shapBase"], places=6)
+                for got, want in zip(phi, expected["shap"]):
+                    self.assertAlmostEqual(got, want, places=6)
+                self.assertAlmostEqual(base + sum(phi), expected["raw"], places=6)
 
     def test_fixture_exercises_missing_values(self):
         fixture = json.loads(self.fixture.read_text())

@@ -8,9 +8,12 @@ import 'package:classvault/data/services/drift_academic_history_service.dart';
 import 'package:classvault/data/services/drift_academic_service.dart';
 import 'package:classvault/data/services/drift_auth_service.dart';
 import 'package:classvault/data/services/providers.dart';
+import 'package:classvault/features/analytics/analytics_service.dart';
+import 'package:classvault/features/analytics/analytics_widgets.dart';
 import 'package:classvault/features/analytics/class_analytics_screen.dart';
 import 'package:classvault/features/analytics/student_insights_screen.dart';
 import 'package:classvault/features/auth/auth_provider.dart';
+import 'package:classvault/features/prediction/prediction_explanation_screen.dart';
 import 'package:classvault/features/prediction/prediction_models_screen.dart';
 import 'package:classvault/features/prediction/prediction_service.dart';
 import 'package:drift/native.dart';
@@ -61,7 +64,19 @@ Future<void> pumpAt(WidgetTester tester, ProviderContainer container, String pat
       path: '/analytics',
       builder: (_, _) => const ClassAnalyticsScreen(),
       routes: [
-        GoRoute(path: 'student/:id', builder: (_, s) => StudentInsightsScreen(studentId: s.pathParameters['id']!)),
+        GoRoute(
+          path: 'student/:id',
+          builder: (_, s) => StudentInsightsScreen(studentId: s.pathParameters['id']!),
+          routes: [
+            GoRoute(
+              path: 'prediction/:pid',
+              builder: (_, s) => PredictionExplanationScreen(
+                studentId: s.pathParameters['id']!,
+                predictionId: s.pathParameters['pid']!,
+              ),
+            ),
+          ],
+        ),
       ],
     ),
   ]);
@@ -123,6 +138,68 @@ void main() {
       expect(find.textContaining('synthetic data. Do not use'), findsOneWidget);
     });
   }
+
+  for (final (label, size) in [('phone', const Size(390, 844)), ('desktop', const Size(1440, 900))]) {
+    testWidgets('"Why this signal?" explains a prediction on $label', (tester) async {
+      tester.view.physicalSize = size;
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      final (db, c) = await setUpApp();
+      addTearDown(db.close);
+      addTearDown(c.dispose);
+      final user = c.read(authStateProvider).valueOrNull!;
+      final service = c.read(predictionServiceProvider);
+      final section = (await c.read(analyticsServiceProvider).visibleSections(user)).single;
+      await service.generateForSection(section, user);
+
+      await pumpAt(tester, c, '/analytics/student/s1');
+      final why = find.text('Why this signal?').first;
+      await tester.ensureVisible(why);
+      await tester.tap(why);
+      await tester.pumpAndSettle();
+
+      expect(find.text('Academic risk signal'), findsOneWidget);
+      expect(find.textContaining('Estimated '), findsOneWidget);
+      expect(find.text('How each factor moved this estimate'), findsOneWidget);
+      expect(find.textContaining('Exact (linear model)'), findsWidgets);
+      expect(find.text('Data used'), findsOneWidget);
+      expect(find.text('Model and audit trail'), findsOneWidget);
+      expect(find.textContaining('synthetic data. Do not use'), findsOneWidget);
+      expect(find.textContaining('changed since this prediction'), findsNothing);
+
+      // After the data changes, the explanation says it is out of date.
+      await DriftAcademicHistoryService(db).upsertSemesterResults([
+        SemesterResult(id: 'fix', studentId: 's1', semesterNumber: 3, sgpa: 6.4, backlogs: 1),
+      ]);
+      // Leave and reopen the explanation, as a user would.
+      await tester.tap(find.byTooltip('Back to student'));
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(find.text('Why this signal?').first);
+      await tester.tap(find.text('Why this signal?').first);
+      await tester.pumpAndSettle();
+      expect(find.textContaining('changed since this prediction'), findsOneWidget);
+    });
+  }
+
+  testWidgets('models screen shows the activity log and keeps used models', (tester) async {
+    tester.view.physicalSize = const Size(1440, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    final (db, c) = await setUpApp();
+    addTearDown(db.close);
+    addTearDown(c.dispose);
+    final user = c.read(authStateProvider).valueOrNull!;
+    final section = (await c.read(analyticsServiceProvider).visibleSections(user)).single;
+    await c.read(predictionServiceProvider).generateForSection(section, user);
+
+    await pumpAt(tester, c, '/admin/models');
+    expect(find.text('Prediction activity'), findsOneWidget);
+    final activityCard = find.ancestor(of: find.text('Prediction activity'), matching: find.byType(AnalyticsCard));
+    // One run per active model (risk + forecast), both by the admin.
+    expect(find.descendant(of: activityCard, matching: find.text('Admin')), findsNWidgets(2));
+    expect(find.textContaining('kept for audit'), findsNWidgets(2));
+    expect(find.text('Remove'), findsOneWidget); // only the unused tree model
+  });
 
   testWidgets('no generate button without active models', (tester) async {
     tester.view.physicalSize = const Size(1440, 900);

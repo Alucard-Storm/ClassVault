@@ -11,7 +11,10 @@ import '../../data/services/providers.dart';
 import '../analytics/analytics_service.dart';
 import 'engine/feature_extractor.dart';
 import 'engine/model_bundle.dart';
+import 'engine/explanation.dart';
 import 'engine/synthetic_history.dart';
+
+export 'engine/explanation.dart' show PredictionView, ExplanationText, FeatureChange;
 
 final predictionServiceProvider = Provider<PredictionService>((ref) {
   return PredictionService(
@@ -46,32 +49,53 @@ class ModelActivationException implements Exception {
   String toString() => 'Activation needs acknowledgement: ${warnings.join(' ')}';
 }
 
+class ModelInUseException implements Exception {
+  final int predictions;
+  ModelInUseException(this.predictions);
+  @override
+  String toString() =>
+      'This model made $predictions predictions and is kept so they stay auditable. Deactivate it instead.';
+}
+
+/// Everything shown in "Why this signal?".
+class PredictionExplanation {
+  final PredictionView prediction;
+  final Student student;
+
+  /// The model that made the prediction (kept while it has predictions).
+  final ModelBundle? model;
+  final String summary;
+  final List<String> suggestions;
+
+  /// Features that have changed since the prediction was made.
+  final List<FeatureChange> changes;
+
+  /// Set when the student has moved on from the predicted semester.
+  final int? currentSemester;
+  final String? generatedByName;
+
+  const PredictionExplanation({
+    required this.prediction,
+    required this.student,
+    required this.model,
+    required this.summary,
+    required this.suggestions,
+    required this.changes,
+    required this.currentSemester,
+    required this.generatedByName,
+  });
+
+  bool get isStale => changes.isNotEmpty || (currentSemester != null && currentSemester != prediction.record.targetSemester);
+
+  /// Training-data average of a feature (from the model's preprocessing).
+  double? trainingAverage(String feature) =>
+      model?.inputs.where((i) => i.source == feature && !i.isMissingIndicator).firstOrNull?.mean;
+}
+
 class GenerationResult {
   final int predicted;
   final int skippedNoHistory;
   const GenerationResult(this.predicted, this.skippedNoHistory);
-}
-
-/// A stored prediction with its explanation decoded for display.
-class PredictionView {
-  final PredictionRecord record;
-  final List<FeatureContribution> contributions;
-  const PredictionView(this.record, this.contributions);
-
-  RiskBand? get band => switch (record.band) {
-        'elevated' => RiskBand.elevated,
-        'moderate' => RiskBand.moderate,
-        'low' => RiskBand.low,
-        _ => null,
-      };
-
-  static PredictionView of(PredictionRecord r) => PredictionView(
-        r,
-        [
-          for (final c in (jsonDecode(r.contributionsJson) as List).cast<Map<String, dynamic>>())
-            FeatureContribution.fromJson(c),
-        ],
-      );
 }
 
 /// Training-data export, model management and prediction generation.
@@ -142,7 +166,17 @@ class PredictionService {
 
   Future<void> deactivate(StoredModel model) => predictions.setActive(model.record.id, false);
 
-  Future<void> delete(StoredModel model) => predictions.deleteModel(model.record.id);
+  /// Removes a model that has never been used. Models with predictions are
+  /// kept so every prediction can be traced to the model that made it.
+  Future<void> delete(StoredModel model) async {
+    final used = (await predictions.countByModel())[model.record.id] ?? 0;
+    if (used > 0) throw ModelInUseException(used);
+    await predictions.deleteModel(model.record.id);
+  }
+
+  Future<Map<String, int>> predictionCounts() => predictions.countByModel();
+
+  Future<List<PredictionRun>> activity() => predictions.getActivity();
 
   // Predictions -------------------------------------------------------------------
 
@@ -185,7 +219,7 @@ class PredictionService {
           lower: out.lower,
           upper: out.upper,
           featuresJson: jsonEncode(features),
-          contributionsJson: jsonEncode([for (final c in out.contributions) c.toJson()]),
+          contributionsJson: PredictionView.encode(out),
           synthetic: m.bundle.isSynthetic,
           generatedAt: now,
           generatedBy: user.uid,
@@ -209,9 +243,44 @@ class PredictionService {
 
   /// Prediction history for a student in one of [user]'s sections.
   Future<List<PredictionView>> historyFor(String studentId, AppUser user) async {
+    if (await _visibleStudent(studentId, user) == null) return const [];
+    return [for (final r in await predictions.getPredictionsForStudent(studentId)) PredictionView.of(r)];
+  }
+
+  /// Full explanation for one prediction, or null if it does not exist or
+  /// the student is not in one of [user]'s sections.
+  Future<PredictionExplanation?> explain(String predictionId, AppUser user) async {
+    final record = await predictions.getPrediction(predictionId);
+    if (record == null) return null;
+    final student = await _visibleStudent(record.studentId, user);
+    if (student == null) return null;
+
+    final view = PredictionView.of(record);
+    final model = (await predictions.getModels()).where((m) => m.id == record.modelId).firstOrNull;
+    final h = await history.getStudentHistory(student.id);
+    final current = h?.enrollments.where((e) => e.isCurrent).lastOrNull;
+    final now = h == null ? const <String, double?>{} : FeatureExtractor.extract(h, record.targetSemester);
+    final runs = await predictions.getActivity(limit: 500);
+
+    return PredictionExplanation(
+      prediction: view,
+      student: student,
+      model: model == null ? null : ModelBundle.parse(model.bundleJson),
+      summary: ExplanationText.summary(view),
+      suggestions: ExplanationText.suggestions(view),
+      changes: h == null ? const [] : ExplanationText.changes(view.features, now),
+      currentSemester: current?.semesterNumber,
+      generatedByName: runs
+          .where((r) => r.generatedBy == record.generatedBy && r.generatedAt == record.generatedAt)
+          .firstOrNull
+          ?.generatedByName,
+    );
+  }
+
+  Future<Student?> _visibleStudent(String studentId, AppUser user) async {
     final student = (await academic.getStudents()).where((s) => s.id == studentId).firstOrNull;
     final visible = await analytics.visibleSections(user);
-    if (student == null || !visible.any((s) => s.section.id == student.sectionId)) return const [];
-    return [for (final r in await predictions.getPredictionsForStudent(studentId)) PredictionView.of(r)];
+    if (student == null || !visible.any((s) => s.section.id == student.sectionId)) return null;
+    return student;
   }
 }
