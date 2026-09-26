@@ -16,6 +16,7 @@ import 'analytics_service.dart';
 import 'analytics_widgets.dart';
 import 'engine/student_analytics.dart';
 import '../prediction/student_predictions_card.dart';
+import '../intelligence/student_intelligence_cards.dart';
 
 final _studentAnalyticsProvider = FutureProvider.autoDispose.family<StudentAnalytics?, String>((ref, id) async {
   final user = ref.watch(authStateProvider).valueOrNull;
@@ -81,10 +82,14 @@ class _StudentInsightsBody extends StatelessWidget {
             _signals(theme),
             gap,
             StudentPredictionsCard(studentId: a.student.id),
+            InterventionsCard(studentId: a.student.id),
+            gap,
             _metrics(theme),
             gap,
             if (a.performanceSeries.isNotEmpty) ...[_performanceChart(theme), gap],
             if (a.attendanceSeries.isNotEmpty) ...[_attendanceChart(theme), gap],
+            ReadinessCard(analytics: a),
+            gap,
             if (a.subjects.isNotEmpty) ...[_subjects(context, theme), gap],
             if (a.backlogs.everFailed > 0 || a.backlogs.current > 0) ...[_backlogs(theme), gap],
             if (a.assessmentTrends.isNotEmpty) ...[_assessmentTrends(theme), gap],

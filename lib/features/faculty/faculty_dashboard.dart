@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 import '../auth/auth_provider.dart';
+import '../intelligence/attention_summary_card.dart';
 import '../../data/models/models.dart';
 import '../../data/services/providers.dart';
 import '../../core/widgets/responsive_scaffold.dart';
@@ -149,6 +150,8 @@ class _FacultyDashboardState extends ConsumerState<FacultyDashboard> {
           ).animate().fadeIn(duration: AppMotion.entrance).slideY(begin: 0.08, curve: Curves.easeOut),
           const SizedBox(height: AppSpacing.xxl - AppSpacing.xs),
           _buildQuickActions(context, theme, stretchWidth: false),
+          const SizedBox(height: AppSpacing.lg),
+          const AttentionSummaryCard(),
           const SizedBox(height: AppSpacing.xxl),
           _buildAssignmentsSection(theme, staggerFrom: 0),
         ],
@@ -183,6 +186,8 @@ class _FacultyDashboardState extends ConsumerState<FacultyDashboard> {
                             value: '${_sessionsConducted.length}')),
                   ],
                 ).animate().fadeIn(duration: AppMotion.entrance).slideY(begin: 0.08, curve: Curves.easeOut),
+                const SizedBox(height: AppSpacing.lg),
+                const AttentionSummaryCard(),
                 const SizedBox(height: AppSpacing.xxl - AppSpacing.xs),
                 _buildAssignmentsSection(theme, staggerFrom: 1),
               ],

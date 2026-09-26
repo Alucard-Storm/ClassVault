@@ -1,5 +1,6 @@
 import 'package:classvault/core/theme/app_theme.dart';
 import 'package:classvault/core/widgets/app_dialogs.dart';
+import 'package:classvault/core/widgets/console_header.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -29,6 +30,25 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Activate Anyway'), findsOneWidget);
       expect(find.text('Change Password'), findsOneWidget);
+    });
+  }
+
+  for (final width in [360.0, 1280.0]) {
+    testWidgets('console header action lays out under the app theme at ${width.toInt()}px', (tester) async {
+      tester.view.physicalSize = Size(width, 700);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      await tester.pumpWidget(MaterialApp(
+        theme: AppTheme.light,
+        home: Scaffold(
+          body: Padding(
+            padding: const EdgeInsets.all(24),
+            child: ConsoleHeader(title: 'Students', subtitle: 'Manage students', actionLabel: 'Attention Queue', onAction: () {}),
+          ),
+        ),
+      ));
+      await tester.pumpAndSettle();
+      expect(find.text('Attention Queue'), findsOneWidget);
     });
   }
 }

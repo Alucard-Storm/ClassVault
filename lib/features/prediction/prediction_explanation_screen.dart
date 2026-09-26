@@ -14,6 +14,7 @@ import '../auth/auth_provider.dart';
 import 'engine/feature_extractor.dart';
 import 'engine/model_bundle.dart';
 import 'prediction_service.dart';
+import '../intelligence/prediction_review_card.dart';
 
 final _explanationProvider =
     FutureProvider.autoDispose.family<PredictionExplanation?, String>((ref, predictionId) async {
@@ -103,6 +104,8 @@ class _Body extends StatelessWidget {
               _contributions(theme),
               gap,
               if (e.suggestions.isNotEmpty) ...[_suggestions(theme), gap],
+              PredictionReviewCard(predictionId: r.id, studentId: e.student.id),
+              gap,
               _dataUsed(context, theme),
               gap,
               _modelCard(theme),

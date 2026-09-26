@@ -20,3 +20,4 @@ export 'assessment_model.dart';
 export 'student_academic_history_model.dart';
 export 'ml_model_record.dart';
 export 'prediction_record.dart';
+export 'intervention_model.dart';

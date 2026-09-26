@@ -10,6 +10,8 @@ import 'drift_academic_service.dart';
 import 'drift_attendance_service.dart';
 import 'drift_academic_history_service.dart';
 import 'drift_prediction_service.dart';
+import 'drift_intervention_service.dart';
+import '../repositories/intervention_repository.dart';
 import '../repositories/prediction_repository.dart';
 
 /// Single database instance for the app. Override in tests with
@@ -38,6 +40,10 @@ final academicHistoryRepositoryProvider = Provider<AcademicHistoryRepository>((r
 
 final predictionRepositoryProvider = Provider<PredictionRepository>((ref) {
   return DriftPredictionService(ref.watch(appDatabaseProvider));
+});
+
+final interventionRepositoryProvider = Provider<InterventionRepository>((ref) {
+  return DriftInterventionService(ref.watch(appDatabaseProvider));
 });
 
 final themeModeProvider = StateProvider<ThemeMode>((ref) => ThemeMode.light);

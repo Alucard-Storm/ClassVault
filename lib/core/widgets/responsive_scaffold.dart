@@ -693,7 +693,7 @@ class ResponsiveScaffold extends ConsumerWidget {
     );
   }
 
-  static const _rootRoutes = {'/admin', '/faculty', '/student'};
+  static const _rootRoutes = {'/admin', '/faculty', '/student', '/analytics'};
 
   /// Single source of truth for nav-item selection, used by the desktop
   /// sidebar, mobile drawer, and faculty bottom nav alike. Root routes only
@@ -748,6 +748,10 @@ class ResponsiveScaffold extends ConsumerWidget {
               icon: Icons.drive_folder_upload_rounded,
               route: '/admin/academic-import'),
           _NavigationMenuItem(
+              title: 'Attention Queue',
+              icon: Icons.flag_rounded,
+              route: '/analytics/attention'),
+          _NavigationMenuItem(
               title: 'Academic Insights',
               icon: Icons.insights_rounded,
               route: '/analytics'),
@@ -772,6 +776,10 @@ class ResponsiveScaffold extends ConsumerWidget {
               title: 'Edit Attendance',
               icon: Icons.edit_note_rounded,
               route: '/faculty/edit-attendance'),
+          _NavigationMenuItem(
+              title: 'Attention Queue',
+              icon: Icons.flag_rounded,
+              route: '/analytics/attention'),
           _NavigationMenuItem(
               title: 'Academic Insights',
               icon: Icons.insights_rounded,

@@ -213,6 +213,10 @@ class StudentAnalytics {
   final List<SubjectPerformance> subjects;
   final BacklogSummary backlogs;
   final List<AssessmentTrend> assessmentTrends;
+
+  /// Mean score % across lab, practical and project assessments.
+  final double? practicalScorePercent;
+  final int practicalAssessments;
   final List<AnalyticsSignal> signals;
 
   const StudentAnalytics({
@@ -238,6 +242,8 @@ class StudentAnalytics {
     required this.subjects,
     required this.backlogs,
     required this.assessmentTrends,
+    this.practicalScorePercent,
+    this.practicalAssessments = 0,
     required this.signals,
   });
 
@@ -316,6 +322,10 @@ class StudentAnalyticsEngine {
     // Subjects & backlogs --------------------------------------------------
     final (subjects, backlogs) = _subjects(history.subjectResults, results.lastOrNull?.backlogs);
     final assessmentTrends = _assessmentTrends(history.assessments);
+    final practical = [
+      for (final a in history.assessments)
+        if (a.maxScore > 0 && _isPractical(a)) a.score / a.maxScore * 100,
+    ];
 
     final analytics = StudentAnalytics(
       student: history.student,
@@ -342,6 +352,8 @@ class StudentAnalyticsEngine {
       subjects: subjects,
       backlogs: backlogs,
       assessmentTrends: assessmentTrends,
+      practicalScorePercent: practical.isEmpty ? null : practical.reduce((a, b) => a + b) / practical.length,
+      practicalAssessments: practical.length,
       signals: const [],
     );
     return analytics._withSignals(_signals(analytics, attendanceThreshold));
@@ -537,6 +549,11 @@ class StudentAnalyticsEngine {
     return out;
   }
 
+  static final _practicalPattern = RegExp(r'\b(lab|labs|practical|practicals|project|projects|viva)\b');
+
+  static bool _isPractical(Assessment a) =>
+      _practicalPattern.hasMatch('${a.assessmentType} ${a.title ?? ''}'.toLowerCase());
+
   static double? _recentWeighted(List<SemesterPoint> series) {
     if (series.isEmpty) return null;
     final recent = series.length > 3 ? series.sublist(series.length - 3) : series;
@@ -613,6 +630,8 @@ extension on StudentAnalytics {
         subjects: subjects,
         backlogs: backlogs,
         assessmentTrends: assessmentTrends,
+        practicalScorePercent: practicalScorePercent,
+        practicalAssessments: practicalAssessments,
         signals: signals,
       );
 }

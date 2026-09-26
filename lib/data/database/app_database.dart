@@ -363,6 +363,30 @@ class Predictions extends Table {
 }
 
 // ---------------------------------------------------------------------------
+// Faculty interventions (Phase 7) — added in schema v3
+// ---------------------------------------------------------------------------
+
+@UseRowClass(Intervention, generateInsertable: true)
+class Interventions extends Table {
+  TextColumn get id => text()();
+  TextColumn get studentId =>
+      text().references(Students, #id, onDelete: KeyAction.cascade)();
+  TextColumn get authorId => text()();
+  TextColumn get type => text()();
+  TextColumn get note => text()();
+  TextColumn get status => text().withDefault(const Constant('open'))();
+  DateTimeColumn get followUpOn => dateTime().nullable()();
+  // No foreign key: reviews must survive prediction clean-up.
+  TextColumn get predictionId => text().nullable()();
+  TextColumn get reviewAssessment => text().nullable()();
+  DateTimeColumn get createdAt => dateTime()();
+  DateTimeColumn get updatedAt => dateTime()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+// ---------------------------------------------------------------------------
 // Database
 // ---------------------------------------------------------------------------
 
@@ -388,13 +412,14 @@ class Predictions extends Table {
   Assessments,
   MlModels,
   Predictions,
+  Interventions,
 ])
 class AppDatabase extends _$AppDatabase {
   /// Pass an [executor] (e.g. `NativeDatabase.memory()`) in tests.
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   // Bump [schemaVersion] and add steps in onUpgrade for every schema change;
   // never edit an already-shipped table definition without a migration.
@@ -405,6 +430,9 @@ class AppDatabase extends _$AppDatabase {
           if (from < 2) {
             await m.createTable(mlModels);
             await m.createTable(predictions);
+          }
+          if (from < 3) {
+            await m.createTable(interventions);
           }
         },
         beforeOpen: (details) async {

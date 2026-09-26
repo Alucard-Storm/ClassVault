@@ -24,6 +24,28 @@ class ConsoleHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    return LayoutBuilder(builder: (context, constraints) {
+      // On narrow screens the action button moves under the title so long
+      // labels never squeeze the title or overflow.
+      final narrow = constraints.maxWidth < 600 && onAction != null && actionLabel != null;
+      if (!narrow) return _row(context, includeAction: true);
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _row(context, includeAction: false),
+          const SizedBox(height: AppSpacing.md),
+          ElevatedButton.icon(
+            style: ElevatedButton.styleFrom(minimumSize: const Size(0, 44)),
+            onPressed: onAction,
+            icon: Icon(actionIcon ?? Icons.add_rounded, size: 18),
+            label: Text(actionLabel!),
+          ),
+        ],
+      );
+    });
+  }
+
+  Widget _row(BuildContext context, {required bool includeAction}) {
     final theme = Theme.of(context);
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -56,9 +78,11 @@ class ConsoleHeader extends StatelessWidget {
             onPressed: onRefresh,
           ),
         ],
-        if (onAction != null && actionLabel != null) ...[
+        if (includeAction && onAction != null && actionLabel != null) ...[
           const SizedBox(width: AppSpacing.sm),
           ElevatedButton.icon(
+            // The theme's full-width minimum size is infinite inside this Row.
+            style: ElevatedButton.styleFrom(minimumSize: const Size(0, 44)),
             onPressed: onAction,
             icon: Icon(actionIcon ?? Icons.add_rounded, size: 18),
             label: Text(actionLabel!),

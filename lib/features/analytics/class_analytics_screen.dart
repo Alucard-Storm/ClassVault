@@ -18,6 +18,8 @@ import '../prediction/prediction_service.dart';
 import 'analytics_service.dart';
 import 'analytics_widgets.dart';
 import 'engine/student_analytics.dart';
+import 'class_trend_card.dart';
+import '../intelligence/engine/readiness.dart';
 
 /// Remembers the chosen section while navigating to a student and back.
 final selectedAnalyticsSectionProvider = StateProvider<String?>((ref) => null);
@@ -176,9 +178,12 @@ class _ClassAnalyticsScreenState extends ConsumerState<ClassAnalyticsScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const ConsoleHeader(
+            ConsoleHeader(
               title: 'Academic Insights',
               subtitle: 'Trends, consistency, attendance and backlogs from each student\'s academic history.',
+              actionLabel: 'Attention Queue',
+              actionIcon: Icons.flag_rounded,
+              onAction: () => context.go('/analytics/attention'),
             ).animate().fadeIn(duration: 250.ms).slideY(begin: -0.05, curve: Curves.easeOut),
             const SizedBox(height: AppSpacing.xl),
             if (_error != null)
@@ -228,6 +233,8 @@ class _ClassAnalyticsScreenState extends ConsumerState<ClassAnalyticsScreen> {
     }
 
     final summary = StudentAnalyticsEngine.summarize(students);
+    final readiness = {for (final s in students) s.student.id: ProjectReadiness.assess(s).level};
+    final opportunities = readiness.values.where((l) => l == ReadinessLevel.strong).length;
     final isDesktop = MediaQuery.of(context).size.width > AppBreakpoints.desktop;
     final visible = _visible();
 
@@ -242,6 +249,7 @@ class _ClassAnalyticsScreenState extends ConsumerState<ClassAnalyticsScreen> {
             ('Attention signals', '${summary.attention}', Icons.priority_high_rounded, theme.appColors.danger),
             ('Monitor signals', '${summary.monitor}', Icons.visibility_outlined, theme.appColors.warning),
             ('Stable', '${summary.stable}', Icons.check_circle_outline_rounded, theme.appColors.success),
+            ('Opportunity indicators', '$opportunities', Icons.rocket_launch_outlined, theme.appColors.success),
             ('Average CGPA', AnalyticsFormat.num2(summary.averageCgpa), Icons.school_outlined, theme.appColors.info),
             ('Avg. latest attendance', AnalyticsFormat.pct(summary.averageAttendance), Icons.event_available_rounded,
                 theme.appColors.info),
@@ -267,6 +275,8 @@ class _ClassAnalyticsScreenState extends ConsumerState<ClassAnalyticsScreen> {
           ),
         ),
       ],
+      const SizedBox(height: AppSpacing.lg),
+      ClassTrendCard(students: students),
       const SizedBox(height: AppSpacing.lg),
       AnalyticsCard(
         title: 'Students',
@@ -332,6 +342,13 @@ class _ClassAnalyticsScreenState extends ConsumerState<ClassAnalyticsScreen> {
                     mobileTrailing: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
+                        if (readiness[s.student.id] == ReadinessLevel.strong) ...[
+                          Tooltip(
+                            message: 'Project-readiness indicators: strong',
+                            child: Icon(Icons.rocket_launch_outlined, size: 16, color: theme.appColors.success),
+                          ),
+                          const SizedBox(width: AppSpacing.xs),
+                        ],
                         TrendBadge(s.performanceTrend.direction, compact: true),
                         const SizedBox(width: AppSpacing.xs),
                         SignalChip(s.highestSignal, hasHistory: s.hasHistory),
@@ -354,7 +371,21 @@ class _ClassAnalyticsScreenState extends ConsumerState<ClassAnalyticsScreen> {
                         ),
                       ),
                       Text('${s.backlogs.current}'),
-                      Align(alignment: Alignment.centerLeft, child: SignalChip(s.highestSignal, hasHistory: s.hasHistory)),
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: Wrap(
+                          spacing: AppSpacing.xs,
+                          crossAxisAlignment: WrapCrossAlignment.center,
+                          children: [
+                            SignalChip(s.highestSignal, hasHistory: s.hasHistory),
+                            if (readiness[s.student.id] == ReadinessLevel.strong)
+                              Tooltip(
+                                message: 'Project-readiness indicators: strong',
+                                child: Icon(Icons.rocket_launch_outlined, size: 16, color: theme.appColors.success),
+                              ),
+                          ],
+                        ),
+                      ),
                       _predictionCell(s.student.id),
                     ],
                   ),
