@@ -44,7 +44,7 @@ class _FacultyDashboardState extends ConsumerState<FacultyDashboard> {
     });
     try {
       final user = ref.read(authStateProvider).valueOrNull;
-      final facultyId = user?.associatedId ?? 'fac_1';
+      final facultyId = user?.associatedId ?? '';
       final academicRepo = ref.read(academicRepositoryProvider);
       final attendanceRepo = ref.read(attendanceRepositoryProvider);
 
@@ -59,7 +59,7 @@ class _FacultyDashboardState extends ConsumerState<FacultyDashboard> {
       ]);
 
       final allAssignments = results[0] as List<FacultyAssignment>;
-      final facultyId2 = user?.associatedId ?? 'fac_1';
+      final facultyId2 = user?.associatedId ?? '';
       setState(() {
         _assignments = allAssignments.where((a) => a.facultyId == facultyId2).toList();
         _mappings = results[1] as List<SubjectMapping>;

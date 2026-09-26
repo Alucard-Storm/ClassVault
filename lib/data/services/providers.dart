@@ -3,20 +3,35 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../repositories/auth_repository.dart';
 import '../repositories/academic_repository.dart';
 import '../repositories/attendance_repository.dart';
-import 'local_auth_service.dart';
-import 'local_academic_service.dart';
-import 'local_attendance_service.dart';
+import '../repositories/academic_history_repository.dart';
+import '../database/app_database.dart';
+import 'drift_auth_service.dart';
+import 'drift_academic_service.dart';
+import 'drift_attendance_service.dart';
+import 'drift_academic_history_service.dart';
+
+/// Single database instance for the app. Override in tests with
+/// `AppDatabase(NativeDatabase.memory())`.
+final appDatabaseProvider = Provider<AppDatabase>((ref) {
+  final db = AppDatabase();
+  ref.onDispose(db.close);
+  return db;
+});
 
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
-  return LocalAuthService();
+  return DriftAuthService(ref.watch(appDatabaseProvider));
 });
 
 final academicRepositoryProvider = Provider<AcademicRepository>((ref) {
-  return LocalAcademicService();
+  return DriftAcademicService(ref.watch(appDatabaseProvider));
 });
 
 final attendanceRepositoryProvider = Provider<AttendanceRepository>((ref) {
-  return LocalAttendanceService();
+  return DriftAttendanceService(ref.watch(appDatabaseProvider));
+});
+
+final academicHistoryRepositoryProvider = Provider<AcademicHistoryRepository>((ref) {
+  return DriftAcademicHistoryService(ref.watch(appDatabaseProvider));
 });
 
 final themeModeProvider = StateProvider<ThemeMode>((ref) => ThemeMode.light);

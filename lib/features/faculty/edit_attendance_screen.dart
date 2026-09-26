@@ -50,7 +50,7 @@ class _EditAttendanceScreenState extends ConsumerState<EditAttendanceScreen> {
   Future<void> _loadSessions() async {
     setState(() => _isLoading = true);
     final user = ref.read(authStateProvider).valueOrNull;
-    final facultyId = user?.associatedId ?? 'fac_1';
+    final facultyId = user?.associatedId ?? '';
 
     final repo = ref.read(academicRepositoryProvider);
     final attendanceRepo = ref.read(attendanceRepositoryProvider);

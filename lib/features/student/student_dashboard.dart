@@ -46,7 +46,7 @@ class _StudentDashboardState extends ConsumerState<StudentDashboard> {
     });
     try {
       final user = ref.read(authStateProvider).valueOrNull;
-      final studentId = user?.associatedId ?? 'stud_1';
+      final studentId = user?.associatedId ?? '';
       final academicRepo = ref.read(academicRepositoryProvider);
       final attendanceRepo = ref.read(attendanceRepositoryProvider);
 
@@ -84,7 +84,7 @@ class _StudentDashboardState extends ConsumerState<StudentDashboard> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final user = ref.watch(authStateProvider).valueOrNull;
-    final studentId = user?.associatedId ?? 'stud_1';
+    final studentId = user?.associatedId ?? '';
 
     if (_isLoading) {
       return const ResponsiveScaffold(

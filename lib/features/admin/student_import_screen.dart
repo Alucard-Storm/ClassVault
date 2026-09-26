@@ -113,7 +113,7 @@ class _StudentImportScreenState extends ConsumerState<StudentImportScreen> {
         if (roll.isEmpty || name.isEmpty) continue;
 
         // Duplicate checks
-        final existsInDb = _existingStudents.any((s) => s.sectionId == _selectedSectionId && s.rollNumber == roll);
+        final existsInDb = _existingStudents.any((s) => s.rollNumber == roll);
         final existsInCsv = parsedList.any((p) => p['roll'] == roll);
 
         String status = 'Valid';
@@ -205,7 +205,16 @@ class _StudentImportScreenState extends ConsumerState<StudentImportScreen> {
       );
     }).toList();
 
-    await repo.addStudentsBulk(list);
+    try {
+      await repo.addStudentsBulk(list);
+    } catch (e) {
+      // The bulk insert is transactional, so nothing was imported.
+      if (mounted) {
+        setState(() => _isLoading = false);
+        AppSnackBar.error(context, 'Import failed, no students were added: $e');
+      }
+      return;
+    }
 
     if (mounted) {
       AppSnackBar.success(context, 'Successfully imported ${list.length} students!');

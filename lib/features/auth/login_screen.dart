@@ -17,12 +17,31 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _nameController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
   bool _obscureText = true;
+
+  /// null while checking; true on a fresh install with no accounts yet.
+  bool? _needsSetup;
+  bool _creatingAdmin = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkSetup();
+  }
+
+  Future<void> _checkSetup() async {
+    final needsSetup = await ref.read(authRepositoryProvider).needsInitialSetup();
+    if (mounted) setState(() => _needsSetup = needsSetup);
+  }
 
   @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
+    _nameController.dispose();
+    _confirmPasswordController.dispose();
     super.dispose();
   }
 
@@ -41,12 +60,26 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     }
   }
 
-  void _fillPreset(String email, String password) {
-    setState(() {
-      _emailController.text = email;
-      _passwordController.text = password;
-    });
-    _submit();
+  void _createAdmin() async {
+    if (!_formKey.currentState!.validate()) return;
+    setState(() => _creatingAdmin = true);
+    try {
+      await ref.read(authRepositoryProvider).createInitialAdmin(
+            name: _nameController.text,
+            email: _emailController.text,
+            password: _passwordController.text,
+          );
+      await ref.read(authStateProvider.notifier).login(
+            _emailController.text,
+            _passwordController.text,
+          );
+    } catch (e) {
+      if (mounted) {
+        AppSnackBar.error(context, e.toString().replaceAll('Exception: ', ''));
+      }
+    } finally {
+      if (mounted) setState(() => _creatingAdmin = false);
+    }
   }
 
   Widget _buildFeatureRow(IconData icon, String text, int index) {
@@ -250,105 +283,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               ).animate().fadeIn(delay: 150.ms, duration: 400.ms),
               const SizedBox(height: 32),
 
-              // Email input
-              TextFormField(
-                controller: _emailController,
-                keyboardType: TextInputType.emailAddress,
-                decoration: const InputDecoration(
-                  labelText: 'Email Address',
-                  prefixIcon: Icon(Icons.email_outlined),
-                ),
-                validator: Validators.email,
-              ).animate().fadeIn(delay: 200.ms, duration: 400.ms).slideY(begin: 0.1, end: 0),
-              const SizedBox(height: 16),
-
-              // Password input
-              TextFormField(
-                controller: _passwordController,
-                obscureText: _obscureText,
-                decoration: InputDecoration(
-                  labelText: 'Password',
-                  prefixIcon: const Icon(Icons.lock_outlined),
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      _obscureText ? Icons.visibility_outlined : Icons.visibility_off_outlined,
-                    ),
-                    tooltip: _obscureText ? 'Show password' : 'Hide password',
-                    onPressed: () {
-                      setState(() {
-                        _obscureText = !_obscureText;
-                      });
-                    },
-                  ),
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter your password';
-                  }
-                  return null;
-                },
-              ).animate().fadeIn(delay: 250.ms, duration: 400.ms).slideY(begin: 0.1, end: 0),
-              const SizedBox(height: 24),
-
-              // Submit button
-              ElevatedButton(
-                onPressed: authState.isLoading ? null : _submit,
-                child: authState.isLoading
-                    ? const SizedBox(
-                        height: 24,
-                        width: 24,
-                        child: CircularProgressIndicator(
-                          color: Colors.white,
-                          strokeWidth: 2.5,
-                        ),
-                      )
-                    : const Text('Login'),
-              ).animate().fadeIn(delay: 300.ms, duration: 400.ms).scaleXY(begin: 0.95, end: 1.0),
-              const SizedBox(height: 32),
-
-              // Presets Divider
-              Row(
-                children: [
-                  Expanded(child: Divider(color: theme.dividerColor)),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                    child: Text(
-                      'TEST ACCOUNTS',
-                      style: theme.textTheme.labelSmall?.copyWith(
-                        color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
-                        letterSpacing: 1.2,
-                      ),
-                    ),
-                  ),
-                  Expanded(child: Divider(color: theme.dividerColor)),
-                ],
-              ).animate().fadeIn(delay: 350.ms, duration: 400.ms),
-              const SizedBox(height: 16),
-
-              // Preset login buttons
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  _buildPresetButton(
-                    label: 'Admin',
-                    email: 'admin@campusvault.com',
-                    password: 'admin123',
-                    theme: theme,
-                  ),
-                  _buildPresetButton(
-                    label: 'Faculty',
-                    email: 'faculty@campusvault.com',
-                    password: 'faculty123',
-                    theme: theme,
-                  ),
-                  _buildPresetButton(
-                    label: 'Student',
-                    email: 'student@campusvault.com',
-                    password: 'student123',
-                    theme: theme,
-                  ),
-                ],
-              ).animate().fadeIn(delay: 400.ms, duration: 400.ms).slideY(begin: 0.15, end: 0),
+              if (_needsSetup == null)
+                const Center(child: CircularProgressIndicator())
+              else if (_needsSetup!)
+                ..._buildSetupFields(theme)
+              else
+                ..._buildLoginFields(authState.isLoading),
             ],
           ),
         ),
@@ -407,26 +347,115 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 
 
-  Widget _buildPresetButton({
-    required String label,
-    required String email,
-    required String password,
-    required ThemeData theme,
-  }) {
-    return OutlinedButton(
-      style: OutlinedButton.styleFrom(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      ),
-      onPressed: () => _fillPreset(email, password),
-      child: Text(
-        label,
-        style: TextStyle(
-          color: theme.colorScheme.primary,
-          fontSize: 12,
-          fontWeight: FontWeight.bold,
+  Widget _passwordField({required int delayMs}) {
+    return TextFormField(
+      controller: _passwordController,
+      obscureText: _obscureText,
+      decoration: InputDecoration(
+        labelText: 'Password',
+        prefixIcon: const Icon(Icons.lock_outlined),
+        suffixIcon: IconButton(
+          icon: Icon(
+            _obscureText ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+          ),
+          tooltip: _obscureText ? 'Show password' : 'Hide password',
+          onPressed: () {
+            setState(() {
+              _obscureText = !_obscureText;
+            });
+          },
         ),
       ),
-    );
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Please enter your password';
+        }
+        if (_needsSetup == true && value.length < 8) {
+          return 'Use at least 8 characters';
+        }
+        return null;
+      },
+    ).animate().fadeIn(delay: delayMs.ms, duration: 400.ms).slideY(begin: 0.1, end: 0);
+  }
+
+  Widget _progressLabel(String label, bool busy) {
+    return busy
+        ? const SizedBox(
+            height: 24,
+            width: 24,
+            child: CircularProgressIndicator(
+              color: Colors.white,
+              strokeWidth: 2.5,
+            ),
+          )
+        : Text(label);
+  }
+
+  List<Widget> _buildLoginFields(bool isLoading) {
+    return [
+      // Email / roll number input
+      TextFormField(
+        controller: _emailController,
+        keyboardType: TextInputType.emailAddress,
+        decoration: const InputDecoration(
+          labelText: 'Email or Roll Number',
+          prefixIcon: Icon(Icons.person_outline_rounded),
+        ),
+        validator: (v) => Validators.required(v, label: 'Email or roll number'),
+      ).animate().fadeIn(delay: 200.ms, duration: 400.ms).slideY(begin: 0.1, end: 0),
+      const SizedBox(height: 16),
+      _passwordField(delayMs: 250),
+      const SizedBox(height: 24),
+      ElevatedButton(
+        onPressed: isLoading ? null : _submit,
+        child: _progressLabel('Login', isLoading),
+      ).animate().fadeIn(delay: 300.ms, duration: 400.ms).scaleXY(begin: 0.95, end: 1.0),
+    ];
+  }
+
+  List<Widget> _buildSetupFields(ThemeData theme) {
+    return [
+      Text(
+        'Welcome! Create the administrator account to get started.',
+        textAlign: TextAlign.center,
+        style: theme.textTheme.bodyMedium,
+      ).animate().fadeIn(delay: 150.ms, duration: 400.ms),
+      const SizedBox(height: 24),
+      TextFormField(
+        controller: _nameController,
+        decoration: const InputDecoration(
+          labelText: 'Full Name',
+          prefixIcon: Icon(Icons.badge_outlined),
+        ),
+        validator: (v) => Validators.required(v, label: 'Name'),
+      ).animate().fadeIn(delay: 200.ms, duration: 400.ms).slideY(begin: 0.1, end: 0),
+      const SizedBox(height: 16),
+      TextFormField(
+        controller: _emailController,
+        keyboardType: TextInputType.emailAddress,
+        decoration: const InputDecoration(
+          labelText: 'Email Address',
+          prefixIcon: Icon(Icons.email_outlined),
+        ),
+        validator: Validators.email,
+      ).animate().fadeIn(delay: 225.ms, duration: 400.ms).slideY(begin: 0.1, end: 0),
+      const SizedBox(height: 16),
+      _passwordField(delayMs: 250),
+      const SizedBox(height: 16),
+      TextFormField(
+        controller: _confirmPasswordController,
+        obscureText: _obscureText,
+        decoration: const InputDecoration(
+          labelText: 'Confirm Password',
+          prefixIcon: Icon(Icons.lock_outlined),
+        ),
+        validator: (v) => v != _passwordController.text ? 'Passwords do not match' : null,
+      ).animate().fadeIn(delay: 275.ms, duration: 400.ms).slideY(begin: 0.1, end: 0),
+      const SizedBox(height: 24),
+      ElevatedButton(
+        onPressed: _creatingAdmin ? null : _createAdmin,
+        child: _progressLabel('Create Administrator', _creatingAdmin),
+      ).animate().fadeIn(delay: 300.ms, duration: 400.ms).scaleXY(begin: 0.95, end: 1.0),
+    ];
   }
 }

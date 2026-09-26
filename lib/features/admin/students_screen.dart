@@ -115,13 +115,13 @@ class _StudentsScreenState extends ConsumerState<StudentsScreen> {
           ),
           onConfirm: () async {
             if (formKey.currentState!.validate() && selectedSectionId != null) {
-              // Check duplicate roll number in same section
+              // Roll numbers identify students across imports, so they are
+              // unique institution-wide, not just within a section.
               final hasDuplicate = _students.any(
-                (s) => s.sectionId == selectedSectionId &&
-                       s.rollNumber.trim() == rollController.text.trim(),
+                (s) => s.rollNumber.trim() == rollController.text.trim(),
               );
               if (hasDuplicate) {
-                AppSnackBar.error(context, 'Roll Number already exists in this section!');
+                AppSnackBar.error(context, 'Roll Number already exists!');
                 return;
               }
 
@@ -131,7 +131,12 @@ class _StudentsScreenState extends ConsumerState<StudentsScreen> {
                 name: nameController.text.trim(),
                 sectionId: selectedSectionId!,
               );
-              await ref.read(academicRepositoryProvider).addStudent(newStudent);
+              try {
+                await ref.read(academicRepositoryProvider).addStudent(newStudent);
+              } catch (e) {
+                if (context.mounted) AppSnackBar.error(context, 'Could not add student: $e');
+                return;
+              }
               if (context.mounted) Navigator.pop(context);
               _loadData();
             }

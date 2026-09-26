@@ -72,7 +72,7 @@ class _MarkAttendanceScreenState extends ConsumerState<MarkAttendanceScreen> {
   Future<void> _loadSetupData() async {
     setState(() => _isLoading = true);
     final user = ref.read(authStateProvider).valueOrNull;
-    final facultyId = user?.associatedId ?? 'fac_1';
+    final facultyId = user?.associatedId ?? '';
 
     final repo = ref.read(academicRepositoryProvider);
     final allAssignments = await repo.getFacultyAssignments();
@@ -165,7 +165,7 @@ class _MarkAttendanceScreenState extends ConsumerState<MarkAttendanceScreen> {
 
     final session = AttendanceSession(
       id: sessionId,
-      facultyId: user?.associatedId ?? 'fac_1',
+      facultyId: user?.associatedId ?? '',
       subjectId: mapping.subjectId,
       sectionId: mapping.sectionId,
       date: _selectedDate,

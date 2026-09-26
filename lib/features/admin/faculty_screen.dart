@@ -8,6 +8,7 @@ import '../../core/widgets/responsive_scaffold.dart';
 import '../../core/widgets/console_header.dart';
 import '../../core/widgets/app_data_table.dart';
 import '../../core/widgets/app_dialogs.dart';
+import '../../core/widgets/app_snackbar.dart';
 import '../../core/widgets/skeleton_loaders.dart';
 import '../../core/utils/validators.dart';
 import '../../core/theme/app_tokens.dart';
@@ -100,7 +101,13 @@ class _FacultyScreenState extends ConsumerState<FacultyScreen> {
               name: nameController.text.trim(),
               email: emailController.text.toLowerCase().trim(),
             );
-            await ref.read(academicRepositoryProvider).addFaculty(newFaculty);
+            try {
+              await ref.read(academicRepositoryProvider).addFaculty(newFaculty);
+            } catch (e) {
+              // Employee ID and login email must be unique.
+              if (context.mounted) AppSnackBar.error(context, 'Could not add faculty: $e');
+              return;
+            }
             if (context.mounted) Navigator.pop(context);
             _loadData();
           }
