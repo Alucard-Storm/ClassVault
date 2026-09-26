@@ -7,6 +7,12 @@ abstract class AuthRepository {
   Future<AppUser?> getCurrentUser();
   Stream<AppUser?> authStateChanges();
 
+  /// Changes the signed-in user's password after verifying the current one.
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  });
+
   /// True on a fresh install, before any account exists.
   Future<bool> needsInitialSetup();
 

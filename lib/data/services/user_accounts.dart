@@ -8,7 +8,7 @@ import '../models/models.dart';
 /// Keeps login accounts in step with faculty/student records.
 ///
 /// Faculty sign in with their email, students with their roll number. A new
-/// account's initial password is the employee ID / roll number respectively.
+/// account's initial password is the same as its login ID, as entered.
 class UserAccounts {
   final AppDatabase _db;
 
@@ -23,7 +23,6 @@ class UserAccounts {
     required UserRole role,
     required String name,
     required String loginId,
-    required String initialPassword,
   }) async {
     final existing = await (_db.select(_db.users)
           ..where((u) => u.associatedId.equals(associatedId)))
@@ -47,7 +46,7 @@ class UserAccounts {
             loginId: normalizeLoginId(loginId),
             role: role.name,
             associatedId: Value(associatedId),
-            passwordHash: PasswordHasher.hash(initialPassword, salt),
+            passwordHash: PasswordHasher.hash(loginId.trim(), salt),
             passwordSalt: salt,
             createdAt: DateTime.now(),
           ),

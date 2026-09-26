@@ -51,7 +51,8 @@ void main() {
       await academic.addFaculty(Faculty(id: 'f1', employeeId: 'EMP1', name: 'Dr. F', email: 'f@college.edu'));
       await academic.addStudent(Student(id: 's1', rollNumber: 'CS001', name: 'A', sectionId: 'sec3'));
 
-      final faculty = await auth.login('f@college.edu', 'EMP1');
+      // Initial password is the login ID itself.
+      final faculty = await auth.login('f@college.edu', 'f@college.edu');
       expect(faculty!.role, UserRole.faculty);
       expect(faculty.associatedId, 'f1');
 
@@ -61,6 +62,32 @@ void main() {
 
       await academic.deleteStudent('s1');
       await expectLater(auth.login('cs001', 'CS001'), throwsException);
+    });
+
+    test('change password requires the current one and replaces it', () async {
+      await academic.addStudent(Student(id: 's1', rollNumber: 'CS001', name: 'A', sectionId: 'sec3'));
+      await auth.login('CS001', 'CS001');
+
+      await expectLater(
+        auth.changePassword(currentPassword: 'wrong', newPassword: 'new-pass-1'),
+        throwsException,
+      );
+      await auth.changePassword(currentPassword: 'CS001', newPassword: 'new-pass-1');
+      await auth.logout();
+
+      await expectLater(auth.login('CS001', 'CS001'), throwsException);
+      expect((await auth.login('CS001', 'new-pass-1'))!.associatedId, 's1');
+
+      // Editing the student later must not reset the password.
+      await academic.updateStudent(Student(id: 's1', rollNumber: 'CS001', name: 'A. Renamed', sectionId: 'sec3'));
+      expect((await auth.login('CS001', 'new-pass-1'))!.name, 'A. Renamed');
+    });
+
+    test('change password fails when signed out', () async {
+      await expectLater(
+        auth.changePassword(currentPassword: 'x', newPassword: 'new-pass-1'),
+        throwsException,
+      );
     });
   });
 

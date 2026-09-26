@@ -47,6 +47,30 @@ class DriftAuthService implements AuthRepository {
   }
 
   @override
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    final user = _currentUser;
+    if (user == null) throw Exception('You are not signed in.');
+
+    final row = await (_db.select(_db.users)..where((u) => u.uid.equals(user.uid)))
+        .getSingleOrNull();
+    if (row == null) throw Exception('Account no longer exists.');
+    if (!PasswordHasher.verify(currentPassword, row.passwordSalt, row.passwordHash)) {
+      throw Exception('Current password is incorrect.');
+    }
+
+    final salt = PasswordHasher.newSalt();
+    await (_db.update(_db.users)..where((u) => u.uid.equals(user.uid))).write(
+      UsersCompanion(
+        passwordHash: Value(PasswordHasher.hash(newPassword, salt)),
+        passwordSalt: Value(salt),
+      ),
+    );
+  }
+
+  @override
   Future<bool> needsInitialSetup() async {
     final count = await _db.users.count().getSingle();
     return count == 0;

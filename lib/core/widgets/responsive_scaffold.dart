@@ -8,6 +8,7 @@ import '../theme/app_color_scheme.dart';
 import '../../data/models/models.dart';
 import '../../data/services/providers.dart';
 import '../../features/auth/auth_provider.dart';
+import '../../features/auth/change_password_dialog.dart';
 
 class ResponsiveScaffold extends ConsumerWidget {
   final String title;
@@ -477,6 +478,18 @@ class ResponsiveScaffold extends ConsumerWidget {
                             ),
                           ),
                           PopupMenuItem(
+                            value: 3,
+                            child: Row(
+                              children: [
+                                Icon(Icons.key_rounded,
+                                    size: 18,
+                                    color: theme.colorScheme.onSurface.withValues(alpha: 0.8)),
+                                const SizedBox(width: 12),
+                                const Text('Change Password', style: TextStyle(fontSize: 13)),
+                              ],
+                            ),
+                          ),
+                          PopupMenuItem(
                             value: 2,
                             child: Row(
                               children: [
@@ -496,6 +509,7 @@ class ResponsiveScaffold extends ConsumerWidget {
                       onSelected: (val) {
                         if (val == 1) cycleThemeMode();
                         if (val == 2) ref.read(authStateProvider.notifier).logout();
+                        if (val == 3) showChangePasswordDialog(context);
                       },
                     ),
                     const SizedBox(width: 24),
@@ -540,6 +554,11 @@ class ResponsiveScaffold extends ConsumerWidget {
               tooltip: themeMode == ThemeMode.system
                   ? 'Theme: Auto (System)'
                   : (isDark ? 'Theme: Dark Mode' : 'Theme: Light Mode'),
+            ),
+            IconButton(
+              icon: const Icon(Icons.key_rounded),
+              tooltip: 'Change Password',
+              onPressed: () => showChangePasswordDialog(context),
             ),
             IconButton(
               icon: const Icon(Icons.logout_rounded),
@@ -615,6 +634,17 @@ class ResponsiveScaffold extends ConsumerWidget {
                       onTap: () {
                         Navigator.pop(context);
                         cycleThemeMode();
+                      },
+                    ),
+                    ListTile(
+                      leading: Icon(Icons.key_rounded, color: theme.colorScheme.primary),
+                      title: Text('Change Password',
+                          style: TextStyle(
+                              color: theme.colorScheme.primary,
+                              fontWeight: FontWeight.bold)),
+                      onTap: () {
+                        Navigator.pop(context);
+                        showChangePasswordDialog(context);
                       },
                     ),
                     ListTile(

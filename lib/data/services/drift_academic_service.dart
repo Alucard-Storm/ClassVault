@@ -82,7 +82,6 @@ class DriftAcademicService implements AcademicRepository {
           role: UserRole.student,
           name: student.name,
           loginId: student.rollNumber,
-          initialPassword: student.rollNumber,
         );
       }
     });
@@ -111,7 +110,6 @@ class DriftAcademicService implements AcademicRepository {
         role: UserRole.student,
         name: student.name,
         loginId: student.rollNumber,
-        initialPassword: student.rollNumber,
       );
     });
   }
@@ -219,7 +217,6 @@ class DriftAcademicService implements AcademicRepository {
       role: UserRole.faculty,
       name: faculty.name,
       loginId: faculty.email,
-      initialPassword: faculty.employeeId,
     );
   }
 
