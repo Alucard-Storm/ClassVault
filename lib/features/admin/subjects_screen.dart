@@ -316,9 +316,11 @@ class _SubjectsScreenState extends ConsumerState<SubjectsScreen> with SingleTick
     final header = Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(
-          'Subjects Catalog (${_subjects.length})',
-          style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+        Flexible(
+          child: Text(
+            'Subjects Catalog (${_subjects.length})',
+            style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+          ),
         ),
         compact
             ? IconButton.filledTonal(
@@ -327,6 +329,8 @@ class _SubjectsScreenState extends ConsumerState<SubjectsScreen> with SingleTick
                 tooltip: 'Add Subject',
               )
             : ElevatedButton.icon(
+                // The theme's full-width minimum size is infinite inside a Row.
+                style: ElevatedButton.styleFrom(minimumSize: const Size(0, 44)),
                 onPressed: _addSubjectDialog,
                 icon: const Icon(Icons.add, size: 18),
                 label: const Text('Add Subject'),

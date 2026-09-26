@@ -238,11 +238,15 @@ class _StudentsScreenState extends ConsumerState<StudentsScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  'Students (${filteredStudents.length})',
-                  style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                Flexible(
+                  child: Text(
+                    'Students (${filteredStudents.length})',
+                    style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                  ),
                 ),
                 ElevatedButton.icon(
+                  // The theme's full-width minimum size is infinite inside a Row.
+                  style: ElevatedButton.styleFrom(minimumSize: const Size(0, 44)),
                   onPressed: _addStudentDialog,
                   icon: const Icon(Icons.person_add_rounded, size: 18),
                   label: const Text('Add Student'),

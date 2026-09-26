@@ -20,7 +20,8 @@ class StudentImportScreen extends ConsumerStatefulWidget {
   const StudentImportScreen({super.key});
 
   @override
-  ConsumerState<StudentImportScreen> createState() => _StudentImportScreenState();
+  ConsumerState<StudentImportScreen> createState() =>
+      _StudentImportScreenState();
 }
 
 class _StudentImportScreenState extends ConsumerState<StudentImportScreen> {
@@ -89,19 +90,25 @@ class _StudentImportScreenState extends ConsumerState<StudentImportScreen> {
       if (bytes == null) throw Exception('Failed to read file bytes.');
 
       final csvString = utf8.decode(bytes);
-      final List<List<dynamic>> csvTable = const CsvToListConverter().convert(csvString);
+      final List<List<dynamic>> csvTable = const CsvToListConverter().convert(
+        csvString,
+      );
 
       if (csvTable.isEmpty) {
         throw Exception('CSV file is empty.');
       }
 
       // Detect header index
-      final header = csvTable[0].map((e) => e.toString().toLowerCase().trim()).toList();
+      final header = csvTable[0]
+          .map((e) => e.toString().toLowerCase().trim())
+          .toList();
       final rollIdx = header.indexOf('roll number');
       final nameIdx = header.indexOf('student name');
 
       if (rollIdx == -1 || nameIdx == -1) {
-        throw Exception('Invalid headers. CSV must contain: "Roll Number" and "Student Name"');
+        throw Exception(
+          'Invalid headers. CSV must contain: "Roll Number" and "Student Name"',
+        );
       }
 
       final List<Map<String, dynamic>> parsedList = [];
@@ -124,11 +131,7 @@ class _StudentImportScreenState extends ConsumerState<StudentImportScreen> {
           status = 'Duplicate (CSV File)';
         }
 
-        parsedList.add({
-          'roll': roll,
-          'name': name,
-          'status': status,
-        });
+        parsedList.add({'roll': roll, 'name': name, 'status': status});
       }
 
       setState(() {
@@ -148,7 +151,9 @@ class _StudentImportScreenState extends ConsumerState<StudentImportScreen> {
     showDialog(
       context: context,
       builder: (context) => Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.card)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadius.card),
+        ),
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 400),
           child: Padding(
@@ -163,15 +168,25 @@ class _StudentImportScreenState extends ConsumerState<StudentImportScreen> {
                     color: theme.colorScheme.error.withValues(alpha: 0.1),
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(Icons.error_outline_rounded, color: theme.colorScheme.error),
+                  child: Icon(
+                    Icons.error_outline_rounded,
+                    color: theme.colorScheme.error,
+                  ),
                 ),
                 const SizedBox(height: AppSpacing.lg),
-                Text('Parsing Error',
-                    style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+                Text(
+                  'Parsing Error',
+                  style: theme.textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
                 const SizedBox(height: AppSpacing.sm),
-                Text(message,
-                    style: theme.textTheme.bodyMedium
-                        ?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
+                Text(
+                  message,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
                 const SizedBox(height: AppSpacing.xl),
                 Align(
                   alignment: Alignment.centerRight,
@@ -231,14 +246,18 @@ class _StudentImportScreenState extends ConsumerState<StudentImportScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDesktop = MediaQuery.of(context).size.width > AppBreakpoints.desktop;
+    final isDesktop =
+        MediaQuery.of(context).size.width > AppBreakpoints.desktop;
     final validCount = _parsedRows.where((r) => r['status'] == 'Valid').length;
 
     if (_isLoading) {
       return ResponsiveScaffold(
         title: 'Bulk Student Import',
         currentPath: '/admin/students/import',
-        body: const Padding(padding: EdgeInsets.all(24.0), child: SkeletonCard(height: 400)),
+        body: const Padding(
+          padding: EdgeInsets.all(24.0),
+          child: SkeletonCard(height: 400),
+        ),
       );
     }
 
@@ -247,21 +266,49 @@ class _StudentImportScreenState extends ConsumerState<StudentImportScreen> {
       currentPath: '/admin/students/import',
       body: Padding(
         padding: const EdgeInsets.all(24.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            ConsoleHeader(
-              title: 'Bulk Student Import Console',
-              subtitle: 'Import class rosters via CSV files directly into specific sections.',
-            ).animate().fadeIn(duration: 250.ms).slideY(begin: -0.05, curve: Curves.easeOut),
-            const SizedBox(height: AppSpacing.xl),
-            Expanded(
-              child: ResponsiveTwoPane(
-                left: SingleChildScrollView(child: _buildFormPanel(theme, validCount)),
-                right: _buildPreviewPanel(theme, isDesktop),
-              ),
-            ),
-          ],
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final header =
+                ConsoleHeader(
+                      title: 'Bulk Student Import Console',
+                      subtitle:
+                          'Import class rosters via CSV files directly into specific sections.',
+                    )
+                    .animate()
+                    .fadeIn(duration: 250.ms)
+                    .slideY(begin: -0.05, curve: Curves.easeOut);
+            // Narrow screens stack the panels, so the page scrolls instead of
+            // squeezing the preview into a fixed height.
+            if (constraints.maxWidth < AppBreakpoints.twoPane) {
+              return SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    header,
+                    const SizedBox(height: AppSpacing.xl),
+                    _buildFormPanel(theme, validCount),
+                    const SizedBox(height: AppSpacing.lg),
+                    _buildPreviewPanel(theme, isDesktop, fillHeight: false),
+                  ],
+                ),
+              );
+            }
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                header,
+                const SizedBox(height: AppSpacing.xl),
+                Expanded(
+                  child: ResponsiveTwoPane(
+                    left: SingleChildScrollView(
+                      child: _buildFormPanel(theme, validCount),
+                    ),
+                    right: _buildPreviewPanel(theme, isDesktop),
+                  ),
+                ),
+              ],
+            );
+          },
         ),
       ),
     );
@@ -282,17 +329,33 @@ class _StudentImportScreenState extends ConsumerState<StudentImportScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('1. Select Target Section', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                Text(
+                  '1. Select Target Section',
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
                 const SizedBox(height: AppSpacing.md),
                 DropdownButtonFormField<String>(
                   isExpanded: true,
                   value: _selectedSectionId,
                   items: _sections.map((sec) {
-                    final sem = _semesters.firstWhere((s) => s.id == sec.semesterId, orElse: () => Semester(id: '', branchId: '', semesterNumber: 0));
-                    final b = _branches.firstWhere((br) => br.id == sem.branchId, orElse: () => Branch(id: '', courseId: '', name: 'Unknown'));
+                    final sem = _semesters.firstWhere(
+                      (s) => s.id == sec.semesterId,
+                      orElse: () =>
+                          Semester(id: '', branchId: '', semesterNumber: 0),
+                    );
+                    final b = _branches.firstWhere(
+                      (br) => br.id == sem.branchId,
+                      orElse: () =>
+                          Branch(id: '', courseId: '', name: 'Unknown'),
+                    );
                     return DropdownMenuItem(
                       value: sec.id,
-                      child: Text('${b.name} - Sem ${sem.semesterNumber} (${sec.name})', overflow: TextOverflow.ellipsis),
+                      child: Text(
+                        '${b.name} - Sem ${sem.semesterNumber} (${sec.name})',
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     );
                   }).toList(),
                   onChanged: (val) {
@@ -320,11 +383,19 @@ class _StudentImportScreenState extends ConsumerState<StudentImportScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('2. Upload CSV File', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                Text(
+                  '2. Upload CSV File',
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
                 const SizedBox(height: AppSpacing.xs),
                 Text(
                   'Requires headers: "Roll Number" & "Student Name".',
-                  style: TextStyle(color: theme.colorScheme.onSurfaceVariant, fontSize: 11),
+                  style: TextStyle(
+                    color: theme.colorScheme.onSurfaceVariant,
+                    fontSize: 11,
+                  ),
                 ),
                 const SizedBox(height: AppSpacing.lg),
                 Row(
@@ -333,19 +404,31 @@ class _StudentImportScreenState extends ConsumerState<StudentImportScreen> {
                       child: Container(
                         padding: const EdgeInsets.all(AppSpacing.md),
                         decoration: BoxDecoration(
-                          color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
-                          borderRadius: BorderRadius.circular(AppRadius.control),
+                          color: theme.colorScheme.surfaceContainerHighest
+                              .withValues(alpha: 0.3),
+                          borderRadius: BorderRadius.circular(
+                            AppRadius.control,
+                          ),
                         ),
                         child: Text(
                           _fileName ?? 'No file selected',
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: TextStyle(fontSize: 13, color: _fileName == null ? theme.hintColor : theme.colorScheme.onSurface),
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: _fileName == null
+                                ? theme.hintColor
+                                : theme.colorScheme.onSurface,
+                          ),
                         ),
                       ),
                     ),
                     const SizedBox(width: AppSpacing.sm),
                     ElevatedButton(
+                      // The theme's full-width minimum size is infinite inside a Row.
+                      style: ElevatedButton.styleFrom(
+                        minimumSize: const Size(0, 44),
+                      ),
                       onPressed: _pickAndParseFile,
                       child: const Text('Browse'),
                     ),
@@ -363,7 +446,9 @@ class _StudentImportScreenState extends ConsumerState<StudentImportScreen> {
             contentPadding: EdgeInsets.zero,
             controlAffinity: ListTileControlAffinity.leading,
             title: const Text('Create login accounts for imported students'),
-            subtitle: const Text('Username and initial password are the roll number.'),
+            subtitle: const Text(
+              'Username and initial password are the roll number.',
+            ),
           ),
           const SizedBox(height: AppSpacing.sm),
           ElevatedButton.icon(
@@ -371,7 +456,9 @@ class _StudentImportScreenState extends ConsumerState<StudentImportScreen> {
               backgroundColor: theme.appColors.success,
               foregroundColor: Colors.white,
               minimumSize: const Size.fromHeight(56),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.card)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(AppRadius.card),
+              ),
             ),
             onPressed: _commitImport,
             icon: const Icon(Icons.save_rounded),
@@ -382,7 +469,62 @@ class _StudentImportScreenState extends ConsumerState<StudentImportScreen> {
     );
   }
 
-  Widget _buildPreviewPanel(ThemeData theme, bool isDesktop) {
+  Widget _buildPreviewPanel(
+    ThemeData theme,
+    bool isDesktop, {
+    bool fillHeight = true,
+  }) {
+    final table = AppDataTable(
+      isDesktop: isDesktop,
+      columns: const ['Roll No.', 'Name', 'Status'],
+      columnFlex: const [1, 2, 2],
+      emptyIcon: Icons.upload_file_outlined,
+      emptyTitle: 'No file parsed yet',
+      emptyMessage: 'Upload a CSV file to see the parsed roster preview.',
+      rows: _parsedRows.map((row) {
+        final isValid = row['status'] == 'Valid';
+        final statusColor = isValid
+            ? theme.appColors.success
+            : theme.appColors.danger;
+        final statusWidget = Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              isValid
+                  ? Icons.check_circle_outline_rounded
+                  : Icons.error_outline_rounded,
+              color: statusColor,
+              size: 16,
+            ),
+            const SizedBox(width: AppSpacing.xs),
+            Flexible(
+              child: Text(
+                row['status'] as String,
+                style: TextStyle(
+                  color: statusColor,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        );
+        return AppDataRow(
+          mobileTitle: row['name'] as String,
+          mobileSubtitle: 'Roll: ${row['roll']}',
+          mobileLeadingText: row['roll'] as String,
+          mobileTrailing: statusWidget,
+          cells: [
+            Text(row['roll'] as String),
+            Text(
+              row['name'] as String,
+              style: const TextStyle(fontWeight: FontWeight.w600),
+            ),
+            statusWidget,
+          ],
+        );
+      }).toList(),
+    );
     return Card(
       elevation: 0,
       shape: RoundedRectangleBorder(
@@ -396,51 +538,15 @@ class _StudentImportScreenState extends ConsumerState<StudentImportScreen> {
           children: [
             Text(
               'Parsed Student Roster Preview (${_parsedRows.length} rows)',
-              style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: AppSpacing.lg),
-            Expanded(
-              child: SingleChildScrollView(
-                child: AppDataTable(
-                  isDesktop: isDesktop,
-                  columns: const ['Roll No.', 'Name', 'Status'],
-                  columnFlex: const [1, 2, 2],
-                  emptyIcon: Icons.upload_file_outlined,
-                  emptyTitle: 'No file parsed yet',
-                  emptyMessage: 'Upload a CSV file to see the parsed roster preview.',
-                  rows: _parsedRows.map((row) {
-                    final isValid = row['status'] == 'Valid';
-                    final statusColor = isValid ? theme.appColors.success : theme.appColors.danger;
-                    final statusWidget = Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          isValid ? Icons.check_circle_outline_rounded : Icons.error_outline_rounded,
-                          color: statusColor,
-                          size: 16,
-                        ),
-                        const SizedBox(width: AppSpacing.xs),
-                        Flexible(
-                          child: Text(row['status'] as String,
-                              style: TextStyle(color: statusColor, fontSize: 12, fontWeight: FontWeight.w600)),
-                        ),
-                      ],
-                    );
-                    return AppDataRow(
-                      mobileTitle: row['name'] as String,
-                      mobileSubtitle: 'Roll: ${row['roll']}',
-                      mobileLeadingText: row['roll'] as String,
-                      mobileTrailing: statusWidget,
-                      cells: [
-                        Text(row['roll'] as String),
-                        Text(row['name'] as String, style: const TextStyle(fontWeight: FontWeight.w600)),
-                        statusWidget,
-                      ],
-                    );
-                  }).toList(),
-                ),
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
               ),
             ),
+            const SizedBox(height: AppSpacing.lg),
+            if (fillHeight)
+              Expanded(child: SingleChildScrollView(child: table))
+            else
+              table,
           ],
         ),
       ),

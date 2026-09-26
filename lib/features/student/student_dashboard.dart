@@ -410,12 +410,14 @@ class _StudentDashboardState extends ConsumerState<StudentDashboard> {
                         Icon(Icons.check_circle_outline_rounded,
                             size: 14, color: theme.appColors.success),
                         const SizedBox(width: 4),
-                        Text(
-                          canMissMore > 0
-                              ? 'On Track — can miss $canMissMore more'
-                              : 'On Track! Attendance is good.',
-                          style: TextStyle(
-                              color: theme.appColors.success, fontSize: 11, fontWeight: FontWeight.bold),
+                        Expanded(
+                          child: Text(
+                            canMissMore > 0
+                                ? 'On Track — can miss $canMissMore more'
+                                : 'On Track! Attendance is good.',
+                            style: TextStyle(
+                                color: theme.appColors.success, fontSize: 11, fontWeight: FontWeight.bold),
+                          ),
                         ),
                       ],
                     )

@@ -324,8 +324,11 @@ class _ReportsDashboardState extends ConsumerState<ReportsDashboard> with Single
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('Flagged Defaulter Roster',
-                      style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                  Flexible(
+                    child: Text('Flagged Defaulter Roster',
+                        style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                  ),
+                  const SizedBox(width: AppSpacing.sm),
                   Text(
                     'Threshold: <${_defaulterThreshold.toInt()}%',
                     style: TextStyle(

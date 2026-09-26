@@ -565,10 +565,13 @@ class _AcademicSetupScreenState extends ConsumerState<AcademicSetupScreen> with 
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                'Available ${title}s (${items.length})',
-                style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+              Flexible(
+                child: Text(
+                  'Available ${title}s (${items.length})',
+                  style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                ),
               ),
+              const SizedBox(width: AppSpacing.sm),
               ElevatedButton.icon(
                 style: ElevatedButton.styleFrom(
                   minimumSize: const Size(120, 44),

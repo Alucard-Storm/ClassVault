@@ -146,25 +146,45 @@ class _SemesterPromotionScreenState extends ConsumerState<SemesterPromotionScree
     return ResponsiveScaffold(
       title: 'Semester Promotion',
       currentPath: '/admin/promotion',
-      body: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            ConsoleHeader(
-              title: 'Semester Promotion Console',
-              subtitle: 'Promote students in batch from a source semester/section to a destination semester/section.',
-            ).animate().fadeIn(duration: 250.ms).slideY(begin: -0.05, curve: Curves.easeOut),
-            const SizedBox(height: AppSpacing.xl),
-            Expanded(
-              child: ResponsiveTwoPane(
-                left: _buildSelectorPanel(theme),
-                right: _buildRosterPanel(theme),
-              ),
+      body: LayoutBuilder(builder: (context, constraints) {
+        final header = ConsoleHeader(
+          title: 'Semester Promotion Console',
+          subtitle: 'Promote students in batch from a source semester/section to a destination semester/section.',
+        ).animate().fadeIn(duration: 250.ms).slideY(begin: -0.05, curve: Curves.easeOut);
+        // Narrow screens stack the panels, so the page scrolls instead of
+        // squeezing the roster into a fixed height.
+        if (constraints.maxWidth < AppBreakpoints.twoPane) {
+          return SingleChildScrollView(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                header,
+                const SizedBox(height: AppSpacing.xl),
+                _buildSelectorPanel(theme),
+                const SizedBox(height: AppSpacing.lg),
+                _buildRosterPanel(theme),
+              ],
             ),
-          ],
-        ),
-      ),
+          );
+        }
+        return Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              header,
+              const SizedBox(height: AppSpacing.xl),
+              Expanded(
+                child: ResponsiveTwoPane(
+                  left: _buildSelectorPanel(theme),
+                  right: _buildRosterPanel(theme),
+                ),
+              ),
+            ],
+          ),
+        );
+      }),
     );
   }
 
@@ -264,7 +284,7 @@ class _SemesterPromotionScreenState extends ConsumerState<SemesterPromotionScree
               style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: AppSpacing.lg),
-            Expanded(
+            _fillOrShrink(
               child: _sourceStudents.isEmpty
                   ? const EmptyState(
                       icon: Icons.groups_outlined,
@@ -272,6 +292,10 @@ class _SemesterPromotionScreenState extends ConsumerState<SemesterPromotionScree
                       message: 'The selected source section has no students yet.',
                     )
                   : ListView.separated(
+                      // In the scrolling (narrow) layout the list takes its
+                      // natural height and the page scrolls instead.
+                      shrinkWrap: !_fillsHeight,
+                      physics: _fillsHeight ? null : const NeverScrollableScrollPhysics(),
                       itemCount: _sourceStudents.length,
                       separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.sm),
                       itemBuilder: (context, idx) {
@@ -289,4 +313,9 @@ class _SemesterPromotionScreenState extends ConsumerState<SemesterPromotionScree
       ),
     );
   }
+
+  /// Whether the roster fills a fixed-height pane (wide layout).
+  bool get _fillsHeight => MediaQuery.of(context).size.width >= AppBreakpoints.twoPane;
+
+  Widget _fillOrShrink({required Widget child}) => _fillsHeight ? Expanded(child: child) : child;
 }

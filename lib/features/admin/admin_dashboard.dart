@@ -104,9 +104,16 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.error_outline_rounded, size: 64, color: theme.colorScheme.error),
+              Icon(
+                Icons.error_outline_rounded,
+                size: 64,
+                color: theme.colorScheme.error,
+              ),
               const SizedBox(height: 16),
-              Text('Failed to load dashboard data', style: theme.textTheme.titleMedium),
+              Text(
+                'Failed to load dashboard data',
+                style: theme.textTheme.titleMedium,
+              ),
               const SizedBox(height: 8),
               ElevatedButton(onPressed: _load, child: const Text('Retry')),
             ],
@@ -123,20 +130,31 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
     int defaultersCount = 0;
     final List<Map<String, dynamic>> dynamicDefaulters = [];
     for (final student in _students) {
-      final studentSessions =
-          _sessions.where((s) => s.sectionId == student.sectionId).toList();
+      final studentSessions = _sessions
+          .where((s) => s.sectionId == student.sectionId)
+          .toList();
       if (studentSessions.isEmpty) continue;
-      final studentRecords = _allRecords.where((r) => r.studentId == student.id).toList();
-      final presentCount = studentRecords.where((r) => r.status == 'present').length;
+      final studentRecords = _allRecords
+          .where((r) => r.studentId == student.id)
+          .toList();
+      final presentCount = studentRecords
+          .where((r) => r.status == 'present')
+          .length;
       final double pct = (presentCount / studentSessions.length) * 100;
       if (pct < AppConstants.defaulterThreshold) {
         defaultersCount++;
-        final sec = _sections.firstWhere((s) => s.id == student.sectionId,
-            orElse: () => Section(id: '', semesterId: '', name: 'Unknown'));
-        final sem = _semesters.firstWhere((s) => s.id == sec.semesterId,
-            orElse: () => Semester(id: '', branchId: '', semesterNumber: 0));
-        final b = _branches.firstWhere((br) => br.id == sem.branchId,
-            orElse: () => Branch(id: '', courseId: '', name: 'Unknown'));
+        final sec = _sections.firstWhere(
+          (s) => s.id == student.sectionId,
+          orElse: () => Section(id: '', semesterId: '', name: 'Unknown'),
+        );
+        final sem = _semesters.firstWhere(
+          (s) => s.id == sec.semesterId,
+          orElse: () => Semester(id: '', branchId: '', semesterNumber: 0),
+        );
+        final b = _branches.firstWhere(
+          (br) => br.id == sem.branchId,
+          orElse: () => Branch(id: '', courseId: '', name: 'Unknown'),
+        );
         dynamicDefaulters.add({
           'name': student.name,
           'roll': student.rollNumber,
@@ -151,23 +169,39 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
     Color attendanceTodayColor = theme.colorScheme.onSurfaceVariant;
 
     if (_sessions.isNotEmpty) {
-      final mostRecent = _sessions.reduce((a, b) => a.date.isAfter(b.date) ? a : b);
-      final sessionRecords = _allRecords.where((r) => r.sessionId == mostRecent.id).toList();
+      final mostRecent = _sessions.reduce(
+        (a, b) => a.date.isAfter(b.date) ? a : b,
+      );
+      final sessionRecords = _allRecords
+          .where((r) => r.sessionId == mostRecent.id)
+          .toList();
       if (sessionRecords.isNotEmpty) {
-        final presentCount = sessionRecords.where((r) => r.status == 'present').length;
+        final presentCount = sessionRecords
+            .where((r) => r.status == 'present')
+            .length;
         attendanceToday = (presentCount / sessionRecords.length) * 100;
-        final otherSessions = _sessions.where((s) => s.id != mostRecent.id).toList();
+        final otherSessions = _sessions
+            .where((s) => s.id != mostRecent.id)
+            .toList();
         if (otherSessions.isNotEmpty) {
-          final prev = otherSessions.reduce((a, b) => a.date.isAfter(b.date) ? a : b);
-          final prevRecords = _allRecords.where((r) => r.sessionId == prev.id).toList();
+          final prev = otherSessions.reduce(
+            (a, b) => a.date.isAfter(b.date) ? a : b,
+          );
+          final prevRecords = _allRecords
+              .where((r) => r.sessionId == prev.id)
+              .toList();
           if (prevRecords.isNotEmpty) {
-            final prevPresent = prevRecords.where((r) => r.status == 'present').length;
+            final prevPresent = prevRecords
+                .where((r) => r.status == 'present')
+                .length;
             final prevPct = (prevPresent / prevRecords.length) * 100;
             final diff = attendanceToday - prevPct;
             attendanceTodayLabel = diff >= 0
                 ? '↑ ${diff.toStringAsFixed(1)}% vs prev'
                 : '↓ ${diff.abs().toStringAsFixed(1)}% vs prev';
-            attendanceTodayColor = diff >= 0 ? theme.appColors.success : theme.appColors.danger;
+            attendanceTodayColor = diff >= 0
+                ? theme.appColors.success
+                : theme.appColors.danger;
           }
         } else {
           attendanceTodayLabel = 'First session';
@@ -241,21 +275,28 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Control Panel Dashboard',
-                    style: theme.textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
-                  ),
-                  Text(
-                    'Real-time overview of college attendance analytics and records.',
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Control Panel Dashboard',
+                      style: theme.textTheme.headlineMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                  ),
-                ],
+                    Text(
+                      'Real-time overview of college attendance analytics and records.',
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: theme.colorScheme.onSurface.withValues(
+                          alpha: 0.6,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
+              const SizedBox(width: AppSpacing.lg),
               Text(
                 DateFormat('EEEE, MMMM dd, yyyy').format(DateTime.now()),
                 style: const TextStyle(fontWeight: FontWeight.w600),
@@ -268,17 +309,17 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
               final crossAxisCount = constraints.maxWidth > 1400
                   ? 5
                   : constraints.maxWidth > 1000
-                      ? 3
-                      : constraints.maxWidth > 600
-                          ? 2
-                          : 1;
+                  ? 3
+                  : constraints.maxWidth > 600
+                  ? 2
+                  : 1;
               final double childAspectRatio = constraints.maxWidth > 1400
                   ? 1.5
                   : constraints.maxWidth > 1000
-                      ? 1.8
-                      : constraints.maxWidth > 600
-                          ? 2.2
-                          : 3.0;
+                  ? 1.8
+                  : constraints.maxWidth > 600
+                  ? 2.2
+                  : 3.0;
 
               final metrics = [
                 StatCard(
@@ -301,7 +342,9 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
                 ),
                 StatCard(
                   label: 'Attendance Today',
-                  value: _sessions.isEmpty ? 'N/A' : '${attendanceToday.toStringAsFixed(0)}%',
+                  value: _sessions.isEmpty
+                      ? 'N/A'
+                      : '${attendanceToday.toStringAsFixed(0)}%',
                   icon: Icons.calendar_today_outlined,
                   color: theme.appColors.warning,
                   trendText: attendanceTodayLabel,
@@ -312,7 +355,9 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
                   value: '$defaultersCount',
                   icon: Icons.gpp_bad_outlined,
                   color: theme.appColors.danger,
-                  trendText: defaultersCount > 0 ? 'Action required' : 'All clear',
+                  trendText: defaultersCount > 0
+                      ? 'Action required'
+                      : 'All clear',
                   trendColor: defaultersCount > 0
                       ? theme.appColors.danger
                       : theme.appColors.success,
@@ -345,24 +390,35 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
                   _buildAttendanceChart(theme, _sessions, _allRecords)
                       .animate()
                       .fadeIn(delay: 300.ms, duration: 500.ms)
-                      .scale(begin: const Offset(0.97, 0.97), end: const Offset(1, 1)),
+                      .scale(
+                        begin: const Offset(0.97, 0.97),
+                        end: const Offset(1, 1),
+                      ),
                   const SizedBox(height: 24),
                   _buildRecentSessionsCard(
-                          theme, recentSessions, _subjects, _sections, _semesters, _branches)
-                      .animate()
-                      .fadeIn(delay: 400.ms, duration: 500.ms),
+                    theme,
+                    recentSessions,
+                    _subjects,
+                    _sections,
+                    _semesters,
+                    _branches,
+                  ).animate().fadeIn(delay: 400.ms, duration: 500.ms),
                 ],
               );
               final rightColumn = Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  _buildDefaulterWatchlistCard(theme, dynamicDefaulters, context)
-                      .animate()
-                      .fadeIn(delay: 350.ms, duration: 500.ms),
+                  _buildDefaulterWatchlistCard(
+                    theme,
+                    dynamicDefaulters,
+                    context,
+                  ).animate().fadeIn(delay: 350.ms, duration: 500.ms),
                   const SizedBox(height: 24),
-                  _buildFacultyLoadCard(theme, _facultyList, _sessions)
-                      .animate()
-                      .fadeIn(delay: 450.ms, duration: 500.ms),
+                  _buildFacultyLoadCard(
+                    theme,
+                    _facultyList,
+                    _sessions,
+                  ).animate().fadeIn(delay: 450.ms, duration: 500.ms),
                 ],
               );
 
@@ -409,7 +465,9 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
         children: [
           Text(
             'Welcome, ${user?.name ?? "Administrator"}',
-            style: theme.textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
+            style: theme.textTheme.headlineMedium?.copyWith(
+              fontWeight: FontWeight.bold,
+            ),
           ),
           Text(
             'Manage academic settings, student lists, faculty, and view analytics.',
@@ -418,85 +476,110 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
             ),
           ),
           const SizedBox(height: 24),
-          GridView.count(
-            crossAxisCount: 2,
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            crossAxisSpacing: 12,
-            mainAxisSpacing: 12,
-            childAspectRatio: 1.5,
-            children: [
-              StatCard(
-                  label: 'Students',
-                  value: '$studentsCount',
-                  icon: Icons.people_rounded,
-                  color: theme.colorScheme.primary),
-              StatCard(
-                  label: 'Faculty',
-                  value: '$facultyCount',
-                  icon: Icons.school_rounded,
-                  color: theme.appColors.info),
-              StatCard(
-                  label: 'Subjects',
-                  value: '$subjectsCount',
-                  icon: Icons.book_rounded,
-                  color: theme.colorScheme.primary),
-              StatCard(
-                  label: 'Attendance Today',
-                  value: _sessions.isEmpty ? 'N/A' : '${attendanceToday.toStringAsFixed(0)}%',
-                  icon: Icons.calendar_today_outlined,
-                  color: theme.appColors.warning),
-              StatCard(
-                  label: 'Defaulters',
-                  value: '$defaultersCount',
-                  icon: Icons.warning_amber_rounded,
-                  color: theme.appColors.danger),
-            ],
+          // Natural-height cards: fixed grid ratios clipped their content.
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final cardWidth = (constraints.maxWidth - 12) / 2;
+              return Wrap(
+                spacing: 12,
+                runSpacing: 12,
+                children: [
+                  for (final card in [
+                    StatCard(
+                      label: 'Students',
+                      value: '$studentsCount',
+                      icon: Icons.people_rounded,
+                      color: theme.colorScheme.primary,
+                    ),
+                    StatCard(
+                      label: 'Faculty',
+                      value: '$facultyCount',
+                      icon: Icons.school_rounded,
+                      color: theme.appColors.info,
+                    ),
+                    StatCard(
+                      label: 'Subjects',
+                      value: '$subjectsCount',
+                      icon: Icons.book_rounded,
+                      color: theme.colorScheme.primary,
+                    ),
+                    StatCard(
+                      label: 'Attendance Today',
+                      value: _sessions.isEmpty
+                          ? 'N/A'
+                          : '${attendanceToday.toStringAsFixed(0)}%',
+                      icon: Icons.calendar_today_outlined,
+                      color: theme.appColors.warning,
+                    ),
+                    StatCard(
+                      label: 'Defaulters',
+                      value: '$defaultersCount',
+                      icon: Icons.warning_amber_rounded,
+                      color: theme.appColors.danger,
+                    ),
+                  ])
+                    SizedBox(width: cardWidth, child: card),
+                ],
+              );
+            },
           ),
           const SizedBox(height: 32),
           Text(
             'Administrative Modules',
-            style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+            style: theme.textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.bold,
+            ),
           ),
           const SizedBox(height: 16),
-          GridView.count(
-            crossAxisCount: 1,
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            crossAxisSpacing: 16,
-            mainAxisSpacing: 16,
-            childAspectRatio: 2.2,
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              ActionTile(
+              for (final tile in [
+                ActionTile(
                   title: 'Academic Setup',
-                  description: 'Manage Courses, Branches, Semesters, and Sections.',
+                  description:
+                      'Manage Courses, Branches, Semesters, and Sections.',
                   icon: Icons.account_tree_rounded,
-                  onTap: () => context.go('/admin/academic')),
-              ActionTile(
+                  onTap: () => context.go('/admin/academic'),
+                ),
+                ActionTile(
                   title: 'Subjects Management',
                   description: 'View, add, edit, and map subjects to classes.',
                   icon: Icons.library_books_rounded,
-                  onTap: () => context.go('/admin/subjects')),
-              ActionTile(
+                  onTap: () => context.go('/admin/subjects'),
+                ),
+                ActionTile(
                   title: 'Faculty & Assignments',
-                  description: 'Manage teachers and map them to class subjects.',
+                  description:
+                      'Manage teachers and map them to class subjects.',
                   icon: Icons.badge_rounded,
-                  onTap: () => context.go('/admin/faculty')),
-              ActionTile(
+                  onTap: () => context.go('/admin/faculty'),
+                ),
+                ActionTile(
                   title: 'Student Directory',
-                  description: 'CRUD student profiles and batch import CSV lists.',
+                  description:
+                      'CRUD student profiles and batch import CSV lists.',
                   icon: Icons.face_rounded,
-                  onTap: () => context.go('/admin/students')),
-              ActionTile(
+                  onTap: () => context.go('/admin/students'),
+                ),
+                ActionTile(
                   title: 'Semester Promotion',
                   description: 'Promote student batches to the next semester.',
                   icon: Icons.upgrade_rounded,
-                  onTap: () => context.go('/admin/promotion')),
-              ActionTile(
+                  onTap: () => context.go('/admin/promotion'),
+                ),
+                ActionTile(
                   title: 'Analytics & Reports',
-                  description: 'View defaulters, subject reports, and export logs.',
+                  description:
+                      'View defaulters, subject reports, and export logs.',
                   icon: Icons.analytics_rounded,
-                  onTap: () => context.go('/reports')),
+                  onTap: () => context.go('/reports'),
+                ),
+              ])
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 16),
+                  child: tile,
+                ),
             ],
           ),
         ],
@@ -505,20 +588,28 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
   }
 
   Widget _buildAttendanceChart(
-      ThemeData theme, List<AttendanceSession> sessions, List<AttendanceRecord> allRecords) {
+    ThemeData theme,
+    List<AttendanceSession> sessions,
+    List<AttendanceRecord> allRecords,
+  ) {
     final Map<DateTime, List<double>> dailyPercentages = {};
     for (final s in sessions) {
       final date = DateTime(s.date.year, s.date.month, s.date.day);
-      final sessionRecords = allRecords.where((r) => r.sessionId == s.id).toList();
+      final sessionRecords = allRecords
+          .where((r) => r.sessionId == s.id)
+          .toList();
       if (sessionRecords.isEmpty) continue;
-      final presentCount = sessionRecords.where((r) => r.status == 'present').length;
+      final presentCount = sessionRecords
+          .where((r) => r.status == 'present')
+          .length;
       final pct = (presentCount / sessionRecords.length) * 100;
       dailyPercentages.putIfAbsent(date, () => []).add(pct);
     }
 
     final sortedDates = dailyPercentages.keys.toList()..sort();
-    final last5Dates =
-        sortedDates.length > 5 ? sortedDates.sublist(sortedDates.length - 5) : sortedDates;
+    final last5Dates = sortedDates.length > 5
+        ? sortedDates.sublist(sortedDates.length - 5)
+        : sortedDates;
 
     final List<String> days = [];
     final List<double> percentages = [];
@@ -537,8 +628,9 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
       percentages.add(dummyPct[idx]);
     }
 
-    final double avgPercentage =
-        percentages.isNotEmpty ? percentages.reduce((a, b) => a + b) / percentages.length : 0.0;
+    final double avgPercentage = percentages.isNotEmpty
+        ? percentages.reduce((a, b) => a + b) / percentages.length
+        : 0.0;
 
     const thresholdPct = AppConstants.defaulterThreshold;
 
@@ -553,10 +645,15 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
               children: [
                 Text(
                   'Weekly Attendance Analytics',
-                  style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: theme.colorScheme.primary.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(20),
@@ -585,14 +682,20 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
                     drawVerticalLine: false,
                     horizontalInterval: 25,
                     getDrawingHorizontalLine: (value) => FlLine(
-                      color: theme.colorScheme.outlineVariant.withValues(alpha: 0.4),
+                      color: theme.colorScheme.outlineVariant.withValues(
+                        alpha: 0.4,
+                      ),
                       strokeWidth: 1,
                     ),
                   ),
                   borderData: FlBorderData(show: false),
                   titlesData: FlTitlesData(
-                    topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                    rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                    topTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false),
+                    ),
+                    rightTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false),
+                    ),
                     leftTitles: AxisTitles(
                       sideTitles: SideTitles(
                         showTitles: true,
@@ -600,8 +703,9 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
                         interval: 25,
                         getTitlesWidget: (value, meta) => Text(
                           '${value.toInt()}%',
-                          style: theme.textTheme.labelSmall
-                              ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                          style: theme.textTheme.labelSmall?.copyWith(
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
                         ),
                       ),
                     ),
@@ -610,53 +714,63 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
                         showTitles: true,
                         getTitlesWidget: (value, meta) {
                           final idx = value.toInt();
-                          if (idx < 0 || idx >= days.length) return const SizedBox.shrink();
+                          if (idx < 0 || idx >= days.length) {
+                            return const SizedBox.shrink();
+                          }
                           return Padding(
                             padding: const EdgeInsets.only(top: 8),
                             child: Text(
                               days[idx],
                               style: theme.textTheme.labelSmall?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                  color: theme.colorScheme.onSurfaceVariant),
+                                fontWeight: FontWeight.bold,
+                                color: theme.colorScheme.onSurfaceVariant,
+                              ),
                             ),
                           );
                         },
                       ),
                     ),
                   ),
-                  extraLinesData: ExtraLinesData(horizontalLines: [
-                    HorizontalLine(
-                      y: thresholdPct,
-                      color: theme.colorScheme.error.withValues(alpha: 0.6),
-                      strokeWidth: 1.5,
-                      dashArray: const [6, 4],
-                      label: HorizontalLineLabel(
-                        show: true,
-                        alignment: Alignment.topRight,
-                        style: TextStyle(
+                  extraLinesData: ExtraLinesData(
+                    horizontalLines: [
+                      HorizontalLine(
+                        y: thresholdPct,
+                        color: theme.colorScheme.error.withValues(alpha: 0.6),
+                        strokeWidth: 1.5,
+                        dashArray: const [6, 4],
+                        label: HorizontalLineLabel(
+                          show: true,
+                          alignment: Alignment.topRight,
+                          style: TextStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.bold,
-                            color: theme.colorScheme.error),
-                        labelResolver: (line) => '${thresholdPct.toInt()}% threshold',
+                            color: theme.colorScheme.error,
+                          ),
+                          labelResolver: (line) =>
+                              '${thresholdPct.toInt()}% threshold',
+                        ),
                       ),
-                    ),
-                  ]),
+                    ],
+                  ),
                   barGroups: List.generate(days.length, (idx) {
                     final pct = percentages[idx];
                     final isBelow = pct < thresholdPct;
-                    return BarChartGroupData(x: idx, barRods: [
-                      BarChartRodData(
-                        toY: pct,
-                        width: 28,
-                        color: isBelow
-                            ? theme.colorScheme.error.withValues(alpha: 0.7)
-                            : theme.colorScheme.primary,
-                        borderRadius: const BorderRadius.only(
-                          topLeft: Radius.circular(8),
-                          topRight: Radius.circular(8),
+                    return BarChartGroupData(
+                      x: idx,
+                      barRods: [
+                        BarChartRodData(
+                          toY: pct,
+                          width: 28,
+                          color: isBelow
+                              ? theme.colorScheme.error.withValues(alpha: 0.7)
+                              : theme.colorScheme.primary,
+                          borderRadius: const BorderRadius.only(
+                            topLeft: Radius.circular(8),
+                            topRight: Radius.circular(8),
+                          ),
                         ),
-                      ),
-                    ]);
+                      ],
+                    );
                   }),
                 ),
               ),
@@ -683,29 +797,51 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
           children: [
             Text(
               'Recent Lecture Sessions Conducted',
-              style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
             ),
             const SizedBox(height: 16),
             AppDataTable(
               isDesktop: true,
-              columns: const ['Class Section', 'Subject', 'Date', 'Time Slot', 'Status'],
+              columns: const [
+                'Class Section',
+                'Subject',
+                'Date',
+                'Time Slot',
+                'Status',
+              ],
               columnFlex: const [2, 2, 1, 1, 1],
               emptyIcon: Icons.event_busy_rounded,
               emptyTitle: 'No sessions yet',
               emptyMessage: 'No attendance sessions conducted yet.',
               rows: sessions.take(5).map((s) {
-                final sub = subjects.firstWhere((sb) => sb.id == s.subjectId,
-                    orElse: () => Subject(id: '', code: 'UNK', name: 'Unknown'));
-                final sec = sections.firstWhere((sc) => sc.id == s.sectionId,
-                    orElse: () => Section(id: '', semesterId: '', name: 'Unknown'));
-                final sem = semesters.firstWhere((se) => se.id == sec.semesterId,
-                    orElse: () => Semester(id: '', branchId: '', semesterNumber: 0));
-                final b = branches.firstWhere((br) => br.id == sem.branchId,
-                    orElse: () => Branch(id: '', courseId: '', name: 'Unknown'));
-                final className = '${b.name} - Sem ${sem.semesterNumber} (${sec.name})';
+                final sub = subjects.firstWhere(
+                  (sb) => sb.id == s.subjectId,
+                  orElse: () => Subject(id: '', code: 'UNK', name: 'Unknown'),
+                );
+                final sec = sections.firstWhere(
+                  (sc) => sc.id == s.sectionId,
+                  orElse: () =>
+                      Section(id: '', semesterId: '', name: 'Unknown'),
+                );
+                final sem = semesters.firstWhere(
+                  (se) => se.id == sec.semesterId,
+                  orElse: () =>
+                      Semester(id: '', branchId: '', semesterNumber: 0),
+                );
+                final b = branches.firstWhere(
+                  (br) => br.id == sem.branchId,
+                  orElse: () => Branch(id: '', courseId: '', name: 'Unknown'),
+                );
+                final className =
+                    '${b.name} - Sem ${sem.semesterNumber} (${sec.name})';
                 final statusChip = Container(
                   alignment: Alignment.center,
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: theme.appColors.successContainer,
                     borderRadius: BorderRadius.circular(AppRadius.control / 2),
@@ -713,12 +849,16 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
                   child: Text(
                     'Submitted',
                     style: TextStyle(
-                        color: theme.appColors.success, fontSize: 10, fontWeight: FontWeight.bold),
+                      color: theme.appColors.success,
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 );
                 return AppDataRow(
                   mobileTitle: className,
-                  mobileSubtitle: '${sub.name} · ${DateFormat('MMM dd, yyyy').format(s.date)}',
+                  mobileSubtitle:
+                      '${sub.name} · ${DateFormat('MMM dd, yyyy').format(s.date)}',
                   mobileLeadingIcon: Icons.event_available_rounded,
                   mobileTrailing: statusChip,
                   cells: [
@@ -749,11 +889,18 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.check_circle_outline_rounded,
-                  color: theme.appColors.success, size: 48),
+              Icon(
+                Icons.check_circle_outline_rounded,
+                color: theme.appColors.success,
+                size: 48,
+              ),
               const SizedBox(height: 12),
-              Text('All Students On Track',
-                  style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+              Text(
+                'All Students On Track',
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
               const SizedBox(height: 4),
               Text(
                 'Every student attendance is above ${AppConstants.defaulterThreshold.toInt()}% threshold.',
@@ -780,11 +927,17 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
           children: [
             Row(
               children: [
-                Icon(Icons.warning_amber_rounded, color: theme.colorScheme.error, size: 22),
+                Icon(
+                  Icons.warning_amber_rounded,
+                  color: theme.colorScheme.error,
+                  size: 22,
+                ),
                 const SizedBox(width: 8),
                 Text(
                   'Defaulter Watchlist (<${AppConstants.defaulterThreshold.toInt()}%)',
-                  style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ],
             ),
@@ -800,11 +953,16 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
                 final pct = d['pct'] as double;
                 return ListTile(
                   contentPadding: EdgeInsets.zero,
-                  title: Text(d['name'] as String,
-                      style: const TextStyle(fontWeight: FontWeight.bold)),
+                  title: Text(
+                    d['name'] as String,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
                   subtitle: Text('Roll: ${d['roll']} | ${d['class']}'),
                   trailing: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 6,
+                    ),
                     decoration: BoxDecoration(
                       color: theme.colorScheme.error.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
@@ -827,7 +985,8 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
                 onPressed: () => context.go('/reports'),
                 icon: const Icon(Icons.arrow_forward_rounded, size: 16),
                 label: Text(
-                    'View all ${defaulters.length} defaulters in Reports'),
+                  'View all ${defaulters.length} defaulters in Reports',
+                ),
               ),
             ],
           ],
@@ -837,15 +996,22 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
   }
 
   Widget _buildFacultyLoadCard(
-      ThemeData theme, List<Faculty> faculty, List<AttendanceSession> sessions) {
+    ThemeData theme,
+    List<Faculty> faculty,
+    List<AttendanceSession> sessions,
+  ) {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(24.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Faculty Deliveries',
-                style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+            Text(
+              'Faculty Deliveries',
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
             const SizedBox(height: 16),
             ListView.separated(
               shrinkWrap: true,
@@ -859,16 +1025,32 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
                 return ListTile(
                   contentPadding: EdgeInsets.zero,
                   leading: CircleAvatar(
-                    backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.1),
-                    child: Text(f.name[0].toUpperCase(),
-                        style: TextStyle(
-                            color: theme.colorScheme.primary, fontWeight: FontWeight.bold)),
+                    backgroundColor: theme.colorScheme.primary.withValues(
+                      alpha: 0.1,
+                    ),
+                    child: Text(
+                      f.name[0].toUpperCase(),
+                      style: TextStyle(
+                        color: theme.colorScheme.primary,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ),
-                  title: Text(f.name,
-                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                  title: Text(
+                    f.name,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13,
+                    ),
+                  ),
                   subtitle: Text('ID: ${f.employeeId}'),
-                  trailing: Text('$count Lectures',
-                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                  trailing: Text(
+                    '$count Lectures',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
+                    ),
+                  ),
                 );
               },
             ),
@@ -877,5 +1059,4 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
       ),
     );
   }
-
 }

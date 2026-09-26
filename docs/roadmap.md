@@ -39,5 +39,5 @@ This covers the original spec's "AI-based analytics, risk prediction, trends and
 - Mobile push notifications
 - Firebase backend ([implementation-plan.md](implementation-plan.md), Phase 6)
 
-**Known issues**
-- The admin dashboard's stat and shortcut cards overflow on phone widths, as does one header row (`admin_dashboard.dart`).
+**Checks**
+- `test/all_screens_scan_test.dart` renders every page, as each role, at phone, tablet and desktop widths, and fails on any layout error.
