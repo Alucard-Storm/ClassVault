@@ -203,6 +203,46 @@ class DriftAcademicHistoryService implements AcademicHistoryRepository {
       _db.into(_db.importBatches).insert(batch.toInsertable());
 
   @override
+  Future<void> commitImport({
+    required ImportBatch batch,
+    List<SchoolResult> schoolResults = const [],
+    List<SemesterResult> semesterResults = const [],
+    List<SubjectResult> subjectResults = const [],
+    List<AttendanceSummary> attendanceSummaries = const [],
+    List<Assessment> assessments = const [],
+  }) {
+    return _db.transaction(() async {
+      await createImportBatch(batch);
+      await upsertSchoolResults([for (final r in schoolResults) r.copyWith(importBatchId: batch.id)]);
+      await upsertSemesterResults([for (final r in semesterResults) r.copyWith(importBatchId: batch.id)]);
+      await upsertSubjectResults([for (final r in subjectResults) r.copyWith(importBatchId: batch.id)]);
+      await upsertAttendanceSummaries(
+          [for (final r in attendanceSummaries) r.copyWith(importBatchId: batch.id)]);
+
+      final newAssessments = <Assessment>[];
+      for (final a in assessments) {
+        if (!await _assessmentExists(a)) newAssessments.add(a.copyWith(importBatchId: batch.id));
+      }
+      await addAssessments(newAssessments);
+    });
+  }
+
+  Future<bool> _assessmentExists(Assessment a) async {
+    final query = _db.select(_db.assessments)
+      ..where((t) =>
+          t.studentId.equals(a.studentId) &
+          t.semesterNumber.equals(a.semesterNumber) &
+          t.subjectName.equals(a.subjectName) &
+          t.assessmentType.equals(a.assessmentType) &
+          t.score.equals(a.score) &
+          t.maxScore.equals(a.maxScore) &
+          (a.title == null ? t.title.isNull() : t.title.equals(a.title!)) &
+          (a.assessedOn == null ? t.assessedOn.isNull() : t.assessedOn.equals(a.assessedOn!)))
+      ..limit(1);
+    return await query.getSingleOrNull() != null;
+  }
+
+  @override
   Future<void> deleteImportBatch(String id) =>
       // Records carrying this importBatchId cascade via foreign keys.
       (_db.delete(_db.importBatches)..where((t) => t.id.equals(id))).go();

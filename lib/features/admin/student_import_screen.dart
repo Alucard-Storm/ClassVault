@@ -33,6 +33,7 @@ class _StudentImportScreenState extends ConsumerState<StudentImportScreen> {
   List<Map<String, dynamic>> _parsedRows = [];
   bool _isLoading = true;
   String? _fileName;
+  bool _createAccounts = true;
 
   @override
   void initState() {
@@ -206,7 +207,7 @@ class _StudentImportScreenState extends ConsumerState<StudentImportScreen> {
     }).toList();
 
     try {
-      await repo.addStudentsBulk(list);
+      await repo.addStudentsBulk(list, createAccounts: _createAccounts);
     } catch (e) {
       // The bulk insert is transactional, so nothing was imported.
       if (mounted) {
@@ -217,7 +218,12 @@ class _StudentImportScreenState extends ConsumerState<StudentImportScreen> {
     }
 
     if (mounted) {
-      AppSnackBar.success(context, 'Successfully imported ${list.length} students!');
+      AppSnackBar.success(
+        context,
+        _createAccounts
+            ? 'Imported ${list.length} students with login accounts (username and password = roll number).'
+            : 'Imported ${list.length} students without login accounts.',
+      );
       context.go('/admin/students');
     }
   }
@@ -350,7 +356,16 @@ class _StudentImportScreenState extends ConsumerState<StudentImportScreen> {
           ),
         ),
         const SizedBox(height: AppSpacing.lg),
-        if (_parsedRows.isNotEmpty)
+        if (_parsedRows.isNotEmpty) ...[
+          CheckboxListTile(
+            value: _createAccounts,
+            onChanged: (v) => setState(() => _createAccounts = v ?? true),
+            contentPadding: EdgeInsets.zero,
+            controlAffinity: ListTileControlAffinity.leading,
+            title: const Text('Create login accounts for imported students'),
+            subtitle: const Text('Username and initial password are the roll number.'),
+          ),
+          const SizedBox(height: AppSpacing.sm),
           ElevatedButton.icon(
             style: ElevatedButton.styleFrom(
               backgroundColor: theme.appColors.success,
@@ -362,6 +377,7 @@ class _StudentImportScreenState extends ConsumerState<StudentImportScreen> {
             icon: const Icon(Icons.save_rounded),
             label: Text('Commit Valid Imports ($validCount)'),
           ),
+        ],
       ],
     );
   }

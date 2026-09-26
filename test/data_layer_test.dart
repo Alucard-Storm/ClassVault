@@ -83,6 +83,20 @@ void main() {
       expect((await auth.login('CS001', 'new-pass-1'))!.name, 'A. Renamed');
     });
 
+    test('bulk import can skip accounts, and editing does not create one', () async {
+      await academic.addStudentsBulk(
+        [Student(id: 's1', rollNumber: 'CS001', name: 'A', sectionId: 'sec3')],
+        createAccounts: false,
+      );
+      await expectLater(auth.login('CS001', 'CS001'), throwsException);
+
+      await academic.updateStudent(Student(id: 's1', rollNumber: 'CS001', name: 'B', sectionId: 'sec3'));
+      await expectLater(auth.login('CS001', 'CS001'), throwsException);
+
+      // Enrollment history is still recorded without an account.
+      expect(await history.getEnrollmentsForStudent('s1'), hasLength(1));
+    });
+
     test('change password fails when signed out', () async {
       await expectLater(
         auth.changePassword(currentPassword: 'x', newPassword: 'new-pass-1'),

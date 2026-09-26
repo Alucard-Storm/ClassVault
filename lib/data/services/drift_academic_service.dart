@@ -63,7 +63,7 @@ class DriftAcademicService implements AcademicRepository {
   Future<void> addStudent(Student student) => addStudentsBulk([student]);
 
   @override
-  Future<void> addStudentsBulk(List<Student> students) {
+  Future<void> addStudentsBulk(List<Student> students, {bool createAccounts = true}) {
     return _db.transaction(() async {
       final now = DateTime.now();
       for (final student in students) {
@@ -77,12 +77,14 @@ class DriftAcademicService implements AcademicRepository {
                 startedAt: now,
               ).toInsertable(),
             );
-        await _accounts.upsertFor(
-          associatedId: student.id,
-          role: UserRole.student,
-          name: student.name,
-          loginId: student.rollNumber,
-        );
+        if (createAccounts) {
+          await _accounts.upsertFor(
+            associatedId: student.id,
+            role: UserRole.student,
+            name: student.name,
+            loginId: student.rollNumber,
+          );
+        }
       }
     });
   }
@@ -105,11 +107,14 @@ class DriftAcademicService implements AcademicRepository {
         ));
       }
 
+      // Keep an existing login in sync, but never create one here: students
+      // imported without accounts stay without one.
       await _accounts.upsertFor(
         associatedId: student.id,
         role: UserRole.student,
         name: student.name,
         loginId: student.rollNumber,
+        createIfMissing: false,
       );
     });
   }

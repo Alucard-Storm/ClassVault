@@ -42,6 +42,19 @@ abstract class AcademicHistoryRepository {
   Future<List<ImportBatch>> getImportBatches();
   Future<void> createImportBatch(ImportBatch batch);
 
+  /// Writes a whole import atomically: creates [batch] and upserts every
+  /// record tagged with its id. Assessments identical to an existing one are
+  /// skipped so re-importing a file does not duplicate them. Nothing is
+  /// written if any step fails.
+  Future<void> commitImport({
+    required ImportBatch batch,
+    List<SchoolResult> schoolResults = const [],
+    List<SemesterResult> semesterResults = const [],
+    List<SubjectResult> subjectResults = const [],
+    List<AttendanceSummary> attendanceSummaries = const [],
+    List<Assessment> assessments = const [],
+  });
+
   /// Rolls back an import: deletes the batch and every record it last wrote.
   Future<void> deleteImportBatch(String id);
 }

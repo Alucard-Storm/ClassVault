@@ -29,7 +29,9 @@ abstract class AcademicRepository {
   Future<List<Student>> getStudents();
   Future<List<Student>> getStudentsBySection(String sectionId);
   Future<void> addStudent(Student student);
-  Future<void> addStudentsBulk(List<Student> students);
+  /// Adds students atomically. With [createAccounts], each also gets a login
+  /// (username and initial password = roll number).
+  Future<void> addStudentsBulk(List<Student> students, {bool createAccounts = true});
   Future<void> updateStudent(Student student);
   Future<void> deleteStudent(String id);
   Future<void> promoteStudents(String sourceSectionId, String destinationSectionId);

@@ -744,6 +744,10 @@ class ResponsiveScaffold extends ConsumerWidget {
               icon: Icons.upgrade_rounded,
               route: '/admin/promotion'),
           _NavigationMenuItem(
+              title: 'History Import',
+              icon: Icons.drive_folder_upload_rounded,
+              route: '/admin/academic-import'),
+          _NavigationMenuItem(
               title: 'Analytics & Reports',
               icon: Icons.analytics_rounded,
               route: '/reports'),

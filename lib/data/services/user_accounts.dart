@@ -17,12 +17,14 @@ class UserAccounts {
   static String normalizeLoginId(String loginId) => loginId.trim().toLowerCase();
 
   /// Creates the account for [associatedId], or updates its name/login ID if
-  /// it already exists. An existing password is never touched.
+  /// it already exists. An existing password is never touched. With
+  /// [createIfMissing] false, only an existing account is updated.
   Future<void> upsertFor({
     required String associatedId,
     required UserRole role,
     required String name,
     required String loginId,
+    bool createIfMissing = true,
   }) async {
     final existing = await (_db.select(_db.users)
           ..where((u) => u.associatedId.equals(associatedId)))
@@ -37,6 +39,7 @@ class UserAccounts {
       );
       return;
     }
+    if (!createIfMissing) return;
 
     final salt = PasswordHasher.newSalt();
     await _db.into(_db.users).insert(
