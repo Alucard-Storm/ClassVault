@@ -45,6 +45,9 @@ class DriftPredictionService implements PredictionRepository {
   }
 
   @override
+  Future<List<PredictionRecord>> getAllPredictions() => _db.select(_db.predictions).get();
+
+  @override
   Future<PredictionRecord?> getPrediction(String id) =>
       (_db.select(_db.predictions)..where((t) => t.id.equals(id))).getSingleOrNull();
 

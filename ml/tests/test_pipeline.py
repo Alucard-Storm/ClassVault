@@ -150,6 +150,15 @@ class TrainingTests(unittest.TestCase):
         self.assertLess(self.risk["bands"]["moderate"], self.risk["bands"]["elevated"] + 1e-9)
         self.assertEqual(self.forecast["interval"]["level"], 0.8)
 
+    def test_cross_validation_is_reported_and_checked(self):
+        for bundle in (self.risk, self.forecast):
+            stability = bundle["metrics"]["stability"]
+            self.assertEqual(len(stability["folds"]), 5)
+            self.assertGreater(stability["mean"], 0)
+            self.assertIn("Stable across data splits", [c["name"] for c in bundle["checks"]])
+        # Synthetic data is homogeneous, so folds should agree closely.
+        self.assertLess(self.risk["metrics"]["stability"]["sd"], 0.05)
+
     def test_model_beats_chance_on_synthetic_data(self):
         self.assertGreater(self.risk["metrics"]["auc"], 0.75)
         self.assertLess(self.forecast["metrics"]["mae"], self.forecast["metrics"]["baselines"]["previousSgpaMae"])

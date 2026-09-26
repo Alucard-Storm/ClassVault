@@ -35,7 +35,8 @@ and never make decisions.
 | Calibration | Platt scaling on validation rows; "elevated" threshold maximises F1 on validation; "moderate" starts at the base rate. |
 | Ranges | Split-conformal 80% intervals from validation residuals. |
 | Evaluation | Held-out test students: AUC, average precision, Brier, calibration table, precision/recall, per-semester stability; MAE/RMSE and interval coverage. Compared against simple baselines. |
-| Checks | A model is only *recommended* if it beats the baselines, is calibrated and (for forecasts) its interval covers close to 80%. Synthetic data is never recommended. The app asks for explicit acknowledgement before activating a model with warnings. |
+| Stability | The chosen model family is refitted on 5 student-grouped folds of the training and validation rows (test rows untouched). The report shows the spread; a model whose quality depends on the split fails *Stable across data splits*. |
+| Checks | A model is only *recommended* if it beats the baselines, is calibrated, is stable across splits and (for forecasts) its interval covers close to 80%. Synthetic data is never recommended. The app asks for explicit acknowledgement before activating a model with warnings. |
 
 Refuses to train with fewer than 200 rows, 50 students or 30 outcomes per class
 (`--allow-small` overrides, for experiments only).
@@ -58,6 +59,11 @@ always add up exactly to the prediction.
 
 Models that have made predictions cannot be removed from the app, only
 deactivated, so every stored prediction stays traceable to its model.
+
+## Pilot
+
+Before relying on predictions, run the pilot described in `docs/pilot-plan.md`. After the pilot semester's
+results are imported, *Admin → Pilot Evaluation* compares every prediction with what actually happened.
 
 ## Synthetic data
 

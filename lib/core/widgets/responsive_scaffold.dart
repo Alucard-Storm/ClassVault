@@ -760,6 +760,10 @@ class ResponsiveScaffold extends ConsumerWidget {
               icon: Icons.model_training_rounded,
               route: '/admin/models'),
           _NavigationMenuItem(
+              title: 'Pilot Evaluation',
+              icon: Icons.fact_check_rounded,
+              route: '/admin/pilot'),
+          _NavigationMenuItem(
               title: 'Analytics & Reports',
               icon: Icons.analytics_rounded,
               route: '/reports'),

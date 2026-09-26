@@ -12,6 +12,7 @@ import 'package:classvault/features/analytics/analytics_service.dart';
 import 'package:classvault/features/analytics/class_analytics_screen.dart';
 import 'package:classvault/features/analytics/student_insights_screen.dart';
 import 'package:classvault/features/auth/auth_provider.dart';
+import 'package:classvault/features/faculty/faculty_dashboard.dart';
 import 'package:classvault/features/intelligence/attention_queue_screen.dart';
 import 'package:classvault/features/intelligence/attention_summary_card.dart';
 import 'package:classvault/features/prediction/prediction_explanation_screen.dart';
@@ -75,6 +76,7 @@ Future<(AppDatabase, ProviderContainer)> setUpApp() async {
 
 Future<void> pumpAt(WidgetTester tester, ProviderContainer container, String path) async {
   final router = GoRouter(initialLocation: path, routes: [
+    GoRoute(path: '/faculty', builder: (_, _) => const FacultyDashboard()),
     GoRoute(
       path: '/analytics',
       builder: (_, _) => const ClassAnalyticsScreen(),
@@ -179,6 +181,14 @@ void main() {
       expect(find.text('Class trend'), findsOneWidget);
       expect(find.text('Opportunity indicators'), findsOneWidget);
       expect(find.byTooltip('Project-readiness indicators: strong'), findsOneWidget); // Ben
+      await tapText(tester, 'Attention Queue');
+      expect(find.text('Asha Rao'), findsOneWidget);
+    });
+
+    testWidgets('faculty dashboard shows the attention summary on $label', (tester) async {
+      final (_, c) = await start(tester, size);
+      await pumpAt(tester, c, '/faculty');
+      expect(find.text('1 student to review'), findsOneWidget);
       await tapText(tester, 'Attention Queue');
       expect(find.text('Asha Rao'), findsOneWidget);
     });

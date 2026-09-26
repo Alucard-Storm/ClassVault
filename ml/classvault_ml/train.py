@@ -9,12 +9,15 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+from sklearn.metrics import mean_absolute_error, roc_auc_score
+from sklearn.model_selection import GroupKFold
 
 from . import evaluate, models
 from .data import DatasetError, FeatureSpec, Preprocessor, data_source, load_dataset, load_spec, split_by_student
 
 SCHEMA = "classvault-model/1"
 INTERVAL_LEVEL = 0.8
+CV_FOLDS = 5
 
 # Refuse to train on less than this unless explicitly overridden.
 MIN_ROWS = 200
@@ -107,7 +110,8 @@ def _train_risk(spec, split, pre, source, small_data, common, stamp) -> dict:
 
     p_test = models.sigmoid(a * models.raw_score(chosen["model"], Xte) + b)
     metrics = evaluate.evaluate_risk(p_test, yte, te, bands, train_rate)
-    checks = evaluate.risk_checks(metrics)
+    metrics["stability"] = _cross_validate(spec, pd.concat([tr, va]), chosen, "label_risk")
+    checks = evaluate.risk_checks(metrics) + [evaluate.risk_stability_check(metrics["stability"])]
 
     training_data = _training_data(source, split, "label_risk", small_data, positive_rate=train_rate)
 
@@ -151,7 +155,8 @@ def _train_forecast(spec, split, pre, source, small_data, common, stamp) -> dict
     chosen, reason = models.choose_forecast(candidates)
     pred = chosen["model"].predict(Xte)
     metrics = evaluate.evaluate_forecast(pred, yte, chosen["half_width"], INTERVAL_LEVEL, te)
-    checks = evaluate.forecast_checks(metrics)
+    metrics["stability"] = _cross_validate(spec, pd.concat([tr, va]), chosen, "label_sgpa")
+    checks = evaluate.forecast_checks(metrics) + [evaluate.forecast_stability_check(metrics["stability"])]
 
     training_data = _training_data(source, split, "label_sgpa", small_data)
 
@@ -180,6 +185,27 @@ def _train_forecast(spec, split, pre, source, small_data, common, stamp) -> dict
         "recommended": source == "classvault" and not small_data and all(c["passed"] for c in checks),
     }
     return {"bundle": bundle, "candidates": candidates, "bundle_for": bundle_for}
+
+
+def _cross_validate(spec: FeatureSpec, rows: pd.DataFrame, chosen: dict, label: str) -> dict:
+    """Refits the chosen model family on student-grouped folds of the
+    training + validation rows (preprocessing refitted per fold, test rows
+    untouched) and scores each held-out fold."""
+    folds = GroupKFold(n_splits=min(CV_FOLDS, rows["student_key"].nunique()))
+    scores = []
+    for train_idx, test_idx in folds.split(rows, groups=rows["student_key"]):
+        fit_rows, score_rows = rows.iloc[train_idx], rows.iloc[test_idx]
+        pre = Preprocessor(spec).fit(fit_rows)
+        model = models.new_estimator(chosen["family"], chosen["params"])
+        model.fit(pre.transform(fit_rows), fit_rows[label].to_numpy())
+        X, y = pre.transform(score_rows), score_rows[label].to_numpy()
+        if label == "label_risk":
+            if len(set(y)) < 2:
+                continue
+            scores.append(roc_auc_score(y, models.raw_score(model, X)))
+        else:
+            scores.append(mean_absolute_error(y, model.predict(X)))
+    return evaluate.stability(scores)
 
 
 def _training_data(source, split, label, small_data, positive_rate=None) -> dict:
@@ -303,6 +329,7 @@ Calibration (predicted vs observed difficulty rate):
 {calib}
 
 Stability by target semester: {', '.join(f"S{s['targetSemester']} AUC {s['auc']}" for s in rm['perTargetSemester']) or 'n/a'}.
+Cross-validated across student groups: AUC {rm['stability']['mean']} ± {rm['stability']['sd']} ({len(rm['stability']['folds'])} folds).
 
 {checks(risk)}
 
@@ -317,6 +344,7 @@ Stability by target semester: {', '.join(f"S{s['targetSemester']} AUC {s['auc']}
 | MAE | {fm['mae']} (previous-SGPA baseline {fm['baselines']['previousSgpaMae']}) |
 | RMSE | {fm['rmse']} |
 | {fm['intervalLevel']:.0%} range | ± {fm['intervalHalfWidth']:.2f} SGPA, covering {fm['intervalCoverage']:.0%} of test outcomes |
+| Cross-validated MAE | {fm['stability']['mean']} ± {fm['stability']['sd']} ({len(fm['stability']['folds'])} student-grouped folds) |
 
 {checks(forecast)}
 

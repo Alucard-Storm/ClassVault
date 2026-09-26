@@ -153,6 +153,8 @@ class _AcademicImportScreenState extends ConsumerState<AcademicImportScreen> {
               importedBy: ref.read(authStateProvider).valueOrNull?.uid,
               recordCount: plan.recordCount,
               notes: plan.summary,
+              rejectedRows: plan.sheets.fold<int>(0, (a, s) => a + s.errorRows),
+              warningCount: plan.warningCount,
             ),
             schoolResults: plan.schoolResults,
             semesterResults: plan.semesterResults,

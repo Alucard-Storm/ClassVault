@@ -25,24 +25,23 @@ class SkeletonLoader extends StatelessWidget {
     // Built from onSurface at low alpha (rather than hardcoded hex) so the
     // shimmer always reads correctly against whatever surface it sits on,
     // in both themes, without per-theme upkeep.
-    final base = baseColor ?? theme.colorScheme.onSurface.withValues(alpha: isDark ? 0.08 : 0.06);
+    final base =
+        baseColor ??
+        theme.colorScheme.onSurface.withValues(alpha: isDark ? 0.08 : 0.06);
     final highlight =
-        highlightColor ?? theme.colorScheme.onSurface.withValues(alpha: isDark ? 0.18 : 0.12);
+        highlightColor ??
+        theme.colorScheme.onSurface.withValues(alpha: isDark ? 0.18 : 0.12);
 
     return Container(
-      width: width,
-      height: height,
-      decoration: BoxDecoration(
-        color: base,
-        borderRadius: borderRadius ?? BorderRadius.circular(8),
-      ),
-    ).animate(
-      onPlay: (controller) => controller.repeat(),
-    ).shimmer(
-      duration: 1500.ms,
-      color: highlight,
-      size: 1.0,
-    );
+          width: width,
+          height: height,
+          decoration: BoxDecoration(
+            color: base,
+            borderRadius: borderRadius ?? BorderRadius.circular(8),
+          ),
+        )
+        .animate(onPlay: (controller) => controller.repeat())
+        .shimmer(duration: 1500.ms, color: highlight, size: 1.0);
   }
 }
 
@@ -51,12 +50,7 @@ class SkeletonCard extends StatelessWidget {
   final EdgeInsetsGeometry? padding;
   final EdgeInsetsGeometry? margin;
 
-  const SkeletonCard({
-    super.key,
-    this.height,
-    this.padding,
-    this.margin,
-  });
+  const SkeletonCard({super.key, this.height, this.padding, this.margin});
 
   @override
   Widget build(BuildContext context) {
@@ -74,17 +68,41 @@ class SkeletonCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SkeletonLoader(width: 120, height: 20, borderRadius: BorderRadius.circular(4)),
+          SkeletonLoader(
+            width: 120,
+            height: 20,
+            borderRadius: BorderRadius.circular(4),
+          ),
           const SizedBox(height: 16),
-          SkeletonLoader(width: 200, height: 28, borderRadius: BorderRadius.circular(4)),
+          SkeletonLoader(
+            width: 200,
+            height: 28,
+            borderRadius: BorderRadius.circular(4),
+          ),
           const SizedBox(height: 8),
-          SkeletonLoader(width: 150, height: 16, borderRadius: BorderRadius.circular(4)),
+          SkeletonLoader(
+            width: 150,
+            height: 16,
+            borderRadius: BorderRadius.circular(4),
+          ),
           const Spacer(),
           Row(
             children: [
-              SkeletonLoader(width: 80, height: 32, borderRadius: BorderRadius.circular(8)),
+              Flexible(
+                child: SkeletonLoader(
+                  width: 80,
+                  height: 32,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
               const SizedBox(width: 12),
-              SkeletonLoader(width: 80, height: 32, borderRadius: BorderRadius.circular(8)),
+              Flexible(
+                child: SkeletonLoader(
+                  width: 80,
+                  height: 32,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
             ],
           ),
         ],
@@ -107,27 +125,43 @@ class SkeletonMetricCard extends StatelessWidget {
           color: Theme.of(context).dividerColor.withValues(alpha: 0.2),
         ),
       ),
-      child: Row(
-        children: [
-          SkeletonLoader(
-            width: 56,
-            height: 56,
-            borderRadius: BorderRadius.circular(12),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SkeletonLoader(width: 80, height: 12, borderRadius: BorderRadius.circular(4)),
-                const SizedBox(height: 8),
-                SkeletonLoader(width: 60, height: 24, borderRadius: BorderRadius.circular(4)),
-                const SizedBox(height: 4),
-                SkeletonLoader(width: 100, height: 12, borderRadius: BorderRadius.circular(4)),
-              ],
+      child: LayoutBuilder(
+        builder: (context, constraints) => Row(
+          children: [
+            if (constraints.maxWidth >= 160) ...[
+              SkeletonLoader(
+                width: 56,
+                height: 56,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              const SizedBox(width: 16),
+            ],
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SkeletonLoader(
+                    width: 80,
+                    height: 12,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  const SizedBox(height: 8),
+                  SkeletonLoader(
+                    width: 60,
+                    height: 24,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  const SizedBox(height: 4),
+                  SkeletonLoader(
+                    width: 100,
+                    height: 12,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -137,16 +171,12 @@ class SkeletonTableRow extends StatelessWidget {
   final int columnCount;
   final List<double>? columnWidths;
 
-  const SkeletonTableRow({
-    super.key,
-    this.columnCount = 4,
-    this.columnWidths,
-  });
+  const SkeletonTableRow({super.key, this.columnCount = 4, this.columnWidths});
 
   @override
   Widget build(BuildContext context) {
     final widths = columnWidths ?? List.filled(columnCount, 120.0);
-    
+
     return Row(
       children: List.generate(columnCount, (index) {
         return Expanded(
@@ -192,14 +222,26 @@ class SkeletonListItem extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SkeletonLoader(width: 120, height: 16, borderRadius: BorderRadius.circular(4)),
+                SkeletonLoader(
+                  width: 120,
+                  height: 16,
+                  borderRadius: BorderRadius.circular(4),
+                ),
                 const SizedBox(height: 4),
-                SkeletonLoader(width: 80, height: 12, borderRadius: BorderRadius.circular(4)),
+                SkeletonLoader(
+                  width: 80,
+                  height: 12,
+                  borderRadius: BorderRadius.circular(4),
+                ),
               ],
             ),
           ),
           if (hasTrailing) ...[
-            SkeletonLoader(width: 60, height: 24, borderRadius: BorderRadius.circular(8)),
+            SkeletonLoader(
+              width: 60,
+              height: 24,
+              borderRadius: BorderRadius.circular(8),
+            ),
           ],
         ],
       ),
@@ -211,11 +253,7 @@ class SkeletonChart extends StatelessWidget {
   final int barCount;
   final double height;
 
-  const SkeletonChart({
-    super.key,
-    this.barCount = 5,
-    this.height = 200,
-  });
+  const SkeletonChart({super.key, this.barCount = 5, this.height = 200});
 
   @override
   Widget build(BuildContext context) {
@@ -224,37 +262,66 @@ class SkeletonChart extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       child: Column(
         children: [
-          SkeletonLoader(width: 180, height: 20, borderRadius: BorderRadius.circular(4)),
+          SkeletonLoader(
+            width: 180,
+            height: 20,
+            borderRadius: BorderRadius.circular(4),
+          ),
           const SizedBox(height: 24),
           Expanded(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: List.generate(barCount, (index) {
-                return Column(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    SkeletonLoader(width: 30, height: 16, borderRadius: BorderRadius.circular(4)),
-                    const SizedBox(height: 8),
-                    Container(
-                      width: 38,
-                      height: 100 * (index % 5 + 1) / 5,
-                      decoration: BoxDecoration(
-                        color: Theme.of(context)
-                            .colorScheme
-                            .onSurface
-                            .withValues(alpha: Theme.of(context).brightness == Brightness.dark ? 0.08 : 0.06),
-                        borderRadius: const BorderRadius.only(
-                          topLeft: Radius.circular(8),
-                          topRight: Radius.circular(8),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                // Labels and gaps above/below each bar take 48px; bars use the
+                // rest, and bar width shares the row with the gaps between bars.
+                final maxBar = (constraints.maxHeight - 48).clamp(0.0, 100.0);
+                final barWidth = (constraints.maxWidth / (barCount * 1.6))
+                    .clamp(8.0, 38.0);
+                final labelWidth = barWidth < 30 ? barWidth : 30.0;
+                return Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: List.generate(barCount, (index) {
+                    return Column(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        SkeletonLoader(
+                          width: labelWidth,
+                          height: 16,
+                          borderRadius: BorderRadius.circular(4),
                         ),
-                      ),
-                    ).animate().shimmer(),
-                    const SizedBox(height: 12),
-                    SkeletonLoader(width: 30, height: 12, borderRadius: BorderRadius.circular(4)),
-                  ],
+                        const SizedBox(height: 8),
+                        // Flexible lets the bar give up a few pixels rather than overflow.
+                        Flexible(
+                          child: Container(
+                            width: barWidth,
+                            height: maxBar * (index % 5 + 1) / 5,
+                            decoration: BoxDecoration(
+                              color: Theme.of(context).colorScheme.onSurface
+                                  .withValues(
+                                    alpha:
+                                        Theme.of(context).brightness ==
+                                            Brightness.dark
+                                        ? 0.08
+                                        : 0.06,
+                                  ),
+                              borderRadius: const BorderRadius.only(
+                                topLeft: Radius.circular(8),
+                                topRight: Radius.circular(8),
+                              ),
+                            ),
+                          ).animate().shimmer(),
+                        ),
+                        const SizedBox(height: 12),
+                        SkeletonLoader(
+                          width: labelWidth,
+                          height: 12,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                      ],
+                    );
+                  }),
                 );
-              }),
+              },
             ),
           ),
         ],
@@ -282,7 +349,11 @@ class SkeletonSection extends StatelessWidget {
       children: [
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: SkeletonLoader(width: 200, height: 24, borderRadius: BorderRadius.circular(4)),
+          child: SkeletonLoader(
+            width: 200,
+            height: 24,
+            borderRadius: BorderRadius.circular(4),
+          ),
         ),
         const SizedBox(height: 16),
         ListView.builder(
@@ -306,53 +377,66 @@ class SkeletonDashboard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SkeletonLoader(width: 280, height: 32, borderRadius: BorderRadius.circular(4)),
+          SkeletonLoader(
+            width: 280,
+            height: 32,
+            borderRadius: BorderRadius.circular(4),
+          ),
           const SizedBox(height: 8),
-          SkeletonLoader(width: 400, height: 16, borderRadius: BorderRadius.circular(4)),
+          SkeletonLoader(
+            width: 400,
+            height: 16,
+            borderRadius: BorderRadius.circular(4),
+          ),
           const SizedBox(height: 32),
           LayoutBuilder(
             builder: (context, constraints) {
-              final crossAxisCount = constraints.maxWidth > 1200 ? 5 : 3;
-              return GridView.count(
-                crossAxisCount: crossAxisCount,
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                crossAxisSpacing: 16,
-                mainAxisSpacing: 16,
-                childAspectRatio: 2.2,
+              final columns = constraints.maxWidth > 1200
+                  ? 5
+                  : (constraints.maxWidth > 600 ? 3 : 2);
+              const spacing = 16.0;
+              final cardWidth =
+                  (constraints.maxWidth - spacing * (columns - 1)) / columns;
+              return Wrap(
+                spacing: spacing,
+                runSpacing: spacing,
                 children: List.generate(
-                  crossAxisCount,
-                  (_) => const SkeletonMetricCard(),
+                  columns,
+                  (_) => SizedBox(
+                    width: cardWidth,
+                    child: const SkeletonMetricCard(),
+                  ),
                 ),
               );
             },
           ),
           const SizedBox(height: 32),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                flex: 3,
-                child: Column(
-                  children: [
-                    const SkeletonChart(barCount: 5, height: 220),
-                    const SizedBox(height: 24),
-                    SkeletonCard(height: 300),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 24),
-              Expanded(
-                flex: 2,
-                child: Column(
-                  children: [
-                    SkeletonCard(height: 300),
-                    const SizedBox(height: 24),
-                    SkeletonCard(height: 220),
-                  ],
-                ),
-              ),
-            ],
+          LayoutBuilder(
+            builder: (context, constraints) {
+              const left = [
+                SkeletonChart(barCount: 5, height: 220),
+                SizedBox(height: 24),
+                SkeletonCard(height: 300),
+              ];
+              const right = [
+                SkeletonCard(height: 300),
+                SizedBox(height: 24),
+                SkeletonCard(height: 220),
+              ];
+              if (constraints.maxWidth < 700) {
+                return const Column(
+                  children: [...left, SizedBox(height: 24), ...right],
+                );
+              }
+              return const Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(flex: 3, child: Column(children: left)),
+                  SizedBox(width: 24),
+                  Expanded(flex: 2, child: Column(children: right)),
+                ],
+              );
+            },
           ),
         ],
       ),

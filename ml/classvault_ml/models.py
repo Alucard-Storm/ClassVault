@@ -164,6 +164,16 @@ def conformal_half_width(residuals: np.ndarray, level: float) -> float:
     return float(ordered[min(k, len(ordered)) - 1])
 
 
+def new_estimator(family: str, params: dict):
+    """A fresh, unfitted estimator matching a chosen candidate."""
+    if family == "logistic":
+        return LogisticRegression(C=params["C"], max_iter=2000)
+    if family == "ridge":
+        return Ridge(alpha=params["alpha"])
+    cls = GradientBoostingClassifier if family == "gbt_classifier" else GradientBoostingRegressor
+    return cls(subsample=0.8, random_state=SEED, **params)
+
+
 # ---------------------------------------------------------------------------
 # Export
 # ---------------------------------------------------------------------------

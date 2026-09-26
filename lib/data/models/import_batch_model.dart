@@ -8,6 +8,10 @@ class ImportBatch {
   final int recordCount;
   final String? notes;
 
+  /// Data-quality counts from validation (null for imports before v4).
+  final int? rejectedRows;
+  final int? warningCount;
+
   ImportBatch({
     required this.id,
     required this.fileName,
@@ -15,6 +19,8 @@ class ImportBatch {
     this.importedBy,
     required this.recordCount,
     this.notes,
+    this.rejectedRows,
+    this.warningCount,
   });
 
   factory ImportBatch.fromJson(Map<String, dynamic> json) {
@@ -25,6 +31,8 @@ class ImportBatch {
       importedBy: json['importedBy'] as String?,
       recordCount: json['recordCount'] as int,
       notes: json['notes'] as String?,
+      rejectedRows: json['rejectedRows'] as int?,
+      warningCount: json['warningCount'] as int?,
     );
   }
 
@@ -36,6 +44,8 @@ class ImportBatch {
       'importedBy': importedBy,
       'recordCount': recordCount,
       'notes': notes,
+      'rejectedRows': rejectedRows,
+      'warningCount': warningCount,
     };
   }
 
@@ -46,6 +56,8 @@ class ImportBatch {
     String? importedBy,
     int? recordCount,
     String? notes,
+    int? rejectedRows,
+    int? warningCount,
   }) {
     return ImportBatch(
       id: id ?? this.id,
@@ -54,6 +66,8 @@ class ImportBatch {
       importedBy: importedBy ?? this.importedBy,
       recordCount: recordCount ?? this.recordCount,
       notes: notes ?? this.notes,
+      rejectedRows: rejectedRows ?? this.rejectedRows,
+      warningCount: warningCount ?? this.warningCount,
     );
   }
 }

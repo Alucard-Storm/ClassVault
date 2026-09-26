@@ -36,6 +36,8 @@ abstract class PredictionRepository {
 
   Future<PredictionRecord?> getPrediction(String id);
 
+  Future<List<PredictionRecord>> getAllPredictions();
+
   /// Number of stored predictions per model id.
   Future<Map<String, int>> countByModel();
 

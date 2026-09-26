@@ -3346,6 +3346,28 @@ class $ImportBatchesTable extends ImportBatches
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _rejectedRowsMeta = const VerificationMeta(
+    'rejectedRows',
+  );
+  @override
+  late final GeneratedColumn<int> rejectedRows = GeneratedColumn<int>(
+    'rejected_rows',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _warningCountMeta = const VerificationMeta(
+    'warningCount',
+  );
+  @override
+  late final GeneratedColumn<int> warningCount = GeneratedColumn<int>(
+    'warning_count',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -3354,6 +3376,8 @@ class $ImportBatchesTable extends ImportBatches
     importedBy,
     recordCount,
     notes,
+    rejectedRows,
+    warningCount,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -3411,6 +3435,24 @@ class $ImportBatchesTable extends ImportBatches
         notes.isAcceptableOrUnknown(data['notes']!, _notesMeta),
       );
     }
+    if (data.containsKey('rejected_rows')) {
+      context.handle(
+        _rejectedRowsMeta,
+        rejectedRows.isAcceptableOrUnknown(
+          data['rejected_rows']!,
+          _rejectedRowsMeta,
+        ),
+      );
+    }
+    if (data.containsKey('warning_count')) {
+      context.handle(
+        _warningCountMeta,
+        warningCount.isAcceptableOrUnknown(
+          data['warning_count']!,
+          _warningCountMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -3444,6 +3486,14 @@ class $ImportBatchesTable extends ImportBatches
         DriftSqlType.string,
         data['${effectivePrefix}notes'],
       ),
+      rejectedRows: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}rejected_rows'],
+      ),
+      warningCount: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}warning_count'],
+      ),
     );
   }
 
@@ -3460,6 +3510,8 @@ class ImportBatchesCompanion extends UpdateCompanion<ImportBatch> {
   final Value<String?> importedBy;
   final Value<int> recordCount;
   final Value<String?> notes;
+  final Value<int?> rejectedRows;
+  final Value<int?> warningCount;
   final Value<int> rowid;
   const ImportBatchesCompanion({
     this.id = const Value.absent(),
@@ -3468,6 +3520,8 @@ class ImportBatchesCompanion extends UpdateCompanion<ImportBatch> {
     this.importedBy = const Value.absent(),
     this.recordCount = const Value.absent(),
     this.notes = const Value.absent(),
+    this.rejectedRows = const Value.absent(),
+    this.warningCount = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   ImportBatchesCompanion.insert({
@@ -3477,6 +3531,8 @@ class ImportBatchesCompanion extends UpdateCompanion<ImportBatch> {
     this.importedBy = const Value.absent(),
     required int recordCount,
     this.notes = const Value.absent(),
+    this.rejectedRows = const Value.absent(),
+    this.warningCount = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        fileName = Value(fileName),
@@ -3489,6 +3545,8 @@ class ImportBatchesCompanion extends UpdateCompanion<ImportBatch> {
     Expression<String>? importedBy,
     Expression<int>? recordCount,
     Expression<String>? notes,
+    Expression<int>? rejectedRows,
+    Expression<int>? warningCount,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -3498,6 +3556,8 @@ class ImportBatchesCompanion extends UpdateCompanion<ImportBatch> {
       if (importedBy != null) 'imported_by': importedBy,
       if (recordCount != null) 'record_count': recordCount,
       if (notes != null) 'notes': notes,
+      if (rejectedRows != null) 'rejected_rows': rejectedRows,
+      if (warningCount != null) 'warning_count': warningCount,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -3509,6 +3569,8 @@ class ImportBatchesCompanion extends UpdateCompanion<ImportBatch> {
     Value<String?>? importedBy,
     Value<int>? recordCount,
     Value<String?>? notes,
+    Value<int?>? rejectedRows,
+    Value<int?>? warningCount,
     Value<int>? rowid,
   }) {
     return ImportBatchesCompanion(
@@ -3518,6 +3580,8 @@ class ImportBatchesCompanion extends UpdateCompanion<ImportBatch> {
       importedBy: importedBy ?? this.importedBy,
       recordCount: recordCount ?? this.recordCount,
       notes: notes ?? this.notes,
+      rejectedRows: rejectedRows ?? this.rejectedRows,
+      warningCount: warningCount ?? this.warningCount,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -3543,6 +3607,12 @@ class ImportBatchesCompanion extends UpdateCompanion<ImportBatch> {
     if (notes.present) {
       map['notes'] = Variable<String>(notes.value);
     }
+    if (rejectedRows.present) {
+      map['rejected_rows'] = Variable<int>(rejectedRows.value);
+    }
+    if (warningCount.present) {
+      map['warning_count'] = Variable<int>(warningCount.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -3558,6 +3628,8 @@ class ImportBatchesCompanion extends UpdateCompanion<ImportBatch> {
           ..write('importedBy: $importedBy, ')
           ..write('recordCount: $recordCount, ')
           ..write('notes: $notes, ')
+          ..write('rejectedRows: $rejectedRows, ')
+          ..write('warningCount: $warningCount, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -3576,6 +3648,8 @@ class _$ImportBatchInsertable implements Insertable<ImportBatch> {
       importedBy: Value(_object.importedBy),
       recordCount: Value(_object.recordCount),
       notes: Value(_object.notes),
+      rejectedRows: Value(_object.rejectedRows),
+      warningCount: Value(_object.warningCount),
     ).toColumns(false);
   }
 }
@@ -11544,6 +11618,8 @@ typedef $$ImportBatchesTableCreateCompanionBuilder =
       Value<String?> importedBy,
       required int recordCount,
       Value<String?> notes,
+      Value<int?> rejectedRows,
+      Value<int?> warningCount,
       Value<int> rowid,
     });
 typedef $$ImportBatchesTableUpdateCompanionBuilder =
@@ -11554,6 +11630,8 @@ typedef $$ImportBatchesTableUpdateCompanionBuilder =
       Value<String?> importedBy,
       Value<int> recordCount,
       Value<String?> notes,
+      Value<int?> rejectedRows,
+      Value<int?> warningCount,
       Value<int> rowid,
     });
 
@@ -11697,6 +11775,16 @@ class $$ImportBatchesTableFilterComposer
 
   ColumnFilters<String> get notes => $composableBuilder(
     column: $table.notes,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get rejectedRows => $composableBuilder(
+    column: $table.rejectedRows,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get warningCount => $composableBuilder(
+    column: $table.warningCount,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -11864,6 +11952,16 @@ class $$ImportBatchesTableOrderingComposer
     column: $table.notes,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<int> get rejectedRows => $composableBuilder(
+    column: $table.rejectedRows,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get warningCount => $composableBuilder(
+    column: $table.warningCount,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$ImportBatchesTableAnnotationComposer
@@ -11898,6 +11996,16 @@ class $$ImportBatchesTableAnnotationComposer
 
   GeneratedColumn<String> get notes =>
       $composableBuilder(column: $table.notes, builder: (column) => column);
+
+  GeneratedColumn<int> get rejectedRows => $composableBuilder(
+    column: $table.rejectedRows,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get warningCount => $composableBuilder(
+    column: $table.warningCount,
+    builder: (column) => column,
+  );
 
   Expression<T> schoolResultsRefs<T extends Object>(
     Expression<T> Function($$SchoolResultsTableAnnotationComposer a) f,
@@ -12066,6 +12174,8 @@ class $$ImportBatchesTableTableManager
                 Value<String?> importedBy = const Value.absent(),
                 Value<int> recordCount = const Value.absent(),
                 Value<String?> notes = const Value.absent(),
+                Value<int?> rejectedRows = const Value.absent(),
+                Value<int?> warningCount = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => ImportBatchesCompanion(
                 id: id,
@@ -12074,6 +12184,8 @@ class $$ImportBatchesTableTableManager
                 importedBy: importedBy,
                 recordCount: recordCount,
                 notes: notes,
+                rejectedRows: rejectedRows,
+                warningCount: warningCount,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -12084,6 +12196,8 @@ class $$ImportBatchesTableTableManager
                 Value<String?> importedBy = const Value.absent(),
                 required int recordCount,
                 Value<String?> notes = const Value.absent(),
+                Value<int?> rejectedRows = const Value.absent(),
+                Value<int?> warningCount = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => ImportBatchesCompanion.insert(
                 id: id,
@@ -12092,6 +12206,8 @@ class $$ImportBatchesTableTableManager
                 importedBy: importedBy,
                 recordCount: recordCount,
                 notes: notes,
+                rejectedRows: rejectedRows,
+                warningCount: warningCount,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0

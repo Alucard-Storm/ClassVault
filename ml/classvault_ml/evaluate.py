@@ -20,6 +20,11 @@ RULE_BASELINE_SGPA = 6.0
 MIN_TEST_AUC = 0.65
 COVERAGE_TOLERANCE = 0.07
 
+# Cross-validation across student groups: results should not depend on
+# which students happened to land in the test split.
+MAX_AUC_SD = 0.05
+MAX_MAE_CV = 0.15  # standard deviation / mean
+
 
 def _prf(pred: np.ndarray, y: np.ndarray) -> dict:
     tp = int(np.sum(pred & (y == 1)))
@@ -128,6 +133,25 @@ def forecast_checks(metrics: dict) -> list[dict]:
                f"{metrics['intervalCoverage']:.0%} of test outcomes fell inside the {level:.0%} range "
                f"(tolerance ±{COVERAGE_TOLERANCE:.0%})."),
     ]
+
+
+def stability(scores: list[float]) -> dict:
+    arr = np.array(scores, dtype=float)
+    return {"folds": [round(float(s), 4) for s in arr], "mean": round(float(arr.mean()), 4),
+            "sd": round(float(arr.std(ddof=1)) if len(arr) > 1 else 0.0, 4)}
+
+
+def risk_stability_check(s: dict) -> dict:
+    return _check("Stable across data splits", s["sd"] <= MAX_AUC_SD,
+                  f"AUC {s['mean']} ± {s['sd']} over {len(s['folds'])} student-grouped folds "
+                  f"(maximum spread {MAX_AUC_SD}).")
+
+
+def forecast_stability_check(s: dict) -> dict:
+    cv = s["sd"] / s["mean"] if s["mean"] else 0.0
+    return _check("Stable across data splits", cv <= MAX_MAE_CV,
+                  f"MAE {s['mean']} ± {s['sd']} over {len(s['folds'])} student-grouped folds "
+                  f"(maximum relative spread {MAX_MAE_CV:.0%}).")
 
 
 def _check(name: str, passed: bool, detail: str) -> dict:

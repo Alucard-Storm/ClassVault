@@ -187,6 +187,9 @@ class ImportBatches extends Table {
   TextColumn get importedBy => text().nullable()();
   IntColumn get recordCount => integer()();
   TextColumn get notes => text().nullable()();
+  // Added in schema v4.
+  IntColumn get rejectedRows => integer().nullable()();
+  IntColumn get warningCount => integer().nullable()();
 
   @override
   Set<Column> get primaryKey => {id};
@@ -419,7 +422,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   // Bump [schemaVersion] and add steps in onUpgrade for every schema change;
   // never edit an already-shipped table definition without a migration.
@@ -433,6 +436,10 @@ class AppDatabase extends _$AppDatabase {
           }
           if (from < 3) {
             await m.createTable(interventions);
+          }
+          if (from < 4) {
+            await m.addColumn(importBatches, importBatches.rejectedRows);
+            await m.addColumn(importBatches, importBatches.warningCount);
           }
         },
         beforeOpen: (details) async {

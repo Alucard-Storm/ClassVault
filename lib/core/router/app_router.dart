@@ -22,6 +22,7 @@ import '../../features/analytics/class_analytics_screen.dart';
 import '../../features/analytics/student_insights_screen.dart';
 import '../../features/prediction/prediction_explanation_screen.dart';
 import '../../features/intelligence/attention_queue_screen.dart';
+import '../../features/pilot/pilot_evaluation_screen.dart';
 
 /// Route guard: where a request for [path] should go instead, or null to
 /// allow it. Pure so the access rules can be tested without rendering.
@@ -119,6 +120,10 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: 'models',
             builder: (context, state) => const PredictionModelsScreen(),
+          ),
+          GoRoute(
+            path: 'pilot',
+            builder: (context, state) => const PilotEvaluationScreen(),
           ),
         ],
       ),
